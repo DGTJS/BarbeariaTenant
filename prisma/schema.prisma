@@ -1,0 +1,68 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String    @id @default(uuid())
+  email     String    @unique
+  name      String?
+  photo     String?
+  googleId  String?   @unique
+  password  String?
+  booking   booking[]
+  role      String    @default("Cliente") // Permissão: Cliente, Administrador, Barbeiro
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model BarberShop {
+  id          String              @id @default(uuid())
+  name        String
+  address     String?
+  phone       String?
+  photo       String?
+  description String?
+  status      Boolean             @default(true)
+  createdAt   DateTime            @default(now())
+  updatedAt   DateTime            @updatedAt
+  services    BarberShopService[]
+}
+
+model BarberShopService {
+  id                 String     @id @default(uuid())
+  barBerShopId       String
+  barberShop         BarberShop @relation(fields: [barberShopId], references: [id])
+  barBerShopBookings booking[]
+  barberShopId       String
+  name               String
+  description        String?
+  price              Decimal    @db.Decimal(10, 2)
+  duration           Int // Duration in minutes
+  status             Boolean    @default(true)
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
+}
+
+model booking {
+  id                  String            @id @default(uuid())
+  userId              String
+  user                User              @relation(fields: [userId], references: [id])
+  barberShopServiceId String
+  barberShopService   BarberShopService @relation(fields: [barberShopServiceId], references: [id])
+  dateTime            DateTime
+  status              String            @default("Pendente") // Status: Pendente, Confirmada, Cancelada
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+}

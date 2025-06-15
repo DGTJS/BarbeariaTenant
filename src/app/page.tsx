@@ -4,6 +4,7 @@ import { Input } from "@/_components/ui/input";
 import { SearchIcon } from "lucide-react";
 import { Button } from "@/_components/ui/button";
 import Image from "next/image";
+import Appointments from "@/_components/appointments";
 
 export default function Home() {
   return (
@@ -17,12 +18,14 @@ export default function Home() {
         <div className="mt-5 flex items-center gap-1 space-x-1 text-gray-800">
           <Input
             placeholder="O que você quer fazer hoje?"
-            className="bg-gray-800 placeholder-gray-400"
+            className="border-gray-700 bg-gray-800 py-5 placeholder-gray-400"
           />
-          <Button variant="outline" className="bg-purple-500">
+          <Button variant="outline" className="bg-purple-500 py-5">
             <SearchIcon className="h-5 w-5 text-white" />
           </Button>
         </div>
+
+        {/* BANNER */}
         <div className="relative mt-5 h-[170px] w-full">
           <Image
             src="/banner-01.png"
@@ -31,6 +34,10 @@ export default function Home() {
             className="rounded-lg object-cover"
           />
         </div>
+
+        {/* AGENDAMENTOS */}
+        <h2 className="font mt-5 font-semibold text-gray-400">AGENDAMENTOS</h2>
+        <Appointments />
       </div>
     </>
   );

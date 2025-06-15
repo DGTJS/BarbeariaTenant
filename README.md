@@ -2,7 +2,7 @@
 
 #### 📦 Banco de Dados
 
-- - [/Incompleto] Estrutura de usuários, barbeiros e barbearias
+- [/Incompleto\] Estrutura de usuários, barbeiros e barbearias
 - [] Tabela de serviços
 - [] Tabela de agendamentos (com link para cliente, serviço, barbeiro e barbearia)
 

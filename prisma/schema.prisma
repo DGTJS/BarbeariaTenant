@@ -31,8 +31,8 @@ model BarberShop {
   id          String              @id @default(uuid())
   name        String
   address     String?
-  phone       String?
-  photo       String?
+  phones      String[]
+  imageUrl    String?
   description String?
   status      Boolean             @default(true)
   createdAt   DateTime            @default(now())
@@ -42,14 +42,14 @@ model BarberShop {
 
 model BarberShopService {
   id                 String     @id @default(uuid())
-  barBerShopId       String
   barberShop         BarberShop @relation(fields: [barberShopId], references: [id])
-  barBerShopBookings booking[]
   barberShopId       String
+  bookings           booking[]
   name               String
   description        String?
   price              Decimal    @db.Decimal(10, 2)
   duration           Int // Duration in minutes
+  imageUrl           String
   status             Boolean    @default(true)
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt
@@ -59,8 +59,8 @@ model booking {
   id                  String            @id @default(uuid())
   userId              String
   user                User              @relation(fields: [userId], references: [id])
-  barberShopServiceId String
-  barberShopService   BarberShopService @relation(fields: [barberShopServiceId], references: [id])
+  serviceId           String
+  service             BarberShopService @relation(fields: [serviceId], references: [id])
   dateTime            DateTime
   status              String            @default("Pendente") // Status: Pendente, Confirmada, Cancelada
   createdAt           DateTime          @default(now())

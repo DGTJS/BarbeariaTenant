@@ -5,8 +5,12 @@ import { SearchIcon } from "lucide-react";
 import { Button } from "@/_components/ui/button";
 import Image from "next/image";
 import Appointments from "@/_components/appointments";
+import { db } from "@/_lib/prisma";
+import BarberShopItem from "@/_components/barbershopitem";
 
-export default function Home() {
+export default async function Home() {
+  const barberShop = await db.barberShop.findMany({});
+
   return (
     <>
       <Header />
@@ -26,7 +30,7 @@ export default function Home() {
         </div>
 
         {/* BANNER */}
-        <div className="relative mt-5 h-[170px] w-full">
+        <div className="relative mt-5 h-[190px] w-full">
           <Image
             src="/banner-01.png"
             alt="Banner"
@@ -36,8 +40,18 @@ export default function Home() {
         </div>
 
         {/* AGENDAMENTOS */}
-        <h2 className="font mt-5 font-semibold text-gray-400">AGENDAMENTOS</h2>
+        <h2 className="font mt-5 text-sm font-semibold text-gray-400 uppercase">
+          Agendamentos
+        </h2>
         <Appointments />
+        <h2 className="font mt-5 text-sm font-semibold text-gray-400 uppercase">
+          Recomendados
+        </h2>
+        <div className="flex gap-2 overflow-auto [&::-webkit-scrollbar]:hidden">
+          {barberShop.map((barberShop) => (
+            <BarberShopItem key={barberShop.id} barberShop={barberShop} />
+          ))}
+        </div>
       </div>
     </>
   );

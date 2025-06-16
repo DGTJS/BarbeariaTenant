@@ -9,21 +9,24 @@ interface BarberShopItemProps {
 
 const BarberShopItem = ({ barberShop }: BarberShopItemProps) => {
   return (
-    <Card className="columns mt-5 flex min-w-[159px] justify-between border-gray-700 bg-gray-800 p-1">
-      <CardContent className="p-0">
+    <Card className="columns mt-5 flex min-w-[167px] rounded-2xl border-gray-700 p-1">
+      <CardContent className="p-1">
         <div className="relative h-[150px] w-full">
           <Image
             src={barberShop.imageUrl}
             alt="Logo"
             fill
-            className="objet-cover"
+            className="objet-cover rounded-2xl"
           />
         </div>
-        <div className="px-2 py-3">
-          <h3 className="text-lg font-semibold">{barberShop.name}</h3>
-          <p className="text-sm text-gray-500">{barberShop.address}</p>
+        <div className="py-3">
+          <h3 className="truncate text-lg font-semibold">{barberShop.name}</h3>
+          <p className="truncate text-sm text-gray-500">{barberShop.address}</p>
         </div>
-        <Button variant="outline" className="border-none bg-gray-700">
+        <Button
+          variant="outline"
+          className="mt-3 w-full border-none bg-gray-700"
+        >
           Reservar
         </Button>
       </CardContent>

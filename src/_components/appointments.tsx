@@ -4,7 +4,7 @@ import { Card, CardContent } from "./ui/card";
 
 const Appointments = () => {
   return (
-    <Card className="mt-5 border-gray-700 bg-gray-800 p-0">
+    <Card className="mt-5 border-gray-700 p-0">
       <CardContent className="flex flex-row items-center justify-between px-0">
         <div className="flex flex-col gap-2 px-4">
           <Badge className="bg-purple-950 text-purple-400">Confirmado</Badge>

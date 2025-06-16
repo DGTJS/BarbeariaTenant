@@ -22,7 +22,7 @@ export default async function Home() {
         <div className="mt-5 flex items-center gap-1 space-x-1 text-gray-800">
           <Input
             placeholder="O que você quer fazer hoje?"
-            className="border-gray-700 bg-gray-800 py-5 placeholder-gray-400"
+            className="border-gray-700 py-5 placeholder-gray-400"
           />
           <Button variant="outline" className="bg-purple-500 py-5">
             <SearchIcon className="h-5 w-5 text-white" />
@@ -47,7 +47,7 @@ export default async function Home() {
         <h2 className="font mt-5 text-sm font-semibold text-gray-400 uppercase">
           Recomendados
         </h2>
-        <div className="flex gap-2 overflow-auto [&::-webkit-scrollbar]:hidden">
+        <div className="flex gap-3 overflow-auto [&::-webkit-scrollbar]:hidden">
           {barberShop.map((barberShop) => (
             <BarberShopItem key={barberShop.id} barberShop={barberShop} />
           ))}

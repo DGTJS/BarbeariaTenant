@@ -18,10 +18,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR">
-      <body className={`${NunitoFont.variable} bg-gray-900 antialiased`}>
-        {children}
-      </body>
+    <html lang="pt-BR" className="dark">
+      <body className={`${NunitoFont.variable} antialiased`}>{children}</body>
     </html>
   );
 }

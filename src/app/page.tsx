@@ -8,9 +8,15 @@ import Appointments from "@/_components/appointments";
 import { db } from "@/_lib/prisma";
 import BarberShopItem from "@/_components/barbershopitem";
 import Barbers from "@/_components/barbers";
+import FooterBar from "@/_components/footerbar";
 
 export default async function Home() {
   const barberShop = await db.barberShop.findMany({});
+  const PopularBarbers = await db.barberShop.findMany({
+    orderBy: {
+      name: "desc",
+    },
+  });
   const barbers = await db.barber.findMany({});
 
   return (
@@ -66,11 +72,12 @@ export default async function Home() {
           Populares
         </h2>
         <div className="flex gap-3 overflow-auto [&::-webkit-scrollbar]:hidden">
-          {barberShop.map((barberShop) => (
+          {PopularBarbers.map((barberShop) => (
             <BarberShopItem key={barberShop.id} barberShop={barberShop} />
           ))}
         </div>
       </div>
+      <FooterBar />
     </>
   );
 }

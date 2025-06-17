@@ -1,21 +1,20 @@
 import Image from "next/image";
 import { Card, CardContent } from "./ui/card";
-import { BarberShop } from "@/generated/prisma/client";
 import { Button } from "./ui/button";
+import { barber } from "@/generated/prisma/client";
 import { Badge } from "./ui/badge";
-import { StarIcon } from "lucide-react";
 
-interface BarberShopItemProps {
-  barberShop: BarberShop;
+interface BarbersProps {
+  barber: barber;
 }
 
-const BarberShopItem = ({ barberShop }: BarberShopItemProps) => {
+const Barbers = ({ barber }: BarbersProps) => {
   return (
     <Card className="columns mt-5 flex min-w-[167px] rounded-2xl border-gray-700 p-1">
       <CardContent className="p-1 pb-2">
         <div className="relative h-[150px] w-full">
           <Image
-            src={barberShop.imageUrl ?? "/default-image.png"}
+            src={barber.photo}
             alt="Logo"
             fill
             className="objet-cover rounded-2xl"
@@ -23,14 +22,11 @@ const BarberShopItem = ({ barberShop }: BarberShopItemProps) => {
           <Badge
             className="absolute top-2 left-2 bg-black/60 shadow-md backdrop-blur-md"
             variant="secondary"
-          >
-            <StarIcon className="fill-primary text-primary h-4 w-4" />
-            <span className="text-xs font-semibold">5.0</span>
-          </Badge>
+          ></Badge>
         </div>
         <div className="py-3">
-          <h3 className="truncate text-lg font-semibold">{barberShop.name}</h3>
-          <p className="truncate text-sm text-gray-500">{barberShop.address}</p>
+          <h3 className="truncate text-lg font-semibold">{barber.name}</h3>
+          <p className="truncate text-sm text-gray-500">{barber.phone}</p>
         </div>
         <Button
           variant="outline"
@@ -43,4 +39,4 @@ const BarberShopItem = ({ barberShop }: BarberShopItemProps) => {
   );
 };
 
-export default BarberShopItem;
+export default Barbers;

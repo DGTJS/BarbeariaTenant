@@ -7,9 +7,11 @@ import Image from "next/image";
 import Appointments from "@/_components/appointments";
 import { db } from "@/_lib/prisma";
 import BarberShopItem from "@/_components/barbershopitem";
+import Barbers from "@/_components/barbers";
 
 export default async function Home() {
   const barberShop = await db.barberShop.findMany({});
+  const barbers = await db.barber.findMany({});
 
   return (
     <>
@@ -44,6 +46,14 @@ export default async function Home() {
           Agendamentos
         </h2>
         <Appointments />
+        <h2 className="font mt-5 text-sm font-semibold text-gray-400 uppercase">
+          Barbeiros
+        </h2>
+        <div className="flex gap-3 overflow-auto [&::-webkit-scrollbar]:hidden">
+          {barbers.map((barber) => (
+            <Barbers key={barber.id} barber={barber} />
+          ))}
+        </div>
         <h2 className="font mt-5 text-sm font-semibold text-gray-400 uppercase">
           Recomendados
         </h2>

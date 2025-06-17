@@ -8,6 +8,7 @@ import Appointments from "@/_components/appointments";
 import { db } from "@/_lib/prisma";
 import BarberShopItem from "@/_components/barbershopitem";
 import Barbers from "@/_components/barbers";
+import Category from "@/_components/category";
 import FooterBar from "@/_components/footerbar";
 
 export default async function Home() {
@@ -18,6 +19,7 @@ export default async function Home() {
     },
   });
   const barbers = await db.barber.findMany({});
+  const categories = await db.barberCategory.findMany({});
 
   return (
     <>
@@ -32,9 +34,19 @@ export default async function Home() {
             placeholder="O que você quer fazer hoje?"
             className="border-gray-700 py-5 placeholder-gray-400"
           />
-          <Button variant="outline" className="bg-purple-500 py-5">
+          <Button variant="secondary" className="bg-purple-500 py-5">
             <SearchIcon className="h-5 w-5 text-white" />
           </Button>
+        </div>
+        {/* CATEGORY */}
+        <div className="mt-5 flex gap-3 overflow-auto [&::-webkit-scrollbar]:hidden">
+          {categories.map((category) => (
+            <Category
+              key={category.id}
+              name={category.name}
+              IconUrl={category.IconUrl}
+            />
+          ))}
         </div>
 
         {/* BANNER */}

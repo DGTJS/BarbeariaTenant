@@ -10,7 +10,8 @@
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts",
-    "seedBarber": "tsx prisma/seedBarbers.ts"
+    "seedBarber": "tsx prisma/seedBarbers.ts",
+    "seedCategory": "tsx prisma/seedCategory.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.9.0",

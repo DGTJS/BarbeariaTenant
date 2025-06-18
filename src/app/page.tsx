@@ -10,14 +10,11 @@ import CardBarber from "@/_components/CardBarber";
 import Barbers from "@/_components/barbers";
 import Category from "@/_components/category";
 import FooterBar from "@/_components/footerbar";
+import CardServices from "@/_components/CardServices";
 
 export default async function Home() {
-  const barberShop = await db.barberShop.findMany({});
-  const PopularBarbers = await db.barberShop.findMany({
-    orderBy: {
-      name: "desc",
-    },
-  });
+  const services = await db.barberShopService.findMany({});
+  const PopularBarbers = await db.barberShop.findMany({});
   const barbers = await db.barber.findMany({});
   const categories = await db.barberCategory.findMany({});
 
@@ -76,11 +73,11 @@ export default async function Home() {
           Recomendados
         </h2>
         <div className="flex gap-3 overflow-auto [&::-webkit-scrollbar]:hidden">
-          {barberShop.map((barberShop) => (
-            <CardBarber
-              key={barberShop.id}
-              barberShop={barberShop}
-              nameButton="Reservar"
+          {services.map((services) => (
+            <CardServices
+              key={services.id}
+              BarberShopService={services}
+              nameButton="Agendar"
             />
           ))}
         </div>

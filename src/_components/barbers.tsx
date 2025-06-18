@@ -5,13 +5,26 @@ import { barber } from "@/generated/prisma/client";
 import { Badge } from "./ui/badge";
 import { Calendar, StarIcon } from "lucide-react";
 import Link from "next/link";
+import { db } from "@/_lib/prisma";
 
 interface BarbersProps {
   barber: barber;
   nameButton: string;
 }
 
-const Barbers = ({ barber, nameButton }: BarbersProps) => {
+const Barbers = async ({ barber, nameButton }: BarbersProps) => {
+  const reviews = await db.booking.aggregate({
+    where: {
+      barberId: barber.id,
+      rating: {
+        not: null,
+      },
+    },
+    _avg: {
+      rating: true,
+    },
+  });
+
   return (
     <Card className="columns mt-5 flex min-w-[167px] rounded-2xl p-1">
       <CardContent className="p-1 pb-2">
@@ -27,7 +40,9 @@ const Barbers = ({ barber, nameButton }: BarbersProps) => {
             variant="secondary"
           >
             <StarIcon className="fill-primary text-primary h-4 w-4" />
-            <span className="text-xs font-semibold">5.0</span>
+            <span className="text-xs font-semibold">
+              {reviews._avg.rating?.toFixed(2) || "Sem avaliação"}
+            </span>
           </Badge>
         </div>
         <div className="py-3">
@@ -35,14 +50,15 @@ const Barbers = ({ barber, nameButton }: BarbersProps) => {
           <p className="truncate text-sm text-gray-500">{barber.phone}</p>
         </div>
 
-        <Link href={`/barber/${barber.id}`}>
-          <Button
-            variant="outline"
-            className="mt-3 flex w-full cursor-pointer flex-row border-none bg-gray-700"
-          >
+        <Button
+          variant="outline"
+          className="mt-3 flex w-full cursor-pointer flex-row border-none bg-gray-700"
+          asChild
+        >
+          <Link href={`/barber/${barber.id}`}>
             <Calendar /> {nameButton}
-          </Button>
-        </Link>
+          </Link>
+        </Button>
       </CardContent>
     </Card>
   );

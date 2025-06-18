@@ -79,6 +79,8 @@ model booking {
   barberId            String        
   barber              barber            @relation(fields: [barberId], references: [id])
   dateTime            DateTime
+  rating              Int?              // ⭐ Avaliação de 1 a 5
+  comment             String?           // 💬 Comentário opcional do cliente
   status              String            @default("Pendente") // Status: Pendente, Confirmada, Cancelada
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt

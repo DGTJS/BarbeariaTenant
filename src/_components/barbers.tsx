@@ -3,7 +3,8 @@ import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { barber } from "@/generated/prisma/client";
 import { Badge } from "./ui/badge";
-import { StarIcon } from "lucide-react";
+import { Calendar, StarIcon } from "lucide-react";
+import Link from "next/link";
 
 interface BarbersProps {
   barber: barber;
@@ -33,12 +34,15 @@ const Barbers = ({ barber, nameButton }: BarbersProps) => {
           <h3 className="truncate text-lg font-semibold">{barber.name}</h3>
           <p className="truncate text-sm text-gray-500">{barber.phone}</p>
         </div>
-        <Button
-          variant="outline"
-          className="mt-3 w-full border-none bg-gray-700"
-        >
-          {nameButton}
-        </Button>
+
+        <Link href={`/barber/${barber.id}`}>
+          <Button
+            variant="outline"
+            className="mt-3 flex w-full cursor-pointer flex-row border-none bg-gray-700"
+          >
+            <Calendar /> {nameButton}
+          </Button>
+        </Link>
       </CardContent>
     </Card>
   );

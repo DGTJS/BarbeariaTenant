@@ -1,13 +1,22 @@
 ### ✅ Dev Checklist – MVP Inicial
 
-#### 📦 Banco de Dados
+#### 📦 Banco de Dados - Em andamento
 
 - [/Incompleto\] Estrutura de usuários, barbeiros e barbearias
 - [] Tabela de serviços
+- [] Tabela de agendamentos
+- [] Tabela de pagamentos
+- [] Tabela de avaliações
 - [] Tabela de agendamentos (com link para cliente, serviço, barbeiro e barbearia)
 
-#### 🧪 Funcionalidades Básicas
+#### 🧪 Funcionalidades Visual UI/UX
 
+- [x] Cards de barbeiros
+- [x] Cards das barbearias filial
+- [x] Cards de serviços
+- [x] Cards de avaliações
+- [x] Cards de agendamentos
+- [x] Cards de categorias
 - [] Cliente agenda serviço com barbeiro e horário
 - [] Barbeiro vê seus próprios agendamentos
 - [] Admin visualiza todos os agendamentos da barbearia
@@ -24,14 +33,11 @@
 - [] Listar agendamentos
 - [] Ver detalhes do agendamento
 - [] Atualizar status
-
-#### 🎯 Próximos Passos
-
 - [ ] Integração com planos (barbearia e cliente)
 - [ ] Integração com Mercado Pago
 - [ ] Sistema de cupons
 - [ ] Gestão de produtos e pedidos
-- [ ] Notificações e chat interno
+- [ ] Notificações e chat interno (ainda em analise)
 
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 

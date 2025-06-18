@@ -7,9 +7,10 @@ import { StarIcon } from "lucide-react";
 
 interface BarberShopItemProps {
   barberShop: BarberShop;
+  nameButton: string;
 }
 
-const BarberShopItem = ({ barberShop }: BarberShopItemProps) => {
+const CardBarber = ({ barberShop, nameButton }: BarberShopItemProps) => {
   return (
     <Card className="columns mt-5 flex min-w-[167px] rounded-2xl p-1">
       <CardContent className="p-1 pb-2">
@@ -36,11 +37,11 @@ const BarberShopItem = ({ barberShop }: BarberShopItemProps) => {
           variant="outline"
           className="mt-3 w-full border-none bg-gray-700"
         >
-          Reservar
+          {nameButton}
         </Button>
       </CardContent>
     </Card>
   );
 };
 
-export default BarberShopItem;
+export default CardBarber;

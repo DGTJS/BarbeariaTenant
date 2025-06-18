@@ -6,7 +6,7 @@ import { Button } from "@/_components/ui/button";
 import Image from "next/image";
 import Appointments from "@/_components/appointments";
 import { db } from "@/_lib/prisma";
-import BarberShopItem from "@/_components/barbershopitem";
+import CardBarber from "@/_components/CardBarber";
 import Barbers from "@/_components/barbers";
 import Category from "@/_components/category";
 import FooterBar from "@/_components/footerbar";
@@ -69,7 +69,7 @@ export default async function Home() {
         </h2>
         <div className="flex gap-3 overflow-auto [&::-webkit-scrollbar]:hidden">
           {barbers.map((barber) => (
-            <Barbers key={barber.id} barber={barber} />
+            <Barbers key={barber.id} barber={barber} nameButton="Agendar" />
           ))}
         </div>
         <h2 className="font mt-5 text-sm font-semibold text-gray-400 uppercase">
@@ -77,7 +77,11 @@ export default async function Home() {
         </h2>
         <div className="flex gap-3 overflow-auto [&::-webkit-scrollbar]:hidden">
           {barberShop.map((barberShop) => (
-            <BarberShopItem key={barberShop.id} barberShop={barberShop} />
+            <CardBarber
+              key={barberShop.id}
+              barberShop={barberShop}
+              nameButton="Reservar"
+            />
           ))}
         </div>
         <h2 className="font mt-5 text-sm font-semibold text-gray-400 uppercase">
@@ -85,7 +89,11 @@ export default async function Home() {
         </h2>
         <div className="flex gap-3 overflow-auto [&::-webkit-scrollbar]:hidden">
           {PopularBarbers.map((barberShop) => (
-            <BarberShopItem key={barberShop.id} barberShop={barberShop} />
+            <CardBarber
+              key={barberShop.id}
+              barberShop={barberShop}
+              nameButton="Reservar"
+            />
           ))}
         </div>
       </div>

@@ -1,5 +1,5 @@
 import { BarberShopService } from "@/generated/prisma";
-import { AlarmClock, BookIcon } from "lucide-react";
+import { AlarmClock, Calendar } from "lucide-react";
 import { Button } from "./ui/button";
 import Image from "next/image";
 import { Card, CardContent } from "./ui/card";
@@ -51,7 +51,7 @@ const ServiceBarberCard = ({ service }: ServiceBarberCardProps) => {
             </span>
             <Button variant="outline">
               {" "}
-              <BookIcon /> Agendar
+              <Calendar /> Agendar
             </Button>
           </div>
         </div>

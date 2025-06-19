@@ -5,6 +5,7 @@ import { Button } from "@/_components/ui/button";
 import { ChevronLeftIcon, MenuIcon, StarIcon } from "lucide-react";
 import Link from "next/link";
 import Category from "@/_components/category";
+import ServiceBarberCard from "@/_components/cardServiceBarber";
 
 interface BarbersProps {
   params: {
@@ -15,8 +16,11 @@ interface BarbersProps {
 export default async function BarberPage({ params }: BarbersProps) {
   const Barbers = await db.barber.findUnique({
     where: { id: params.id },
-    include: {
-      categories: true, // nome da relação no schema (corrija se for diferente!)
+    select: {
+      name: true,
+      photo: true,
+      barberShopId: true,
+      categories: true,
     },
   });
 
@@ -29,6 +33,25 @@ export default async function BarberPage({ params }: BarbersProps) {
     },
     _avg: {
       rating: true,
+    },
+  });
+
+  const categoryIds = Barbers!.categories.map((category) => category.id);
+
+  const services = await db.barberShopService.findMany({
+    where: {
+      categoryId: {
+        in: categoryIds,
+      },
+      status: true,
+    },
+    include: {
+      category: true,
+      priceAdjustments: {
+        where: {
+          barberId: params.id,
+        },
+      },
     },
   });
 
@@ -49,7 +72,7 @@ export default async function BarberPage({ params }: BarbersProps) {
 
       <Button
         variant="outline"
-        className="absolute top-4 left-4 cursor-pointer"
+        className="absolute fixed top-4 left-4 z-50 cursor-pointer"
         asChild
       >
         <Link href="/">
@@ -57,7 +80,7 @@ export default async function BarberPage({ params }: BarbersProps) {
         </Link>
       </Button>
 
-      <Button variant="outline" className="absolute top-4 right-4">
+      <Button variant="outline" className="absolute fixed top-4 right-4 z-50">
         <MenuIcon />
       </Button>
 
@@ -85,7 +108,32 @@ export default async function BarberPage({ params }: BarbersProps) {
             />
           ))}
         </div>
-        <h3 className="mt-2 text-sm font-semibold text-gray-200">Serviços</h3>
+      </div>
+      <div className="border-t border-solid border-gray-800 p-5">
+        <h3 className="text-sm font-semibold text-gray-400 uppercase">
+          Serviços
+        </h3>
+        <div className="mt-5 gap-3">
+          {services.length > 0 ? (
+            services.map((service) => (
+              <ServiceBarberCard
+                key={service.id}
+                service={{
+                  ...service,
+                  priceAdjustments: service.priceAdjustments?.map((adj) => ({
+                    ...adj,
+                    priceAdjustment:
+                      typeof adj.priceAdjustment === "number"
+                        ? adj.priceAdjustment
+                        : Number(adj.priceAdjustment),
+                  })),
+                }}
+              />
+            ))
+          ) : (
+            <p className="text-sm text-gray-400">Nenhum serviço disponível.</p>
+          )}
+        </div>
       </div>
     </div>
   );

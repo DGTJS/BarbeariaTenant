@@ -67,6 +67,7 @@ model BarberShopService {
   price              Decimal    @db.Decimal(10, 2)
   duration           Int // Duration in minutes
   imageUrl           String
+  priceAdjustments   ServicePriceAdjustment[]
   status             Boolean    @default(true)
   createdAt          DateTime   @default(now())
   updatedAt          DateTime   @updatedAt @default(now())
@@ -88,6 +89,7 @@ model booking {
   updatedAt           DateTime          @updatedAt @default(now())
 }
 
+
 model barber{
   id                  String            @id @default(uuid())
   name                String
@@ -96,9 +98,20 @@ model barber{
   userId              String            @unique
   user                User              @relation(fields: [userId], references: [id])
   booking             booking[]
+  priceAdjustment     ServicePriceAdjustment[]
   barberShopId        String
   barberShop          BarberShop        @relation(fields: [barberShopId], references: [id])
   categories          BarberCategory[]  @relation("BarberToCategory")
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt @default(now())
+}
+model ServicePriceAdjustment{
+  id                  String            @id @default(uuid())
+  serviceId           String
+  service             BarberShopService @relation(fields: [serviceId], references: [id])
+  barberId            String
+  barber              barber            @relation(fields: [barberId], references: [id])
+  priceAdjustment     Decimal           @db.Decimal(10,2)
+  createAt            DateTime          @default(now())
+  updateAt            DateTime          @updatedAt @default(now())
 }

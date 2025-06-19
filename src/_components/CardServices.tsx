@@ -1,12 +1,19 @@
 import Image from "next/image";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
-import { BarberShopService } from "@/generated/prisma/client";
 import { Badge } from "./ui/badge";
 import { StarIcon } from "lucide-react";
+import type {
+  BarberShopService as PrismaBarberShopService,
+  ServicePriceAdjustment,
+} from "@/generated/prisma/client";
+
+interface BarberShopServiceWithAdjustments extends PrismaBarberShopService {
+  priceAdjustments?: ServicePriceAdjustment[];
+}
 
 interface BarberServiceProps {
-  BarberShopService: BarberShopService;
+  BarberShopService: BarberShopServiceWithAdjustments;
   nameButton: string;
 }
 
@@ -14,7 +21,19 @@ const CardServices = ({
   BarberShopService,
   nameButton,
 }: BarberServiceProps) => {
-  if (!BarberShopService) return null; // Evita o erro de undefined
+  if (!BarberShopService) return null;
+
+  const getLowestPrice = () => {
+    const basePrice = Number(BarberShopService.price);
+    const adjustments = BarberShopService.priceAdjustments || [];
+
+    if (adjustments.length === 0) return basePrice;
+
+    const pricesWithAdjustments = adjustments.map(
+      (adj) => basePrice + Number(adj.priceAdjustment),
+    );
+    return Math.min(...pricesWithAdjustments);
+  };
 
   return (
     <Card className="columns mt-5 flex min-w-[167px] rounded-2xl p-1">
@@ -24,7 +43,7 @@ const CardServices = ({
             src={BarberShopService.imageUrl}
             alt="Logo"
             fill
-            className="objet-cover rounded-2xl"
+            className="rounded-2xl object-cover"
           />
           <Badge
             className="absolute top-2 left-2 bg-black/60 shadow-md backdrop-blur-md"
@@ -39,7 +58,7 @@ const CardServices = ({
             {BarberShopService.name}
           </h3>
           <p className="truncate text-sm text-gray-500">
-            R$ {BarberShopService.price.toString()}
+            A partir de R$ {getLowestPrice().toFixed(2)}
           </p>
           <p className="truncate text-sm text-gray-500">
             Duração: {BarberShopService.duration} Minutos

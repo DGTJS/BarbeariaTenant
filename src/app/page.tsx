@@ -6,14 +6,20 @@ import { Button } from "@/_components/ui/button";
 import Image from "next/image";
 import Appointments from "@/_components/appointments";
 import { db } from "@/_lib/prisma";
-import CardBarber from "@/_components/CardBarber";
+import CardBarber from "@/_components/cardBarber";
 import Barbers from "@/_components/barbers";
 import Category from "@/_components/category";
 import FooterBar from "@/_components/footerbar";
-import CardServices from "@/_components/CardServices";
+import CardServices from "@/_components/cardServices";
 
 export default async function Home() {
-  const services = await db.barberShopService.findMany({});
+  const services = await db.barberShopService.findMany({
+    where: { status: true },
+    include: {
+      priceAdjustments: true, // traga todos os ajustes pra depois filtrar no front
+      category: true,
+    },
+  });
   const PopularBarbers = await db.barberShop.findMany({});
   const barbers = await db.barber.findMany({});
   const categories = await db.barberCategory.findMany({});

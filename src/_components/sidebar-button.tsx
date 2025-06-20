@@ -7,7 +7,7 @@ import {
   SheetTrigger,
 } from "./ui/sheet";
 import { Avatar, AvatarImage } from "./ui/avatar";
-import { MenuIcon, Calendar, HomeIcon } from "lucide-react";
+import { MenuIcon, Calendar, HomeIcon, LogOutIcon } from "lucide-react";
 
 interface CategoryProps {
   name: string;
@@ -55,25 +55,34 @@ const SideBarButton = ({ category }: SideBarButtonProps) => {
         </SheetHeader>
         <div className="mx-5 flex flex-col gap-2 border-b border-solid border-gray-700 pb-5">
           <Button variant="default" className="flex justify-start gap-2">
-            <HomeIcon className="h-6 w-6 text-white" />
-            <p className="text-sm text-white">Ínicio</p>
+            <HomeIcon className="text-white" width={15} height={15} />
+            <p className="text-sm font-normal text-white">Ínicio</p>
           </Button>
           <Button variant="ghost" className="flex justify-start gap-2">
-            <Calendar className="h-6 w-6" />
-            <p className="text-sm">Agendamentos</p>
+            <Calendar className="width={15} height={15}" />
+            <p className="text-sm font-normal">Agendamentos</p>
           </Button>
         </div>
-        <div className="mx-5 flex flex-col gap-4 py-2 text-left">
+        <div className="mx-5 flex flex-col gap-4 border-b border-solid border-gray-700 py-5 text-left">
           {category.map((item) => (
             <Button
               variant="ghost"
               key={item.id}
-              className="flex items-center justify-start gap-3 py-3"
+              className="flex items-center justify-start gap-3 py-3 font-normal"
             >
-              <img src={item.IconUrl} alt="Logo" />
+              <img src={item.IconUrl} alt="Logo" width={15} height={15} />
               <p className="text-sm">{item.name}</p>
             </Button>
           ))}
+        </div>
+        <div className="mx-5 flex flex-col gap-4 px-2 py-2 text-left">
+          <Button
+            variant="ghost"
+            className="flex items-center justify-start gap-3"
+          >
+            <LogOutIcon width={15} height={15} />
+            <p className="text-sm font-normal">Sair da conta</p>
+          </Button>
         </div>
       </SheetContent>
     </Sheet>

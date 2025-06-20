@@ -15,7 +15,7 @@ interface BarbersProps {
   };
 }
 
-export default async function BarberPage({ params }: BarbersProps) {
+const BarberPage = async ({ params }: BarbersProps) => {
   const Barbers = await db.barber.findUnique({
     where: { id: params.id },
     select: {
@@ -141,4 +141,6 @@ export default async function BarberPage({ params }: BarbersProps) {
       </div>
     </div>
   );
-}
+};
+
+export default BarberPage;

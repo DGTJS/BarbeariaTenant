@@ -6,12 +6,13 @@ import { Button } from "@/_components/ui/button";
 import Image from "next/image";
 import Appointments from "@/_components/appointments";
 import { db } from "@/_lib/prisma";
-import CardBarber from "@/_components/cardBarber";
-import Barbers from "@/_components/barbers";
+import CardBarber from "@/_components/cardBarberShop";
+import Barbers from "@/_components/CardBarbers";
 import Category from "@/_components/category";
 import FooterBar from "@/_components/footerbar";
 import CardServices from "@/_components/cardServices";
 import { getCategories } from "@/_lib/getCategories";
+import { getBarberShops } from "@/_lib/getBarberShop";
 
 export default async function Home() {
   const services = await db.barberShopService.findMany({
@@ -21,7 +22,7 @@ export default async function Home() {
       category: true,
     },
   });
-  const PopularBarbers = await db.barberShop.findMany({});
+  const PopularBarbers = await getBarberShops();
   const barbers = await db.barber.findMany({});
   const categories = await getCategories();
 
@@ -82,6 +83,8 @@ export default async function Home() {
             <Barbers key={barber.id} barber={barber} nameButton="Agendar" />
           ))}
         </div>
+
+        {/* RECOMENDADOS */}
         <h2 className="font mt-5 text-sm font-semibold text-gray-400 uppercase">
           Recomendados
         </h2>
@@ -94,6 +97,8 @@ export default async function Home() {
             />
           ))}
         </div>
+
+        {/* POPULARES */}
         <h2 className="font mt-5 text-sm font-semibold text-gray-400 uppercase">
           Populares
         </h2>

@@ -2,10 +2,12 @@
 import { db } from "@/_lib/prisma";
 import Image from "next/image";
 import { Button } from "@/_components/ui/button";
-import { ChevronLeftIcon, MenuIcon, StarIcon } from "lucide-react";
+import { ChevronLeftIcon, StarIcon } from "lucide-react";
+import SideBarButton from "@/_components/sidebar-button";
 import Link from "next/link";
 import Category from "@/_components/category";
 import ServiceBarberCard from "@/_components/cardServiceBarber";
+import { getCategories } from "@/_lib/getCategories";
 
 interface BarbersProps {
   params: {
@@ -35,6 +37,8 @@ export default async function BarberPage({ params }: BarbersProps) {
       rating: true,
     },
   });
+
+  const categories = await getCategories();
 
   const categoryIds = Barbers!.categories.map((category) => category.id);
 
@@ -80,9 +84,9 @@ export default async function BarberPage({ params }: BarbersProps) {
         </Link>
       </Button>
 
-      <Button variant="outline" className="absolute fixed top-4 right-4 z-50">
-        <MenuIcon />
-      </Button>
+      <div className="absolute fixed top-4 right-4 z-50">
+        <SideBarButton category={categories} />
+      </div>
 
       <div className="flex flex-row justify-between p-5">
         <div>

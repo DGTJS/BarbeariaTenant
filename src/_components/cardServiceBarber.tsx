@@ -51,7 +51,7 @@ const ServiceBarberCard = ({ service }: ServiceBarberCardProps) => {
             </span>
             <Button variant="outline">
               {" "}
-              <Calendar /> Agendar
+              <Calendar size={15} /> Agendar
             </Button>
           </div>
         </div>
@@ -61,26 +61,3 @@ const ServiceBarberCard = ({ service }: ServiceBarberCardProps) => {
 };
 
 export default ServiceBarberCard;
-
-{
-  /*             <div
-                key={service.id}
-                className="flex items-center justify-between border-b border-gray-700 py-2"
-              >
-                <div>
-                  <p className="font-medium">{service.name}</p>
-                  <p className="text-xs text-gray-400">
-                    {service.category?.name}
-                  </p>
-                </div>
-                <span className="text-primary font-semibold">
-                  {(() => {
-                    const base = Number(service.price) || 0;
-                    const adjustment =
-                      service.priceAdjustments?.[0]?.priceAdjustment || 0;
-                    const final = base + Number(adjustment);
-                    return `R$ ${final.toFixed(2)}`;
-                  })()}
-                </span>
-              </div> */
-}

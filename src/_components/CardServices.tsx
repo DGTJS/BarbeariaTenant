@@ -61,7 +61,7 @@ const CardServices = ({
             A partir de R$ {getLowestPrice().toFixed(2)}
           </p>
           <p className="truncate text-sm text-gray-500">
-            Duração: {BarberShopService.duration} Minutos
+            Duração: {BarberShopService.duration} Min
           </p>
         </div>
         <Button

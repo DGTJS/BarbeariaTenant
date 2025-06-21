@@ -112,31 +112,33 @@ const BarberPage = async ({ params }: BarbersProps) => {
             />
           ))}
         </div>
-      </div>
-      <div className="border-t border-solid border-gray-800 p-5">
-        <h3 className="text-sm font-semibold text-gray-400 uppercase">
-          Serviços
-        </h3>
-        <div className="mt-5 gap-3">
-          {services.length > 0 ? (
-            services.map((service) => (
-              <ServiceBarberCard
-                key={service.id}
-                service={{
-                  ...service,
-                  priceAdjustments: service.priceAdjustments?.map((adj) => ({
-                    ...adj,
-                    priceAdjustment:
-                      typeof adj.priceAdjustment === "number"
-                        ? adj.priceAdjustment
-                        : Number(adj.priceAdjustment),
-                  })),
-                }}
-              />
-            ))
-          ) : (
-            <p className="text-sm text-gray-400">Nenhum serviço disponível.</p>
-          )}
+        <div className="border-t border-solid border-gray-800">
+          <h3 className="pt-4 text-sm font-semibold text-gray-400 uppercase">
+            Serviços
+          </h3>
+          <div className="mt-5 gap-3">
+            {services.length > 0 ? (
+              services.map((service) => (
+                <ServiceBarberCard
+                  key={service.id}
+                  service={{
+                    ...service,
+                    priceAdjustments: service.priceAdjustments?.map((adj) => ({
+                      ...adj,
+                      priceAdjustment:
+                        typeof adj.priceAdjustment === "number"
+                          ? adj.priceAdjustment
+                          : Number(adj.priceAdjustment),
+                    })),
+                  }}
+                />
+              ))
+            ) : (
+              <p className="text-sm text-gray-400">
+                Nenhum serviço disponível.
+              </p>
+            )}
+          </div>
         </div>
       </div>
     </div>

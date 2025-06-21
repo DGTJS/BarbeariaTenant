@@ -11,3 +11,22 @@ export const getCategoriesId = cache(async (id: string) => {
     where: { id },
   });
 });
+
+export const getCategoriesFromBarberShop = async (barberShopId: string) => {
+  const services = await db.barberShopService.findMany({
+    where: { barberShopId, status: true },
+    include: {
+      category: true,
+    },
+  });
+
+  const uniqueCategoriesMap = new Map();
+
+  for (const service of services) {
+    if (service.category) {
+      uniqueCategoriesMap.set(service.category.id, service.category);
+    }
+  }
+
+  return Array.from(uniqueCategoriesMap.values());
+};

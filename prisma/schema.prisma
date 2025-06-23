@@ -14,19 +14,63 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique @map("session_token")
+  userId       String   @map("user_id")
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
 model User {
-  id        String    @id @default(uuid())
-  email     String    @unique
-  name      String?
-  photo     String?
-  phone     String?
-  googleId  String?   @unique
-  password  String?
-  booking   booking[]
-  barber    barber?
-  role      String    @default("Cliente") // Permissão: Cliente, Admin, Barbeiro
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt @default(now())
+  id            String    @id @default(uuid())
+  email         String    @unique
+  emailVerified DateTime? @map("email_verified")
+  name          String?
+  photo         String?
+  phone         String?
+  googleId      String?   @unique
+  password      String?
+  booking       booking[]
+  barber        barber?
+  accounts      Account[]
+  sessions      Session[]
+  role          String    @default("Cliente") // Permissão: Cliente, Admin, Barbeiro
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+
+  @@map("users")
+}
+
+model VerificationToken {
+  identifier String
+  token      String
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
 }
 
 model BarberShop {
@@ -41,7 +85,7 @@ model BarberShop {
   barbers     barber[]
   status      Boolean             @default(true)
   createdAt   DateTime            @default(now())
-  updatedAt   DateTime    @updatedAt @default(now())
+  updatedAt   DateTime            @default(now()) @updatedAt
 }
 
 model BarberCategory {
@@ -52,66 +96,66 @@ model BarberCategory {
   barbers     barber[]            @relation("BarberToCategory")
   description String?
   createdAt   DateTime            @default(now())
-  updatedAt   DateTime            @updatedAt @default(now())
+  updatedAt   DateTime            @default(now()) @updatedAt
 }
 
 model BarberShopService {
-  id                 String     @id @default(uuid())
-  barberShop         BarberShop @relation(fields: [barberShopId], references: [id])
-  barberShopId       String
-  booking            booking[]
-  categoryId         String?
-   category          BarberCategory? @relation(fields: [categoryId], references: [id])
-  name               String
-  description        String?
-  price              Decimal    @db.Decimal(10, 2)
-  duration           Int // Duration in minutes
-  imageUrl           String
-  priceAdjustments   ServicePriceAdjustment[]
-  status             Boolean    @default(true)
-  createdAt          DateTime   @default(now())
-  updatedAt          DateTime   @updatedAt @default(now())
+  id               String                   @id @default(uuid())
+  barberShop       BarberShop               @relation(fields: [barberShopId], references: [id])
+  barberShopId     String
+  booking          booking[]
+  categoryId       String?
+  category         BarberCategory?          @relation(fields: [categoryId], references: [id])
+  name             String
+  description      String?
+  price            Decimal                  @db.Decimal(10, 2)
+  duration         Int // Duration in minutes
+  imageUrl         String
+  priceAdjustments ServicePriceAdjustment[]
+  status           Boolean                  @default(true)
+  createdAt        DateTime                 @default(now())
+  updatedAt        DateTime                 @default(now()) @updatedAt
 }
 
 model booking {
-  id                  String            @id @default(uuid())
-  userId              String
-  user                User              @relation(fields: [userId], references: [id])
-  serviceId           String
-  service             BarberShopService @relation(fields: [serviceId], references: [id])
-  barberId            String        
-  barber              barber            @relation(fields: [barberId], references: [id])
-  dateTime            DateTime
-  rating              Int?              // ⭐ Avaliação de 1 a 5
-  comment             String?           // 💬 Comentário opcional do cliente
-  status              String            @default("Pendente") // Status: Pendente, Confirmada, Cancelada
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt @default(now())
+  id        String            @id @default(uuid())
+  userId    String
+  user      User              @relation(fields: [userId], references: [id])
+  serviceId String
+  service   BarberShopService @relation(fields: [serviceId], references: [id])
+  barberId  String
+  barber    barber            @relation(fields: [barberId], references: [id])
+  dateTime  DateTime
+  rating    Int? // ⭐ Avaliação de 1 a 5
+  comment   String? // 💬 Comentário opcional do cliente
+  status    String            @default("Pendente") // Status: Pendente, Confirmada, Cancelada
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @default(now()) @updatedAt
 }
 
-
-model barber{
-  id                  String            @id @default(uuid())
-  name                String
-  phone               String?
-  photo               String
-  userId              String            @unique
-  user                User              @relation(fields: [userId], references: [id])
-  booking             booking[]
-  priceAdjustment     ServicePriceAdjustment[]
-  barberShopId        String
-  barberShop          BarberShop        @relation(fields: [barberShopId], references: [id])
-  categories          BarberCategory[]  @relation("BarberToCategory")
-  createdAt           DateTime          @default(now())
-  updatedAt           DateTime          @updatedAt @default(now())
+model barber {
+  id              String                   @id @default(uuid())
+  name            String
+  phone           String?
+  photo           String
+  userId          String                   @unique
+  user            User                     @relation(fields: [userId], references: [id])
+  booking         booking[]
+  priceAdjustment ServicePriceAdjustment[]
+  barberShopId    String
+  barberShop      BarberShop               @relation(fields: [barberShopId], references: [id])
+  categories      BarberCategory[]         @relation("BarberToCategory")
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @default(now()) @updatedAt
 }
-model ServicePriceAdjustment{
-  id                  String            @id @default(uuid())
-  serviceId           String
-  service             BarberShopService @relation(fields: [serviceId], references: [id])
-  barberId            String
-  barber              barber            @relation(fields: [barberId], references: [id])
-  priceAdjustment     Decimal           @db.Decimal(10,2)
-  createAt            DateTime          @default(now())
-  updateAt            DateTime          @updatedAt @default(now())
+
+model ServicePriceAdjustment {
+  id              String            @id @default(uuid())
+  serviceId       String
+  service         BarberShopService @relation(fields: [serviceId], references: [id])
+  barberId        String
+  barber          barber            @relation(fields: [barberId], references: [id])
+  priceAdjustment Decimal           @db.Decimal(10, 2)
+  createAt        DateTime          @default(now())
+  updateAt        DateTime          @default(now()) @updatedAt
 }

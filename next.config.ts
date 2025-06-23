@@ -2,8 +2,19 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    domains: ["utfs.io", "092abtnhnl.ufs.sh"],
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "utfs.io",
+      },
+      {
+        protocol: "https",
+        hostname: "092abtnhnl.ufs.sh",
+      },
+    ],
   },
 };
 
 export default nextConfig;
+
+// "092abtnhnl.ufs.sh"

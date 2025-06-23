@@ -8,6 +8,7 @@ import Link from "next/link";
 import Category from "@/_components/category";
 import ServiceBarberCard from "@/_components/cardServiceBarber";
 import { getCategories } from "@/_lib/getCategories";
+import FooterBar from "@/_components/footerbar";
 
 interface BarbersProps {
   params: {
@@ -140,6 +141,7 @@ const BarberPage = async ({ params }: BarbersProps) => {
             )}
           </div>
         </div>
+        <FooterBar />
       </div>
     </div>
   );

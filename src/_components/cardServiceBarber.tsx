@@ -30,7 +30,7 @@ const ServiceBarberCard = ({ service }: ServiceBarberCardProps) => {
         {/* CONTEUDO */}
         <div className="w-full space-y-2">
           <div className="flex justify-between">
-            <h3 className="max-w-[100px] truncate text-base font-semibold sm:max-w-[140px] sm:text-lg">
+            <h3 className="truncate text-base text-sm font-semibold sm:text-lg">
               {service.name}
             </h3>
             <h3 className="flex items-center gap-1 text-center text-xs text-gray-500">

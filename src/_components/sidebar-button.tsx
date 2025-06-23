@@ -1,3 +1,5 @@
+"use client";
+
 import { Button } from "./ui/button";
 import {
   DialogContent,
@@ -17,6 +19,9 @@ import {
 // import { Avatar, AvatarImage } from "./ui/avatar";
 import { MenuIcon, Calendar, HomeIcon, LogOutIcon } from "lucide-react";
 import Image from "next/image";
+import { signIn, signOut } from "next-auth/react";
+import { useSession } from "next-auth/react";
+import { Avatar, AvatarImage } from "./ui/avatar";
 
 interface CategoryProps {
   name: string;
@@ -32,6 +37,12 @@ interface SideBarButtonProps {
 }
 
 const SideBarButton = ({ category }: SideBarButtonProps) => {
+  const { data } = useSession();
+  const handleLoginGoogleClick = () => signIn("google");
+  const handleLogoutClick = () => signOut();
+
+  console.log("User data:", data?.user);
+
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -46,55 +57,61 @@ const SideBarButton = ({ category }: SideBarButtonProps) => {
       <SheetContent>
         <SheetTitle className="mx-5 pt-5 pl-3 text-left">Menu</SheetTitle>
         <SheetHeader className="m-4 border-b border-solid border-gray-700 text-left">
-          <div className="flex flex-row items-center justify-between">
-            <h2 className="text-lg font-semibold text-white">
-              Olá Faça seu login!
-            </h2>
-            <Dialog>
-              <DialogTrigger asChild>
-                <Button variant="default">
-                  <LogOutIcon className="text-white" />
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="w-[400px]">
-                <DialogHeader>
-                  <DialogTitle className="text-lg font-semibold">
-                    Faça login
-                  </DialogTitle>
-                </DialogHeader>
-                <DialogDescription className="text-center">
-                  Faça login para acessar sua conta
-                </DialogDescription>
-                <div className="flex items-center">
-                  <Button variant="outline" className="w-full">
-                    <Image
-                      src="/IconGoogle.svg"
-                      alt="Fazer login com Google"
-                      width={20}
-                      height={20}
-                    />
-                    Google
+          {data?.user === undefined && (
+            <div className="flex flex-row items-center justify-between">
+              <h2 className="text-lg font-semibold text-white">
+                Olá Faça seu login!
+              </h2>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button variant="default" className="cursor-pointer">
+                    <LogOutIcon className="text-white" />
                   </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
-          </div>
-
-          {/* <div className="flex flex-row items-center gap-3 border-b border-solid border-gray-700 pb-5">
-            <Avatar>
-              <AvatarImage
-                src="https://images.unsplash.com/photo-1501196354995-cbb51c65aaea?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-                alt="Avatar"
-                width={100}
-                height={100}
-                className="rounded-2xl border-2 border-solid border-purple-500 object-cover"
-              />
-            </Avatar>{" "}
-            <div className="flex flex-col text-start">
-              <p className="text-sm font-bold">John Doe</p>
-              <p className="text-xs text-gray-400">teste@gmail.com</p>
+                </DialogTrigger>
+                <DialogContent className="w-[400px]">
+                  <DialogHeader>
+                    <DialogTitle className="text-lg font-semibold">
+                      Faça login
+                    </DialogTitle>
+                  </DialogHeader>
+                  <DialogDescription className="text-center">
+                    Faça login para acessar sua conta
+                  </DialogDescription>
+                  <div className="flex items-center">
+                    <Button
+                      variant="outline"
+                      className="w-full cursor-pointer"
+                      onClick={handleLoginGoogleClick}
+                    >
+                      <Image
+                        src="/IconGoogle.svg"
+                        alt="Fazer login com Google"
+                        width={20}
+                        height={20}
+                      />
+                      Google
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
             </div>
-          </div> */}
+          )}
+
+          {data?.user && (
+            <div className="flex flex-row items-center gap-2">
+              <Avatar>
+                <AvatarImage
+                  src={data?.user?.image ?? ""}
+                  alt="Avatar"
+                  className="rounded-2xl border-3 border-solid border-purple-500 object-cover"
+                />
+              </Avatar>{" "}
+              <div className="flex flex-col text-start">
+                <p className="text-sm font-bold">{data?.user?.name}</p>
+                <p className="text-xs text-gray-400">{data?.user?.email}</p>
+              </div>
+            </div>
+          )}
         </SheetHeader>
         <div className="mx-5 flex flex-col gap-2 border-b border-solid border-gray-700 pb-5">
           <Button
@@ -128,6 +145,7 @@ const SideBarButton = ({ category }: SideBarButtonProps) => {
           <Button
             variant="ghost"
             className="flex cursor-pointer items-center justify-start gap-3"
+            onClick={handleLogoutClick}
           >
             <LogOutIcon width={15} height={15} />
             <p className="text-sm font-normal">Sair da conta</p>

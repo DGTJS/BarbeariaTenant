@@ -55,8 +55,10 @@ const SideBarButton = ({ category }: SideBarButtonProps) => {
         </Button>
       </SheetTrigger>
       <SheetContent>
-        <SheetTitle className="mx-5 pt-5 pl-3 text-left">Menu</SheetTitle>
-        <SheetHeader className="m-4 border-b border-solid border-gray-700 text-left">
+        <SheetTitle className="mx-5 pt-5 pl-3 text-left text-2xl">
+          Menu
+        </SheetTitle>
+        <SheetHeader className="mx-4 border-b border-solid border-gray-700 pb-8 text-left">
           {data?.user === undefined && (
             <div className="flex flex-row items-center justify-between">
               <h2 className="text-lg font-semibold text-white">

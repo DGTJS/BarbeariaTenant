@@ -13,6 +13,7 @@ import FooterBar from "@/_components/footerbar";
 import CardServices from "@/_components/cardServices";
 import { getCategories } from "@/_lib/getCategories";
 import { getBarberShops } from "@/_lib/getBarberShop";
+import { getUserData } from "@/_lib/getUserData";
 
 export default async function Home() {
   const services = await db.barberShopService.findMany({
@@ -25,14 +26,23 @@ export default async function Home() {
   const PopularBarbers = await getBarberShops();
   const barbers = await db.barber.findMany({});
   const categories = await getCategories();
+  const user = await getUserData();
 
   return (
     <>
       <Header />
       <div className="p-5 text-white">
-        <h2 className="text-xl">
-          Olá, <span className="text-xl font-bold text-white">Diego!</span>
-        </h2>
+        {user?.name && (
+          <h2 className="text-xl">
+            Olá,{" "}
+            <span className="text-xl font-bold text-white">{user?.name}</span>
+          </h2>
+        )}
+        {!user?.name && (
+          <h2 className="text-xl font-semibold">
+            Entre ou Cadastre-se e faça seus agendamentos!
+          </h2>
+        )}
         <p>
           {new Date().toLocaleDateString("pt-BR", {
             weekday: "long",

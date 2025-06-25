@@ -8,7 +8,6 @@ import { getCategoriesFromBarberShop } from "@/_lib/getCategories";
 import Category from "@/_components/category";
 import ServiceBarberCard from "@/_components/cardServiceBarber";
 import { getServiceBarberShop } from "@/_lib/getServiceShop";
-import FooterBar from "@/_components/footerbar";
 
 interface BarberShopPageProps {
   params: {
@@ -81,7 +80,6 @@ const BarberShopPage = async ({ params }: BarberShopPageProps) => {
           </div>
         </div>
       </div>
-      <FooterBar />
     </div>
   );
 };

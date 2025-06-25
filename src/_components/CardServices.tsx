@@ -36,9 +36,9 @@ const CardServices = ({
   };
 
   return (
-    <Card className="columns mt-5 flex min-w-[167px] rounded-2xl p-1">
-      <CardContent className="p-1 pb-2">
-        <div className="relative h-[150px] w-full">
+    <Card className="mt-5 flex max-w-[160px] min-w-[175px] rounded-2xl p-1">
+      <CardContent className="p-0 px-1 pt-1">
+        <div className="relative h-[159px] w-full">
           <Image
             src={BarberShopService.imageUrl}
             alt="Logo"
@@ -53,7 +53,7 @@ const CardServices = ({
             <span className="text-xs font-semibold">5.0</span>
           </Badge>
         </div>
-        <div className="py-3">
+        <div className="px-1 py-3">
           <h3 className="truncate text-lg font-semibold">
             {BarberShopService.name}
           </h3>
@@ -63,13 +63,13 @@ const CardServices = ({
           <p className="truncate text-sm text-gray-500">
             Duração: {BarberShopService.duration} Min
           </p>
+          <Button
+            variant="outline"
+            className="mt-3 w-full border-none bg-gray-700"
+          >
+            {nameButton}
+          </Button>
         </div>
-        <Button
-          variant="outline"
-          className="mt-3 w-full border-none bg-gray-700"
-        >
-          {nameButton}
-        </Button>
       </CardContent>
     </Card>
   );

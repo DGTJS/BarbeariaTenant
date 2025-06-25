@@ -26,9 +26,9 @@ const Barbers = async ({ barber, nameButton }: BarbersProps) => {
   });
 
   return (
-    <Card className="columns mt-5 flex min-w-[167px] rounded-2xl p-1">
-      <CardContent className="p-1 pb-2">
-        <div className="relative h-[150px] w-full">
+    <Card className="mt-5 flex max-w-[160px] min-w-[175px] rounded-2xl p-1">
+      <CardContent className="p-0 px-1 pt-1">
+        <div className="relative h-[159px] w-full">
           <Image
             src={barber.photo}
             alt="Logo"
@@ -45,20 +45,20 @@ const Barbers = async ({ barber, nameButton }: BarbersProps) => {
             </span>
           </Badge>
         </div>
-        <div className="py-3">
+        <div className="px-1 py-3">
           <h3 className="truncate text-lg font-semibold">{barber.name}</h3>
           <p className="truncate text-sm text-gray-500">{barber.phone}</p>
-        </div>
 
-        <Button
-          variant="outline"
-          className="mt-3 flex w-full cursor-pointer flex-row border-none bg-gray-700"
-          asChild
-        >
-          <Link href={`/barber/${barber.id}`}>
-            <Calendar /> {nameButton}
-          </Link>
-        </Button>
+          <Button
+            variant="outline"
+            className="mt-3 flex w-full cursor-pointer flex-row border-none bg-gray-700"
+            asChild
+          >
+            <Link href={`/barber/${barber.id}`}>
+              <Calendar /> {nameButton}
+            </Link>
+          </Button>
+        </div>
       </CardContent>
     </Card>
   );

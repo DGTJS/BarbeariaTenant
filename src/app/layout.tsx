@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 import "./globals.css";
 import AuthProviders from "@/_providers/auth";
+import { Toaster } from "react-hot-toast";
+import FooterBar from "@/_components/footerbar";
 
 const NunitoFont = Nunito({
   subsets: ["latin"],
@@ -20,11 +22,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="pt-BR" className="dark">
-      <body className={`${NunitoFont.variable} antialiased`}>
+      <body className={`${NunitoFont.variable}`}>
         <AuthProviders>
-        {children}
+          <div className="flex h-full flex-col">
+            <div className="flex-1">{children}</div>
+            <FooterBar />
+          </div>
         </AuthProviders>
-        </body>
+        <Toaster />
+      </body>
     </html>
   );
 }

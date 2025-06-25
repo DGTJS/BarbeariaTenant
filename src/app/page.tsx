@@ -1,19 +1,16 @@
 // import Image from "next/image";
 import Header from "@/_components/header";
-import { Input } from "@/_components/ui/input";
-import { SearchIcon } from "lucide-react";
-import { Button } from "@/_components/ui/button";
 import Image from "next/image";
 import Appointments from "@/_components/appointments";
 import { db } from "@/_lib/prisma";
 import CardBarber from "@/_components/cardBarberShop";
 import Barbers from "@/_components/CardBarbers";
 import Category from "@/_components/category";
-import FooterBar from "@/_components/footerbar";
 import CardServices from "@/_components/cardServices";
 import { getCategories } from "@/_lib/getCategories";
 import { getBarberShops } from "@/_lib/getBarberShop";
 import { getUserData } from "@/_lib/getUserData";
+import Search from "@/_components/search";
 
 export default async function Home() {
   const services = await db.barberShopService.findMany({
@@ -50,14 +47,8 @@ export default async function Home() {
             day: "numeric",
           })}
         </p>
-        <div className="mt-5 flex items-center gap-1 space-x-1 text-gray-800">
-          <Input
-            placeholder="O que você quer fazer hoje?"
-            className="border-gray-700 py-5 placeholder-gray-400"
-          />
-          <Button variant="secondary" className="bg-purple-500 py-5">
-            <SearchIcon className="h-5 w-5 text-white" />
-          </Button>
+        <div className="mt-5">
+          <Search />
         </div>
         {/* CATEGORY */}
         <div className="mt-5 flex gap-3 overflow-auto [&::-webkit-scrollbar]:hidden">
@@ -66,6 +57,7 @@ export default async function Home() {
               key={category.id}
               name={category.name}
               IconUrl={category.IconUrl}
+              id={category.id}
             />
           ))}
         </div>
@@ -122,7 +114,6 @@ export default async function Home() {
           ))}
         </div>
       </div>
-      <FooterBar />
     </>
   );
 }

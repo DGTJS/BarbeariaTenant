@@ -1,16 +1,20 @@
+import Link from "next/link";
 import { Button } from "./ui/button";
 
 interface CategorySearchProps {
+  id: string;
   name: string;
   IconUrl: string;
 }
 
-const Category = ({ name, IconUrl }: CategorySearchProps) => {
+const Category = ({ id, name, IconUrl }: CategorySearchProps) => {
   return (
-    <Button variant="outline" className="columns h-[50px] justify-center">
-      <img src={IconUrl} alt="Logo" width={15} height={15} />
-      <span className="justify-center text-center text-xs">{name}</span>
-    </Button>
+    <Link href={`/search?category=${id}`}>
+      <Button variant="outline" className="columns h-[50px] justify-center w-full">
+        <img src={IconUrl} alt="Logo" width={15} height={15} />
+        <span className="justify-center text-center text-xs">{name}</span>
+      </Button>
+    </Link>
   );
 };
 

@@ -22,6 +22,7 @@ import Image from "next/image";
 import { signIn, signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { Avatar, AvatarImage } from "./ui/avatar";
+import Link from "next/link";
 
 interface CategoryProps {
   name: string;
@@ -119,9 +120,12 @@ const SideBarButton = ({ category }: SideBarButtonProps) => {
           <Button
             variant="ghost"
             className="flex cursor-pointer justify-start gap-2"
+            asChild
           >
-            <HomeIcon className="text-white" width={15} height={15} />
-            <p className="text-sm font-normal text-white">Ínicio</p>
+            <Link href="/">
+              <HomeIcon className="text-white" width={15} height={15} />
+              <p className="text-sm font-normal text-white">Ínicio</p>
+            </Link>
           </Button>
           <Button
             variant="ghost"
@@ -137,9 +141,12 @@ const SideBarButton = ({ category }: SideBarButtonProps) => {
               variant="ghost"
               key={item.id}
               className="flex cursor-pointer items-center justify-start gap-3 py-3 font-normal"
+              asChild
             >
-              <img src={item.IconUrl} alt="Logo" width={15} height={15} />
-              <p className="text-sm">{item.name}</p>
+              <Link href={`/search?category=${item.id}`}>
+                <img src={item.IconUrl} alt="Logo" width={15} height={15} />
+                <p className="text-sm">{item.name}</p>
+              </Link>
             </Button>
           ))}
         </div>

@@ -103,11 +103,34 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+.grid-xs {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  justify-items: center; /* ⬅️ Centraliza horizontalmente os filhos */
+}
+
+@media (min-width: 400px) {
+  .grid-xs {
+    grid-template-columns: repeat(2, 1fr);
+    justify-items: stretch; /* ⬅️ Volta ao normal */
+  }
+}
+
+@media (min-width: 600px) {
+  .grid-xs {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50 antialiased;
   }
+  html {
+    @apply h-full;
+  }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground h-full;
   }
 }

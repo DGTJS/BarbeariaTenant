@@ -21,7 +21,11 @@ export default async function Home() {
     },
   });
   const PopularBarbers = await getBarberShops();
-  const barbers = await db.barber.findMany({});
+  const barbers = await db.barber.findMany({
+    include: {
+      categories: true, // traga todas as categorias para o filtro
+    },
+  });
   const categories = await getCategories();
   const user = await getUserData();
 
@@ -91,13 +95,28 @@ export default async function Home() {
           Recomendados
         </h2>
         <div className="flex gap-3 overflow-auto [&::-webkit-scrollbar]:hidden">
-          {services.map((services) => (
-            <CardServices
-              key={services.id}
-              BarberShopService={services}
-              nameButton="Agendar"
-            />
-          ))}
+          {services.map((service) => {
+            // Converter Decimal para number para evitar erro de serialização
+            const serviceWithNumberPrice = {
+              ...service,
+              price: Number(service.price),
+              priceAdjustments: service.priceAdjustments.map((adjustment) => ({
+                ...adjustment,
+                priceAdjustment: Number(adjustment.priceAdjustment),
+              })),
+            };
+            const barbersOfTheSameCategory = barbers.filter((barber) =>
+              barber.categories.some((cat) => cat.id === service.categoryId),
+            );
+            return (
+              <CardServices
+                key={service.id}
+                BarberShopService={serviceWithNumberPrice}
+                nameButton="Agendar"
+                barbers={barbersOfTheSameCategory}
+              />
+            );
+          })}
         </div>
 
         {/* POPULARES */}

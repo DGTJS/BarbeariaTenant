@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
@@ -6,22 +8,47 @@ import { StarIcon } from "lucide-react";
 import type {
   BarberShopService as PrismaBarberShopService,
   ServicePriceAdjustment,
+  barber as Barber,
 } from "@/generated/prisma/client";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "./ui/sheet";
+import { Calendar } from "./ui/calendar";
+import { ptBR } from "date-fns/locale";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "./ui/select";
 
-interface BarberShopServiceWithAdjustments extends PrismaBarberShopService {
-  priceAdjustments?: ServicePriceAdjustment[];
+interface BarberShopServiceWithAdjustments
+  extends Omit<PrismaBarberShopService, "price" | "priceAdjustments"> {
+  price: number;
+  priceAdjustments?: (Omit<ServicePriceAdjustment, "priceAdjustment"> & {
+    priceAdjustment: number;
+  })[];
 }
 
 interface BarberServiceProps {
   BarberShopService: BarberShopServiceWithAdjustments;
   nameButton: string;
+  barbers: Barber[];
 }
 
 const CardServices = ({
   BarberShopService,
   nameButton,
+  barbers,
 }: BarberServiceProps) => {
   if (!BarberShopService) return null;
+
+  console.log("Barbeios: ", barbers);
 
   const getLowestPrice = () => {
     const basePrice = Number(BarberShopService.price);
@@ -63,12 +90,47 @@ const CardServices = ({
           <p className="truncate text-sm text-gray-500">
             Duração: {BarberShopService.duration} Min
           </p>
-          <Button
-            variant="outline"
-            className="mt-3 w-full border-none bg-gray-700"
-          >
-            {nameButton}
-          </Button>
+          <Sheet>
+            <SheetTrigger asChild className="">
+              <Button
+                variant="outline"
+                className="mt-3 w-full cursor-pointer border-none bg-gray-700 hover:bg-gray-600"
+              >
+                {nameButton}
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="right">
+              <SheetHeader className="border-b border-gray-700 p-3 pb-7 font-semibold">
+                <SheetTitle>Fazer Reserva</SheetTitle>
+              </SheetHeader>
+              <div className="px-5">
+                <Select>
+                  <h3 className="py-2 text-sm font-semibold">
+                    Escolha seu Barbeiro
+                  </h3>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Selecione um barbeiro" />
+                  </SelectTrigger>
+
+                  <SelectContent>
+                    {barbers.map((barber) => (
+                      <SelectItem key={barber.id} value={barber.id}>
+                        <Image
+                          src={barber.photo}
+                          alt="Logo"
+                          width={15}
+                          height={15}
+                          className="rounded-full object-cover"
+                        />
+                        {barber.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <Calendar mode="single" locale={ptBR} className="w-full" />
+            </SheetContent>
+          </Sheet>
         </div>
       </CardContent>
     </Card>

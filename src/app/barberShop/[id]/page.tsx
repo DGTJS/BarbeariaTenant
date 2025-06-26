@@ -60,6 +60,7 @@ const BarberShopPage = async ({ params }: BarberShopPageProps) => {
               key={category.id}
               name={category.name}
               IconUrl={category.IconUrl}
+              id={category.id}
             />
           ))}
         </div>

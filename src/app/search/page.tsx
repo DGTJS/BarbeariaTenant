@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import CardBarbers from "@/_components/CardBarbers";
 import CardBarber from "@/_components/cardBarberShop";
 import CardServices from "@/_components/cardServices";
@@ -14,15 +15,18 @@ interface SearchPageProps {
 
 const SearchPage = async ({ searchParams }: SearchPageProps) => {
   let barberShops: any[] = [];
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let barbers: any[] = [];
   let services: any[] = [];
-  let searchTitle = '';
+  let searchTitle = "";
 
   if (searchParams.category) {
     // Busca por categoria
     const categoryId = searchParams.category;
     // Buscar nome da categoria
-    const category = await db.barberCategory.findUnique({ where: { id: categoryId } });
+    const category = await db.barberCategory.findUnique({
+      where: { id: categoryId },
+    });
     const categoryName = category?.name || "";
     services = await db.barberShopService.findMany({
       where: { categoryId },
@@ -101,13 +105,13 @@ const SearchPage = async ({ searchParams }: SearchPageProps) => {
 
           {/* BARBERSHOPS */}
           {barberShops.length > 0 && (
-            <div className="mt-4 w-full border-t border-gray-400">
+            <div className="mt-4 w-full border-t border-gray-800">
               <div className="mx-auto w-full max-w-screen-lg px-2">
                 <h2 className="pt-4 text-xs font-bold text-gray-400 uppercase">
                   Barbearias
                 </h2>
                 <div className="grid-xs">
-                  {barberShops.map((shop: any) => (
+                  {barberShops.map((shop) => (
                     <CardBarber
                       key={shop.id}
                       barberShop={shop}
@@ -121,7 +125,7 @@ const SearchPage = async ({ searchParams }: SearchPageProps) => {
 
           {/* BARBERS */}
           {barbers.length > 0 && (
-            <div className="mt-4 w-full border-t border-gray-400">
+            <div className="mt-4 w-full border-t border-gray-800">
               <div className="mx-auto w-full max-w-screen-lg px-2">
                 <h2 className="pt-4 text-xs font-bold text-gray-400 uppercase">
                   Barbeiros
@@ -141,19 +145,32 @@ const SearchPage = async ({ searchParams }: SearchPageProps) => {
 
           {/* SERVICES */}
           {services.length > 0 && (
-            <div className="mt-4 w-full border-t border-gray-400">
+            <div className="mt-4 w-full border-t border-gray-800">
               <div className="mx-auto w-full max-w-screen-lg px-2">
                 <h2 className="pt-4 text-xs font-bold text-gray-400 uppercase">
                   Serviços
                 </h2>
                 <div className="grid-xs">
-                  {services.map((service) => (
-                    <CardServices
-                      key={service.id}
-                      BarberShopService={service}
-                      nameButton="Reservar"
-                    />
-                  ))}
+                  {services.map((service) => {
+                    // Converter Decimal para number para evitar erro de serialização
+                    const serviceWithNumberPrice = {
+                      ...service,
+                      price: Number(service.price),
+                      priceAdjustments:
+                        service.priceAdjustments?.map((adjustment: any) => ({
+                          ...adjustment,
+                          priceAdjustment: Number(adjustment.priceAdjustment),
+                        })) || [],
+                    };
+                    return (
+                      <CardServices
+                        key={service.id}
+                        BarberShopService={serviceWithNumberPrice}
+                        nameButton="Reservar"
+                        barbers={barbers}
+                      />
+                    );
+                  })}
                 </div>
               </div>
             </div>

@@ -2,9 +2,9 @@ import Link from "next/link";
 import { Button } from "./ui/button";
 
 interface CategorySearchProps {
-  id: string;
   name: string;
   IconUrl: string;
+  id: string;
 }
 
 const Category = ({ id, name, IconUrl }: CategorySearchProps) => {

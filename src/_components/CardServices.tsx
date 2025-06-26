@@ -4,12 +4,8 @@ import Image from "next/image";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
-import { StarIcon } from "lucide-react";
-import type {
-  BarberShopService as PrismaBarberShopService,
-  ServicePriceAdjustment,
-  barber as Barber,
-} from "@/generated/prisma/client";
+import { CalendarIcon, StarIcon } from "lucide-react";
+import type { barber as Barber } from "@/generated/prisma/client";
 import {
   Sheet,
   SheetContent,
@@ -26,29 +22,157 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
+import { useState, useEffect } from "react";
 
-interface BarberShopServiceWithAdjustments
-  extends Omit<PrismaBarberShopService, "price" | "priceAdjustments"> {
-  price: number;
-  priceAdjustments?: (Omit<ServicePriceAdjustment, "priceAdjustment"> & {
-    priceAdjustment: number;
-  })[];
+interface BarberWithWorkingHours extends Barber {
+  workingHours: {
+    weekday: number;
+    startTime: string;
+    endTime: string;
+    pauses: { startTime: string; endTime: string }[];
+  }[];
 }
 
 interface BarberServiceProps {
-  BarberShopService: BarberShopServiceWithAdjustments;
+  BarberShopService: {
+    id: string;
+    name: string;
+    price: number;
+    duration: number;
+    imageUrl: string;
+    barber: BarberWithWorkingHours[];
+    priceAdjustments?: { priceAdjustment: number }[];
+    description?: string;
+  };
   nameButton: string;
-  barbers: Barber[];
+  barbers: BarberWithWorkingHours[];
+  bookings: {
+    dateTime: Date;
+    service: { duration: number };
+    barberId: string;
+  }[];
 }
 
 const CardServices = ({
   BarberShopService,
   nameButton,
   barbers,
+  bookings,
 }: BarberServiceProps) => {
-  if (!BarberShopService) return null;
+  const [selectBarber, setSelectBarber] = useState("");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [availableTimes, setAvailableTimes] = useState<string[]>([]);
 
-  console.log("Barbeios: ", barbers);
+  const handleDateSelect = (date: Date | undefined) => {
+    setSelectedDate(date);
+  };
+
+  useEffect(() => {
+    if (!selectBarber || !selectedDate) {
+      setAvailableTimes([]);
+      return;
+    }
+
+    const selectedBarberObj = barbers.find((b) => b.id === selectBarber);
+    if (!selectedBarberObj) {
+      setAvailableTimes([]);
+      return;
+    }
+
+    // Descubrir o dia da semana (0=domingo, 1=segunda, ...)
+    const weekday = selectedDate.getDay();
+    const workingHour = selectedBarberObj.workingHours?.find(
+      (wh) => wh.weekday === weekday,
+    );
+
+    if (!workingHour) {
+      setAvailableTimes([]);
+      return;
+    }
+
+    // Parse início e fim do expediente
+    const [startHour, startMinute] = workingHour.startTime
+      .split(":")
+      .map(Number);
+    const [endHour, endMinute] = workingHour.endTime.split(":").map(Number);
+
+    const start = new Date(selectedDate);
+    start.setHours(startHour, startMinute, 0, 0);
+    const end = new Date(selectedDate);
+    end.setHours(endHour, endMinute, 0, 0);
+
+    // Pausas
+    const pauses = workingHour.pauses || [];
+
+    const bookingsForBarberAndDate = bookings.filter(
+      (booking) =>
+        booking.service &&
+        booking.barberId === selectBarber &&
+        new Date(booking.dateTime).toDateString() ===
+          selectedDate.toDateString(),
+    );
+
+    // Gera slots de 30 em 30 minutos
+    let slot = new Date(start);
+    const slots: string[] = [];
+    while (slot < end) {
+      const slotEnd = new Date(
+        slot.getTime() + BarberShopService.duration * 60000,
+      );
+
+      // Verifica se está em uma pausa
+      const isInPause = pauses.some(
+        (pause: { startTime: string; endTime: string }) => {
+          const [pauseStartHour, pauseStartMinute] = pause.startTime
+            .split(":")
+            .map(Number);
+          const [pauseEndHour, pauseEndMinute] = pause.endTime
+            .split(":")
+            .map(Number);
+          const pauseStart = new Date(selectedDate);
+          pauseStart.setHours(pauseStartHour, pauseStartMinute, 0, 0);
+          const pauseEnd = new Date(selectedDate);
+          pauseEnd.setHours(pauseEndHour, pauseEndMinute, 0, 0);
+
+          return (
+            (slot >= pauseStart && slot < pauseEnd) ||
+            (slotEnd > pauseStart && slotEnd <= pauseEnd) ||
+            (slot <= pauseStart && slotEnd >= pauseEnd)
+          );
+        },
+      );
+
+      const isBusy = bookingsForBarberAndDate.some((booking) => {
+        const bookingStart = new Date(booking.dateTime);
+        const bookingEnd = new Date(
+          bookingStart.getTime() + booking.service.duration * 60000,
+        );
+        return (
+          (slot >= bookingStart && slot < bookingEnd) ||
+          (slotEnd > bookingStart && slotEnd <= bookingEnd) ||
+          (slot <= bookingStart && slotEnd >= bookingEnd)
+        );
+      });
+
+      if (!isInPause && !isBusy && slotEnd <= end) {
+        slots.push(
+          slot
+            .toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+            .replace(/^24:/, "00:"),
+        );
+      }
+      slot = new Date(slot.getTime() + 30 * 60000);
+    }
+    setAvailableTimes(slots);
+  }, [
+    selectBarber,
+    selectedDate,
+    barbers,
+    BarberShopService.duration,
+    bookings,
+  ]);
+
+  if (!BarberShopService) return null;
 
   const getLowestPrice = () => {
     const basePrice = Number(BarberShopService.price);
@@ -63,7 +187,7 @@ const CardServices = ({
   };
 
   return (
-    <Card className="mt-5 flex max-w-[160px] min-w-[175px] rounded-2xl p-1">
+    <Card className="flex max-w-[160px] min-w-[175px] rounded-2xl p-1">
       <CardContent className="p-0 px-1 pt-1">
         <div className="relative h-[159px] w-full">
           <Image
@@ -91,7 +215,7 @@ const CardServices = ({
             Duração: {BarberShopService.duration} Min
           </p>
           <Sheet>
-            <SheetTrigger asChild className="">
+            <SheetTrigger asChild>
               <Button
                 variant="outline"
                 className="mt-3 w-full cursor-pointer border-none bg-gray-700 hover:bg-gray-600"
@@ -99,12 +223,15 @@ const CardServices = ({
                 {nameButton}
               </Button>
             </SheetTrigger>
-            <SheetContent side="right">
-              <SheetHeader className="border-b border-gray-700 p-3 pb-7 font-semibold">
-                <SheetTitle>Fazer Reserva</SheetTitle>
+            <SheetContent side="right" className="gap-4">
+              <SheetHeader className="border-b p-3 pt-5 pb-5 font-semibold">
+                <SheetTitle className="flex items-center">
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  Fazer Reserva
+                </SheetTitle>
               </SheetHeader>
-              <div className="px-5">
-                <Select>
+              <div className="border-b px-5 pb-5">
+                <Select value={selectBarber} onValueChange={setSelectBarber}>
                   <h3 className="py-2 text-sm font-semibold">
                     Escolha seu Barbeiro
                   </h3>
@@ -128,7 +255,39 @@ const CardServices = ({
                   </SelectContent>
                 </Select>
               </div>
-              <Calendar mode="single" locale={ptBR} className="w-full" />
+              <Calendar
+                mode="single"
+                locale={ptBR}
+                className="w-full border-b pb-2"
+                selected={selectedDate}
+                onSelect={handleDateSelect}
+                disabled={(date) => {
+                  // Desabilita datas anteriores a hoje
+                  const today = new Date();
+                  today.setHours(0, 0, 0, 0); // Zera hora para comparar só a data
+                  return date < today;
+                }}
+              />
+              <div className="flex items-center gap-2 overflow-auto border-b px-3 pt-2 pb-5 [&::-webkit-scrollbar]:hidden">
+                {selectBarber &&
+                  selectedDate &&
+                  availableTimes.length === 0 && (
+                    <span>Nenhum horário disponível</span>
+                  )}
+                {availableTimes.map((time) => (
+                  <Button
+                    key={time}
+                    variant="outline"
+                    className="rounded-2xl border-solid font-normal text-white"
+                    onClick={() => {
+                      // Aqui você pode salvar o horário escolhido para o agendamento
+                      console.log("Horário selecionado:", time);
+                    }}
+                  >
+                    {time}
+                  </Button>
+                ))}
+              </div>
             </SheetContent>
           </Sheet>
         </div>

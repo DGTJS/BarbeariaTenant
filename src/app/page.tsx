@@ -20,14 +20,55 @@ export default async function Home() {
       category: true,
     },
   });
+
+  // Função simples para converter Decimal em number recursivamente:
+  function sanitizeDecimal(obj: any): any {
+    if (Array.isArray(obj)) {
+      return obj.map(sanitizeDecimal);
+    }
+    // Verifica se é um objeto Decimal (tem método toNumber)
+    if (obj && typeof obj === "object" && typeof obj.toNumber === "function") {
+      return obj.toNumber();
+    }
+    // Preserva objetos Date
+    if (obj instanceof Date) {
+      return obj;
+    }
+    if (obj !== null && typeof obj === "object") {
+      const result: any = {};
+      for (const key in obj) {
+        result[key] = sanitizeDecimal(obj[key]);
+      }
+      return result;
+    }
+    return obj;
+  }
   const PopularBarbers = await getBarberShops();
   const barbers = await db.barber.findMany({
     include: {
       categories: true, // traga todas as categorias para o filtro
+      workingHours: true, // traga os horários de trabalho
     },
   });
   const categories = await getCategories();
   const user = await getUserData();
+  const bookings = await db.booking.findMany({
+    include: {
+      barber: {
+        include: {
+          categories: true, // traga todas as categorias para o filtro
+          workingHours: true, // traga os horários de trabalho
+        },
+      },
+      service: {
+        select: {
+          id: true,
+          duration: true,
+          name: true,
+        },
+      }, // traga o serviço agendado com duration
+    },
+  });
 
   return (
     <>
@@ -86,7 +127,7 @@ export default async function Home() {
         </h2>
         <div className="flex gap-3 overflow-auto [&::-webkit-scrollbar]:hidden">
           {barbers.map((barber) => (
-            <Barbers key={barber.id} barber={barber} nameButton="Agendar" />
+            <Barbers key={barber.id} barber={sanitizeDecimal(barber)} nameButton="Agendar" />
           ))}
         </div>
 
@@ -96,24 +137,34 @@ export default async function Home() {
         </h2>
         <div className="flex gap-3 overflow-auto [&::-webkit-scrollbar]:hidden">
           {services.map((service) => {
-            // Converter Decimal para number para evitar erro de serialização
-            const serviceWithNumberPrice = {
-              ...service,
-              price: Number(service.price),
-              priceAdjustments: service.priceAdjustments.map((adjustment) => ({
-                ...adjustment,
-                priceAdjustment: Number(adjustment.priceAdjustment),
-              })),
-            };
             const barbersOfTheSameCategory = barbers.filter((barber) =>
               barber.categories.some((cat) => cat.id === service.categoryId),
             );
+            
+            // Usa a função sanitizeDecimal para converter todos os campos Decimal
+            const sanitizedService = sanitizeDecimal(service);
+            const sanitizedBookings = bookings.map(booking => ({
+              dateTime: booking.dateTime,
+              service: {
+                duration: Number(booking.service.duration)
+              },
+              barberId: booking.barberId
+            }));
+            const sanitizedBarbers = sanitizeDecimal(barbersOfTheSameCategory.map((barber) => ({
+              ...barber,
+              workingHours: (barber.workingHours ?? []).map((wh) => ({
+                ...wh,
+                pauses: [],
+              })),
+            })));
+
             return (
               <CardServices
                 key={service.id}
-                BarberShopService={serviceWithNumberPrice}
+                BarberShopService={sanitizedService}
                 nameButton="Agendar"
-                barbers={barbersOfTheSameCategory}
+                bookings={sanitizedBookings}
+                barbers={sanitizedBarbers}
               />
             );
           })}
@@ -127,7 +178,7 @@ export default async function Home() {
           {PopularBarbers.map((barberShop) => (
             <CardBarber
               key={barberShop.id}
-              barberShop={barberShop}
+              barberShop={sanitizeDecimal(barberShop)}
               nameButton="Reservar"
             />
           ))}

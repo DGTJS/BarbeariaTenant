@@ -105,12 +105,12 @@ const SearchPage = async ({ searchParams }: SearchPageProps) => {
 
           {/* BARBERSHOPS */}
           {barberShops.length > 0 && (
-            <div className="mt-4 w-full border-t border-gray-800">
+            <div className="mt-4 w-full border-t">
               <div className="mx-auto w-full max-w-screen-lg px-2">
-                <h2 className="pt-4 text-xs font-bold text-gray-400 uppercase">
+                <h2 className="pt-2 text-xs font-bold text-gray-400 uppercase">
                   Barbearias
                 </h2>
-                <div className="grid-xs">
+                <div className="grid-xs mt-2">
                   {barberShops.map((shop) => (
                     <CardBarber
                       key={shop.id}
@@ -125,12 +125,12 @@ const SearchPage = async ({ searchParams }: SearchPageProps) => {
 
           {/* BARBERS */}
           {barbers.length > 0 && (
-            <div className="mt-4 w-full border-t border-gray-800">
+            <div className="mt-4 w-full border-t">
               <div className="mx-auto w-full max-w-screen-lg px-2">
-                <h2 className="pt-4 text-xs font-bold text-gray-400 uppercase">
+                <h2 className="pt-2 text-xs font-bold text-gray-400 uppercase">
                   Barbeiros
                 </h2>
-                <div className="grid-xs">
+                <div className="grid-xs mt-2">
                   {barbers.map((barber) => (
                     <CardBarbers
                       key={barber.id}
@@ -145,12 +145,12 @@ const SearchPage = async ({ searchParams }: SearchPageProps) => {
 
           {/* SERVICES */}
           {services.length > 0 && (
-            <div className="mt-4 w-full border-t border-gray-800">
+            <div className="mt-4 w-full border-t">
               <div className="mx-auto w-full max-w-screen-lg px-2">
-                <h2 className="pt-4 text-xs font-bold text-gray-400 uppercase">
+                <h2 className="pt-2 text-xs font-bold text-gray-400 uppercase">
                   Serviços
                 </h2>
-                <div className="grid-xs">
+                <div className="grid-xs mt-2">
                   {services.map((service) => {
                     // Converter Decimal para number para evitar erro de serialização
                     const serviceWithNumberPrice = {
@@ -168,6 +168,7 @@ const SearchPage = async ({ searchParams }: SearchPageProps) => {
                         BarberShopService={serviceWithNumberPrice}
                         nameButton="Reservar"
                         barbers={barbers}
+                        bookings={[]}
                       />
                     );
                   })}

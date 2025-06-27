@@ -127,7 +127,11 @@ export default async function Home() {
         </h2>
         <div className="flex gap-3 overflow-auto [&::-webkit-scrollbar]:hidden">
           {barbers.map((barber) => (
-            <Barbers key={barber.id} barber={sanitizeDecimal(barber)} nameButton="Agendar" />
+            <Barbers
+              key={barber.id}
+              barber={sanitizeDecimal(barber)}
+              nameButton="Agendar"
+            />
           ))}
         </div>
 
@@ -140,23 +144,25 @@ export default async function Home() {
             const barbersOfTheSameCategory = barbers.filter((barber) =>
               barber.categories.some((cat) => cat.id === service.categoryId),
             );
-            
+
             // Usa a função sanitizeDecimal para converter todos os campos Decimal
             const sanitizedService = sanitizeDecimal(service);
-            const sanitizedBookings = bookings.map(booking => ({
+            const sanitizedBookings = bookings.map((booking) => ({
               dateTime: booking.dateTime,
               service: {
-                duration: Number(booking.service.duration)
+                duration: Number(booking.service.duration),
               },
-              barberId: booking.barberId
+              barberId: booking.barberId,
             }));
-            const sanitizedBarbers = sanitizeDecimal(barbersOfTheSameCategory.map((barber) => ({
-              ...barber,
-              workingHours: (barber.workingHours ?? []).map((wh) => ({
-                ...wh,
-                pauses: [],
+            const sanitizedBarbers = sanitizeDecimal(
+              barbersOfTheSameCategory.map((barber) => ({
+                ...barber,
+                workingHours: (barber.workingHours ?? []).map((wh) => ({
+                  ...wh,
+                  pauses: [],
+                })),
               })),
-            })));
+            );
 
             return (
               <CardServices

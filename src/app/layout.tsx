@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 import "./globals.css";
 import AuthProviders from "@/_providers/auth";
-import { Toaster } from "react-hot-toast";
 import FooterBar from "@/_components/footerbar";
+import { Toaster } from "sonner";
 
 const NunitoFont = Nunito({
   subsets: ["latin"],

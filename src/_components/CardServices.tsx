@@ -9,6 +9,7 @@ import type { barber as Barber } from "@/generated/prisma/client";
 import {
   Sheet,
   SheetContent,
+  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
@@ -23,6 +24,9 @@ import {
   SelectValue,
 } from "./ui/select";
 import { useState, useEffect } from "react";
+import { createBooking } from "@/app/_actions/create-booking";
+import { set } from "date-fns";
+import { toast } from "sonner";
 
 interface BarberWithWorkingHours extends Barber {
   workingHours: {
@@ -62,6 +66,15 @@ const CardServices = ({
   const [selectBarber, setSelectBarber] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [availableTimes, setAvailableTimes] = useState<string[]>([]);
+
+  const [selectedTime, setSelectedTime] = useState<string | undefined>(
+    undefined,
+  );
+  // const { data } = useSession();
+
+  const handleSelectTime = (time: string | undefined) => {
+    setSelectedTime(time);
+  };
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
@@ -185,6 +198,29 @@ const CardServices = ({
     );
     return Math.min(...pricesWithAdjustments);
   };
+  const handleCreateBooking = async () => {
+    try {
+      if (!selectBarber || !selectedDate || !selectedTime) return;
+
+      const hours = Number(selectedTime.split(":")[0]);
+      const minutes = Number(selectedTime.split(":")[1]);
+
+      const newData = set(selectedDate, { hours: hours, minutes: minutes });
+
+      await createBooking({
+        barberId: selectBarber,
+        dateTime: newData,
+        serviceId: BarberShopService.id,
+        status: "pending",
+        userId: "902a70aa-03d2-4aeb-9a11-e8a7acd76291",
+      });
+      console.log(createBooking);
+      toast.success("Agendamento criado com sucesso");
+    } catch (e) {
+      console.error(e);
+      toast.error("Erro ao criar agendamento");
+    }
+  };
 
   return (
     <Card className="flex max-w-[160px] min-w-[175px] rounded-2xl p-1">
@@ -226,7 +262,7 @@ const CardServices = ({
             <SheetContent side="right" className="gap-4">
               <SheetHeader className="border-b p-3 pt-5 pb-5 font-semibold">
                 <SheetTitle className="flex items-center">
-                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  <CalendarIcon className="mr-1 h-4 w-4" />
                   Fazer Reserva
                 </SheetTitle>
               </SheetHeader>
@@ -268,26 +304,81 @@ const CardServices = ({
                   return date < today;
                 }}
               />
-              <div className="flex items-center gap-2 overflow-auto border-b px-3 pt-2 pb-5 [&::-webkit-scrollbar]:hidden">
-                {selectBarber &&
-                  selectedDate &&
-                  availableTimes.length === 0 && (
-                    <span>Nenhum horário disponível</span>
-                  )}
-                {availableTimes.map((time) => (
-                  <Button
-                    key={time}
-                    variant="outline"
-                    className="rounded-2xl border-solid font-normal text-white"
-                    onClick={() => {
-                      // Aqui você pode salvar o horário escolhido para o agendamento
-                      console.log("Horário selecionado:", time);
-                    }}
-                  >
-                    {time}
-                  </Button>
-                ))}
-              </div>
+
+              {selectedDate && (
+                <div className="flex items-center gap-2 overflow-auto border-b px-3 pt-2 pb-5 [&::-webkit-scrollbar]:hidden">
+                  {selectBarber &&
+                    selectedDate &&
+                    availableTimes.length === 0 && (
+                      <span>Nenhum horário disponível</span>
+                    )}
+                  {availableTimes.map((time) => (
+                    <Button
+                      key={time}
+                      variant={selectedTime === time ? "default" : "outline"}
+                      className="rounded-2xl border-solid font-normal text-white"
+                      onClick={() => handleSelectTime(time)}
+                    >
+                      {time}
+                    </Button>
+                  ))}
+                </div>
+              )}
+
+              {selectedDate && (
+                <div className="p-5">
+                  <Card className="px-0 py-3">
+                    <CardContent className="space-y-2 px-2">
+                      <div className="flex justify-between px-2">
+                        <h2 className="font-semibold">
+                          {BarberShopService.name}
+                        </h2>
+                        <p className="text-sm font-bold">
+                          {Intl.NumberFormat("pt-BR", {
+                            style: "currency",
+                            currency: "BRL",
+                          }).format(Number(BarberShopService.price))}
+                        </p>
+                      </div>
+                      <div className="flex justify-between px-2">
+                        <span className="text-sm text-gray-500">Data</span>
+                        <span className="text-sm">
+                          {selectedDate.toLocaleDateString("pt-BR", {
+                            day: "numeric",
+                            month: "long",
+                          })}
+                        </span>
+                      </div>
+                      <div className="flex justify-between px-2">
+                        <span className="text-sm text-gray-500">Horário</span>
+                        <span className="text-sm">{selectedTime}</span>
+                      </div>
+                      <div className="flex justify-between px-2">
+                        <span className="text-sm text-gray-500">Duração</span>
+                        <span className="text-sm">
+                          {BarberShopService.duration} Min
+                        </span>
+                      </div>
+                      <div className="flex justify-between px-2">
+                        <span className="text-sm text-gray-500">Barbeiro</span>
+                        <span className="text-sm">
+                          {barbers.find((b) => b.id === selectBarber)?.name ||
+                            "Selecione um barbeiro"}
+                        </span>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              )}
+              <SheetFooter className="px-5">
+                <Button
+                  type="submit"
+                  className="text-white"
+                  onClick={handleCreateBooking}
+                >
+                  Confirmar
+                </Button>
+              </SheetFooter>
             </SheetContent>
           </Sheet>
         </div>

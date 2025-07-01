@@ -4,10 +4,14 @@ import { Button } from "@/_components/ui/button";
 import { ChevronLeftIcon, StarIcon } from "lucide-react";
 import Link from "next/link";
 import SideBarButton from "@/_components/sidebar-button";
-import { getCategoriesFromBarberShop } from "@/_lib/getCategories";
+import {
+  getBarberFromBarberShop,
+  getCategoriesFromBarberShop,
+} from "@/_lib/getCategories";
 import Category from "@/_components/category";
 import ServiceBarberCard from "@/_components/cardServiceBarber";
 import { getServiceBarberShop } from "@/_lib/getServiceShop";
+import Barbers from "@/_components/CardBarbers";
 
 interface BarberShopPageProps {
   params: {
@@ -19,6 +23,7 @@ const BarberShopPage = async ({ params }: BarberShopPageProps) => {
   const barberShop = await getBarberShopsId(params.id);
   const categoriesBarberShop = await getCategoriesFromBarberShop(params.id);
   const servicesBarberShop = await getServiceBarberShop(params.id);
+  const barberBarberShop = await getBarberFromBarberShop(params.id);
 
   return (
     <div>
@@ -32,14 +37,14 @@ const BarberShopPage = async ({ params }: BarberShopPageProps) => {
       </div>
       <Button
         variant="outline"
-        className="absolute fixed top-4 left-4 z-50 bg-gray-600"
+        className="fixed top-4 left-4 z-50 bg-gray-600"
         asChild
       >
         <Link href="/">
           <ChevronLeftIcon className="text-white" />
         </Link>
       </Button>
-      <div className="absolute fixed top-4 right-4 z-50">
+      <div className="fixed top-4 right-4 z-50">
         <SideBarButton category={categoriesBarberShop} />
       </div>
       <div className="flex flex-row justify-between p-5">
@@ -61,6 +66,16 @@ const BarberShopPage = async ({ params }: BarberShopPageProps) => {
               name={category.name}
               IconUrl={category.IconUrl}
               id={category.id}
+            />
+          ))}
+        </div>
+        <h3 className="text-sm font-semibold text-gray-200">Barbeiros</h3>
+        <div className="mt-5 flex gap-3 overflow-auto pb-5 [&::-webkit-scrollbar]:hidden">
+          {barberBarberShop.map((barberBarberShop) => (
+            <Barbers
+              key={barberBarberShop.id}
+              barber={barberBarberShop}
+              nameButton={"Agendar"}
             />
           ))}
         </div>

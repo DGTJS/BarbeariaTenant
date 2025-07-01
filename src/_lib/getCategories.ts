@@ -30,3 +30,9 @@ export const getCategoriesFromBarberShop = async (barberShopId: string) => {
 
   return Array.from(uniqueCategoriesMap.values());
 };
+
+export const getBarberFromBarberShop = async (barberShopId: string) => {
+  return db.barber.findMany({
+    where: { barberShopId },
+  });
+};

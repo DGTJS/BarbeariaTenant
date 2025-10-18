@@ -253,7 +253,10 @@ const HomeContent = ({
       {/* Booking Modal */}
       <BookingModal 
         isOpen={isBookingModalOpen} 
-        onClose={() => setIsBookingModalOpen(false)} 
+        onClose={() => setIsBookingModalOpen(false)}
+        services={services}
+        barbers={barbers}
+        bookings={bookings}
       />
     </>
   );

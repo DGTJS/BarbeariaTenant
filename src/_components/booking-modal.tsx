@@ -9,7 +9,6 @@ import { Calendar } from "@/_components/ui/calendar";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/_components/ui/select";
 import { toast } from "sonner";
 import { createBooking } from "@/app/_actions/create-booking";
-import { getHomeData, sanitizeDecimal } from "@/_lib/getHomeData";
 import { set } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import Image from "next/image";
@@ -61,13 +60,13 @@ interface Booking {
 interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
+  services: Service[];
+  barbers: BarberWithWorkingHours[];
+  bookings: Booking[];
 }
 
-export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
+export default function BookingModal({ isOpen, onClose, services, barbers, bookings }: BookingModalProps) {
   const { data: session, status } = useSession();
-  const [services, setServices] = useState<Service[]>([]);
-  const [barbers, setBarbers] = useState<BarberWithWorkingHours[]>([]);
-  const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [selectBarber, setSelectBarber] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -76,10 +75,10 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
-      loadData();
+    if (isOpen && services.length > 0 && !selectedService) {
+      setSelectedService(services[0]);
     }
-  }, [isOpen]);
+  }, [isOpen, services, selectedService]);
 
   useEffect(() => {
     if (!selectBarber || !selectedDate) {
@@ -172,22 +171,6 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     setAvailableTimes(slots);
   }, [selectBarber, selectedDate, barbers, bookings]);
 
-  const loadData = async () => {
-    try {
-      const homeData = await getHomeData();
-      setServices(sanitizeDecimal(homeData.services));
-      setBarbers(sanitizeDecimal(homeData.barbers));
-      setBookings(sanitizeDecimal(homeData.bookings));
-      
-      // Selecionar o primeiro serviço por padrão
-      if (homeData.services.length > 0) {
-        setSelectedService(sanitizeDecimal(homeData.services)[0]);
-      }
-    } catch (error) {
-      console.error("Erro ao carregar dados:", error);
-      toast.error("Erro ao carregar dados");
-    }
-  };
 
   const handleSelectTime = (time: string | undefined) => {
     setSelectedTime(time);

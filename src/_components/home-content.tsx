@@ -10,20 +10,20 @@ import BookingModal from "./booking-modal";
 
 interface HomeContentProps {
   user: { name?: string | null } | null;
-  categories: any[];
-  barbers: any[];
-  services: any[];
-  barberShops: any[];
-  bookings: any[];
+  categories?: any[];
+  barbers?: any[];
+  services?: any[];
+  barberShops?: any[];
+  bookings?: any[];
 }
 
 const HomeContent = ({
   user,
-  categories,
-  barbers,
-  services,
-  barberShops,
-  bookings,
+  categories = [],
+  barbers = [],
+  services = [],
+  barberShops = [],
+  bookings = [],
 }: HomeContentProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);

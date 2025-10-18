@@ -77,44 +77,50 @@ interface Booking {
 
 interface FilteredSectionsProps {
   selectedCategory: string | null;
-  barbers: Barber[];
-  services: Service[];
-  barberShops: BarberShop[];
-  bookings: Booking[];
+  barbers?: Barber[];
+  services?: Service[];
+  barberShops?: BarberShop[];
+  bookings?: Booking[];
 }
 
 const FilteredSections = ({ selectedCategory, barbers, services, barberShops, bookings }: FilteredSectionsProps) => {
   const filteredData = useMemo(() => {
+    // Garantir que os arrays existam e não sejam undefined
+    const safeBarbers = barbers || [];
+    const safeServices = services || [];
+    const safeBarberShops = barberShops || [];
+    const safeBookings = bookings || [];
+
     if (!selectedCategory) {
       return {
-        filteredBarbers: barbers.filter((barber, index, self) => 
+        filteredBarbers: safeBarbers.filter((barber, index, self) => 
           index === self.findIndex(b => b.id === barber.id)
         ),
-        filteredServices: services.filter((service, index, self) => 
+        filteredServices: safeServices.filter((service, index, self) => 
           index === self.findIndex(s => s.id === service.id)
         ),
-        filteredBarberShops: barberShops.filter((barberShop, index, self) => 
+        filteredBarberShops: safeBarberShops.filter((barberShop, index, self) => 
           index === self.findIndex(bs => bs.id === barberShop.id)
         ),
       };
     }
 
     // Filtrar barbeiros que têm a categoria selecionada e deduplicar
-    const filteredBarbers = barbers
-      .filter((barber) => barber.categories.some((cat) => cat.id === selectedCategory))
+    const filteredBarbers = safeBarbers
+      .filter((barber) => barber.categories?.some((cat) => cat.id === selectedCategory))
       .filter((barber, index, self) => 
         index === self.findIndex(b => b.id === barber.id)
       );
 
             // Filtrar serviços globais da categoria selecionada
-            const filteredServices = services
+            const filteredServices = safeServices
               .filter((service) => service.categoryId === selectedCategory)
               .filter((service, index, self) => 
                 index === self.findIndex(s => s.id === service.id)
               );
 
             // Para serviços globais, mostrar todas as barbearias (exceto a barbearia global)
-            const filteredBarberShops = barberShops
+            const filteredBarberShops = safeBarberShops
               .filter((barberShop) => barberShop.name !== "Serviços Globais")
               .filter((barberShop, index, self) => 
                 index === self.findIndex(bs => bs.id === barberShop.id)
@@ -125,7 +131,7 @@ const FilteredSections = ({ selectedCategory, barbers, services, barberShops, bo
       filteredServices,
       filteredBarberShops,
     };
-  }, [selectedCategory, barbers, services, barberShops]);
+  }, [selectedCategory, barbers, services, barberShops, bookings]);
 
   const hasResults = 
     filteredData.filteredBarbers.length > 0 ||
@@ -167,7 +173,7 @@ const FilteredSections = ({ selectedCategory, barbers, services, barberShops, bo
           {/* Mobile */}
           <div className="flex gap-3 overflow-auto [&::-webkit-scrollbar]:hidden lg:hidden">
             {filteredData.filteredBarbers.map((barber) => {
-              const averageRating = barber.booking.length > 0 
+              const averageRating = barber.booking?.length > 0 
                 ? barber.booking.reduce((sum, booking) => sum + (booking.rating || 0), 0) / barber.booking.length
                 : 5.0;
               
@@ -185,7 +191,7 @@ const FilteredSections = ({ selectedCategory, barbers, services, barberShops, bo
           {/* Desktop */}
           <div className="hidden lg:grid lg:grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredData.filteredBarbers.map((barber) => {
-              const averageRating = barber.booking.length > 0 
+              const averageRating = barber.booking?.length > 0 
                 ? barber.booking.reduce((sum, booking) => sum + (booking.rating || 0), 0) / barber.booking.length
                 : 5.0;
               
@@ -219,11 +225,11 @@ const FilteredSections = ({ selectedCategory, barbers, services, barberShops, bo
           <div className="flex gap-3 overflow-auto [&::-webkit-scrollbar]:hidden lg:hidden">
             {filteredData.filteredServices.map((service) => {
               // Para serviços globais, usar todos os barbeiros
-              const allBarbers = barbers.filter((barber, index, self) => 
+              const allBarbers = (barbers || []).filter((barber, index, self) => 
                 index === self.findIndex(b => b.id === barber.id)
               );
 
-              const sanitizedBookings = bookings.map((booking) => ({
+              const sanitizedBookings = (bookings || []).map((booking) => ({
                 dateTime: booking.dateTime,
                 service: {
                   duration: Number(booking.service.duration),
@@ -250,11 +256,11 @@ const FilteredSections = ({ selectedCategory, barbers, services, barberShops, bo
           <div className="hidden lg:grid lg:grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredData.filteredServices.map((service) => {
               // Para serviços globais, usar todos os barbeiros
-              const allBarbers = barbers.filter((barber, index, self) => 
+              const allBarbers = (barbers || []).filter((barber, index, self) => 
                 index === self.findIndex(b => b.id === barber.id)
               );
 
-              const sanitizedBookings = bookings.map((booking) => ({
+              const sanitizedBookings = (bookings || []).map((booking) => ({
                 dateTime: booking.dateTime,
                 service: {
                   duration: Number(booking.service.duration),

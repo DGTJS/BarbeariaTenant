@@ -1,5 +1,6 @@
 // lib/prisma.ts
 import { PrismaClient } from "@/generated/prisma";
+
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
@@ -7,9 +8,29 @@ const globalForPrisma = globalThis as unknown as {
 const prisma =
   globalForPrisma.prisma ??
   new PrismaClient({
-    log: process.env.NODE_ENV === "development" ? ["query"] : [],
+    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+    datasources: {
+      db: {
+        url: process.env.DATABASE_URL,
+      },
+    },
+    // Configurações otimizadas para o pool de conexões
+    __internal: {
+      engine: {
+        connectTimeout: 60000, // 60 segundos
+        queryTimeout: 30000,   // 30 segundos
+      },
+    },
   });
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+// Garantir que a conexão seja fechada adequadamente
+if (process.env.NODE_ENV !== "production") {
+  globalForPrisma.prisma = prisma;
+}
+
+// Função para fechar conexões adequadamente
+export const disconnectPrisma = async () => {
+  await prisma.$disconnect();
+};
 
 export const db = prisma;

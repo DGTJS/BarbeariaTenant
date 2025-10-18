@@ -24,7 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createBooking } from "@/app/_actions/create-booking";
 import { set } from "date-fns";
 import { toast } from "sonner";
@@ -74,13 +74,13 @@ const CardServices = ({
   );
   // const { data } = useSession();
 
-  const handleSelectTime = (time: string | undefined) => {
+  const handleSelectTime = useCallback((time: string | undefined) => {
     setSelectedTime(time);
-  };
+  }, []);
 
-  const handleDateSelect = (date: Date | undefined) => {
+  const handleDateSelect = useCallback((date: Date | undefined) => {
     setSelectedDate(date);
-  };
+  }, []);
 
   useEffect(() => {
     if (!selectBarber || !selectedDate) {
@@ -189,7 +189,7 @@ const CardServices = ({
 
   if (!BarberShopService) return null;
 
-  const getLowestPrice = () => {
+  const getLowestPrice = useMemo(() => {
     const basePrice = Number(BarberShopService.price);
     const adjustments = BarberShopService.priceAdjustments || [];
 
@@ -199,13 +199,10 @@ const CardServices = ({
       (adj) => basePrice + Number(adj.priceAdjustment),
     );
     return Math.min(...pricesWithAdjustments);
-  };
-  const handleCreateBooking = async () => {
+  }, [BarberShopService.price, BarberShopService.priceAdjustments]);
+  const handleCreateBooking = useCallback(async () => {
     try {
       if (!selectBarber || !selectedDate || !selectedTime) return;
-      
-      console.log("Creating booking for user:", session?.user?.id);
-      console.log("Session:", session);
 
       const hours = Number(selectedTime.split(":")[0]);
       const minutes = Number(selectedTime.split(":")[1]);
@@ -219,7 +216,7 @@ const CardServices = ({
         status: "pending",
         userId: session?.user?.id || "",
       });
-      console.log(createBooking);
+      
       toast.success("Agendamento criado com sucesso");
       // Atualizar a página para mostrar o novo agendamento
       window.location.reload();
@@ -227,7 +224,7 @@ const CardServices = ({
       console.error(e);
       toast.error("Erro ao criar agendamento");
     }
-  };
+  }, [selectBarber, selectedDate, selectedTime, BarberShopService.id, session?.user?.id]);
 
   return (
     <>
@@ -254,7 +251,7 @@ const CardServices = ({
               {BarberShopService.name}
             </h3>
             <p className="truncate text-sm text-gray-500">
-              A partir de R$ {getLowestPrice().toFixed(2)}
+              A partir de R$ {getLowestPrice.toFixed(2)}
             </p>
             <p className="truncate text-sm text-gray-500">
               Duração: {BarberShopService.duration} Min
@@ -432,7 +429,7 @@ const CardServices = ({
           </h3>
           <div className="mb-3 space-y-1">
             <p className="text-sm font-semibold text-primary">
-              A partir de R$ {getLowestPrice().toFixed(2)}
+              A partir de R$ {getLowestPrice.toFixed(2)}
             </p>
             {BarberShopService.description && (
               <p className="text-xs text-muted-foreground line-clamp-2">

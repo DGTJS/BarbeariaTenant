@@ -148,9 +148,7 @@ const Appointments = memo(({ bookings = [] }: AppointmentsProps) => {
       })}
     </div>
   );
-};
-
-});
+})  ;
 
 Appointments.displayName = 'Appointments';
 

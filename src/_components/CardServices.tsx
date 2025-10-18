@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { useSession } from "next-auth/react";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
@@ -63,6 +64,7 @@ const CardServices = ({
   barbers,
   bookings,
 }: BarberServiceProps) => {
+  const { data: session } = useSession();
   const [selectBarber, setSelectBarber] = useState("");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
   const [availableTimes, setAvailableTimes] = useState<string[]>([]);
@@ -201,6 +203,9 @@ const CardServices = ({
   const handleCreateBooking = async () => {
     try {
       if (!selectBarber || !selectedDate || !selectedTime) return;
+      
+      console.log("Creating booking for user:", session?.user?.id);
+      console.log("Session:", session);
 
       const hours = Number(selectedTime.split(":")[0]);
       const minutes = Number(selectedTime.split(":")[1]);
@@ -212,10 +217,12 @@ const CardServices = ({
         dateTime: newData,
         serviceId: BarberShopService.id,
         status: "pending",
-        userId: "902a70aa-03d2-4aeb-9a11-e8a7acd76291",
+        userId: session?.user?.id || "",
       });
       console.log(createBooking);
       toast.success("Agendamento criado com sucesso");
+      // Atualizar a página para mostrar o novo agendamento
+      window.location.reload();
     } catch (e) {
       console.error(e);
       toast.error("Erro ao criar agendamento");

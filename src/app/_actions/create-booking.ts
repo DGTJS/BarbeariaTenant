@@ -12,6 +12,12 @@ interface createBookingParams {
 
 export const createBooking = async (params: createBookingParams) => {
   try {
+    
+    // Validar se userId não está vazio
+    if (!params.userId || params.userId.trim() === "") {
+      throw new Error("UserId é obrigatório");
+    }
+    
     const booking = await db.booking.create({
       data: {
         userId: params.userId,
@@ -48,7 +54,6 @@ export const createBooking = async (params: createBookingParams) => {
     
     return booking;
   } catch (error) {
-    console.error("Erro ao criar agendamento:", error);
-    throw new Error("Erro ao criar agendamento");
+    throw new Error(`Erro ao criar agendamento: ${error instanceof Error ? error.message : 'Erro desconhecido'}`);
   }
 };

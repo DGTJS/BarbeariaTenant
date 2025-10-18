@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/_components/ui/card";
 import { Button } from "@/_components/ui/button";
 import { Badge } from "@/_components/ui/badge";
@@ -35,7 +35,8 @@ import {
   ChevronUp,
   MapPin,
   Star,
-  Loader2
+  Loader2,
+  X
 } from "lucide-react";
 import BookingCalendar from "@/_components/booking-calendar";
 
@@ -90,6 +91,7 @@ export default function BookingsManagement() {
   });
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [loadingBookings, setLoadingBookings] = useState<Set<string>>(new Set());
   const [filter, setFilter] = useState("all");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
@@ -102,7 +104,7 @@ export default function BookingsManagement() {
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
 
   // Carregar dados do banco
-  const loadBookings = async () => {
+  const loadBookings = useCallback(async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
@@ -147,15 +149,17 @@ export default function BookingsManagement() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filter, searchTerm]);
 
   useEffect(() => {
     loadBookings();
   }, [filter, searchTerm]);
 
-  const handleStatusChange = async (bookingId: string, newStatus: string) => {
+  const handleStatusChange = useCallback(async (bookingId: string, newStatus: string) => {
+    // Adicionar o booking ao loading individual
+    setLoadingBookings(prev => new Set(prev).add(bookingId));
+    
     try {
-      setSaving(true);
       const response = await fetch('/api/admin/bookings', {
         method: 'PUT',
         headers: {
@@ -171,14 +175,24 @@ export default function BookingsManagement() {
         throw new Error('Erro ao atualizar status');
       }
 
-      await loadBookings();
+      // Atualizar o estado local sem recarregar a página
+      setBookings(prev => prev.map(booking => 
+        booking.id === bookingId 
+          ? { ...booking, status: newStatus }
+          : booking
+      ));
     } catch (error) {
       console.error('Erro ao atualizar status:', error);
       alert('Erro ao atualizar status do agendamento');
     } finally {
-      setSaving(false);
+      // Remover o booking do loading individual
+      setLoadingBookings(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(bookingId);
+        return newSet;
+      });
     }
-  };
+  }, []);
 
   const handleReschedule = async () => {
     if (!selectedBooking || !newDateTime) return;
@@ -245,49 +259,77 @@ export default function BookingsManagement() {
     }
   };
 
-  const toggleExpanded = (bookingId: string) => {
+  const toggleExpanded = useCallback((bookingId: string) => {
     const newExpanded = new Set(expandedBookings);
     if (newExpanded.has(bookingId)) {
+      // Se o card já está expandido, fecha ele
       newExpanded.delete(bookingId);
     } else {
+      // Se o card não está expandido, fecha todos os outros e abre apenas este
+      newExpanded.clear();
       newExpanded.add(bookingId);
     }
     setExpandedBookings(newExpanded);
-  };
+  }, [expandedBookings]);
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Confirmada":
+  const getStatusColor = useCallback((status: string) => {
+    const normalizedStatus = status.toUpperCase();
+    switch (normalizedStatus) {
+      case "CONFIRMED":
+      case "CONFIRMADA":
         return "bg-emerald-500";
-      case "Pendente":
+      case "PENDING":
+      case "PENDENTE":
         return "bg-amber-500";
-      case "Cancelada":
+      case "CANCELLED":
+      case "CANCELADA":
         return "bg-red-500";
       default:
         return "bg-gray-500";
     }
-  };
+  }, []);
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "Confirmada":
+  const getStatusIcon = useCallback((status: string) => {
+    const normalizedStatus = status.toUpperCase();
+    switch (normalizedStatus) {
+      case "CONFIRMED":
+      case "CONFIRMADA":
         return <CheckCircle className="h-4 w-4" />;
-      case "Pendente":
+      case "PENDING":
+      case "PENDENTE":
         return <AlertCircle className="h-4 w-4" />;
-      case "Cancelada":
+      case "CANCELLED":
+      case "CANCELADA":
         return <XCircle className="h-4 w-4" />;
       default:
         return <AlertCircle className="h-4 w-4" />;
     }
-  };
+  }, []);
 
-  const formatDateTime = (dateTime: string) => {
+  const getStatusText = useCallback((status: string) => {
+    const normalizedStatus = status.toUpperCase();
+    switch (normalizedStatus) {
+      case "CONFIRMED":
+      case "CONFIRMADA":
+        return "Confirmado";
+      case "PENDING":
+      case "PENDENTE":
+        return "Aguardando";
+      case "CANCELLED":
+      case "CANCELADA":
+        return "Cancelado";
+      default:
+        return status;
+    }
+  }, []);
+
+  const formatDateTime = useCallback((dateTime: string) => {
     const date = new Date(dateTime);
     return {
       date: date.toLocaleDateString('pt-BR'),
       time: date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
     };
-  };
+  }, []);
 
   if (loading) {
     return (
@@ -366,79 +408,91 @@ export default function BookingsManagement() {
         </div>
 
         {/* Estatísticas */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 sm:gap-6 mb-8">
-          <Card className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-950 dark:to-blue-900 border-blue-200 dark:border-blue-800">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Total</p>
-                  <p className="text-3xl font-bold text-blue-700 dark:text-blue-300">{stats.total}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-8">
+          <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:shadow-md transition-all duration-200">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20">
+                  <CalendarDays className="h-5 w-5 text-blue-600 dark:text-blue-400" />
                 </div>
-                <CalendarDays className="h-8 w-8 text-blue-500" />
+                <div>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.total}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Total</p>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-950 dark:to-emerald-900 border-emerald-200 dark:border-emerald-800">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-emerald-600 dark:text-emerald-400">Confirmados</p>
-                  <p className="text-3xl font-bold text-emerald-700 dark:text-emerald-300">{stats.confirmed}</p>
+          <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:shadow-md transition-all duration-200">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 rounded-lg bg-emerald-50 dark:bg-emerald-900/20">
+                  <CheckCircle className="h-5 w-5 text-emerald-600 dark:text-emerald-400" />
                 </div>
-                <CheckCircle className="h-8 w-8 text-emerald-500" />
+                <div>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.confirmed}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Confirmados</p>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-950 dark:to-amber-900 border-amber-200 dark:border-amber-800">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-amber-600 dark:text-amber-400">Pendentes</p>
-                  <p className="text-3xl font-bold text-amber-700 dark:text-amber-300">{stats.pending}</p>
+          <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:shadow-md transition-all duration-200">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 rounded-lg bg-amber-50 dark:bg-amber-900/20">
+                  <AlertCircle className="h-5 w-5 text-amber-600 dark:text-amber-400" />
                 </div>
-                <AlertCircle className="h-8 w-8 text-amber-500" />
+                <div>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.pending}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Aguardando</p>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-red-50 to-red-100 dark:from-red-950 dark:to-red-900 border-red-200 dark:border-red-800">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-red-600 dark:text-red-400">Cancelados</p>
-                  <p className="text-3xl font-bold text-red-700 dark:text-red-300">{stats.cancelled}</p>
+          <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:shadow-md transition-all duration-200">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 rounded-lg bg-red-50 dark:bg-red-900/20">
+                  <XCircle className="h-5 w-5 text-red-600 dark:text-red-400" />
                 </div>
-                <XCircle className="h-8 w-8 text-red-500" />
+                <div>
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">{stats.cancelled}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Cancelados</p>
+                </div>
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-green-50 to-green-100 dark:from-green-950 dark:to-green-900 border-green-200 dark:border-green-800">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
+          <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:shadow-md transition-all duration-200">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 rounded-lg bg-green-50 dark:bg-green-900/20">
+                  <DollarSign className="h-5 w-5 text-green-600 dark:text-green-400" />
+                </div>
                 <div>
-                  <p className="text-sm font-medium text-green-600 dark:text-green-400">Receita Hoje</p>
-                  <p className="text-3xl font-bold text-green-700 dark:text-green-300">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     R$ {stats.todayRevenue.toFixed(2)}
                   </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Receita Hoje</p>
                 </div>
-                <DollarSign className="h-8 w-8 text-green-500" />
               </div>
             </CardContent>
           </Card>
 
-          <Card className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-950 dark:to-purple-900 border-purple-200 dark:border-purple-800">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
+          <Card className="border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 hover:shadow-md transition-all duration-200">
+            <CardContent className="p-4">
+              <div className="flex items-center space-x-3">
+                <div className="p-2 rounded-lg bg-purple-50 dark:bg-purple-900/20">
+                  <Star className="h-5 w-5 text-purple-600 dark:text-purple-400" />
+                </div>
                 <div>
-                  <p className="text-sm font-medium text-purple-600 dark:text-purple-400">Avaliação Média</p>
-                  <p className="text-3xl font-bold text-purple-700 dark:text-purple-300">
+                  <p className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                     {stats.avgRating > 0 ? stats.avgRating.toFixed(1) : 'N/A'}
                   </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Avaliação</p>
                 </div>
-                <Star className="h-8 w-8 text-purple-500" />
               </div>
             </CardContent>
           </Card>
@@ -459,19 +513,170 @@ export default function BookingsManagement() {
             }}
           />
         ) : (
-          <div className="space-y-4">
-          {bookings.map((booking) => {
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+          {bookings
+            .sort((a, b) => {
+              // Card expandido sempre aparece primeiro
+              const aExpanded = expandedBookings.has(a.id);
+              const bExpanded = expandedBookings.has(b.id);
+              
+              if (aExpanded && !bExpanded) return -1;
+              if (!aExpanded && bExpanded) return 1;
+              return 0;
+            })
+            .map((booking) => {
             const isExpanded = expandedBookings.has(booking.id);
             const { date, time } = formatDateTime(booking.dateTime);
             
             return (
-              <Card key={booking.id} className="hover:shadow-lg transition-all duration-200">
-                <CardContent className="p-6">
-                  <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
+              <Card 
+                key={booking.id} 
+                className={`group border border-border/50 bg-gradient-to-br from-white to-gray-50 dark:from-gray-900 dark:to-gray-800 hover:shadow-xl hover:scale-105 transition-all duration-300 ${
+                  isExpanded ? 'ring-2 ring-primary/20 col-span-full' : 'h-72'
+                }`}
+                onClick={() => toggleExpanded(booking.id)}
+              >
+                <CardContent className={`${isExpanded ? 'p-6' : 'p-3 h-full flex flex-col'}`}>
+                  {!isExpanded ? (
+                    // Card compacto elegante
+                    <div className="flex flex-col h-full">
+                      {/* Header com avatar e status */}
+                      <div className="flex items-center justify-between mb-2">
+                        <Avatar className="h-8 w-8 ring-2 ring-white shadow-lg">
+                          <AvatarImage src={booking.user.image} />
+                          <AvatarFallback className="bg-gradient-to-br from-blue-500 to-purple-600 text-white font-semibold text-xs">
+                            {booking.user.name.charAt(0).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <Badge 
+                          variant={booking.status.toUpperCase() === "CONFIRMED" || booking.status === "Confirmada" ? "default" : 
+                                  booking.status.toUpperCase() === "PENDING" || booking.status === "Pendente" ? "secondary" : "destructive"}
+                          className="flex items-center space-x-1 px-1.5 py-0.5 text-xs shadow-sm"
+                        >
+                          {getStatusIcon(booking.status)}
+                          <span className="hidden sm:inline">{getStatusText(booking.status)}</span>
+                        </Badge>
+                      </div>
+                      
                     {/* Informações principais */}
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-6 flex-1">
-                      {/* Cliente */}
-                      <div className="flex items-center space-x-4">
+                      <div className="mb-2">
+                        <h3 className="font-semibold text-xs text-gray-900 dark:text-gray-100 truncate">
+                          {booking.user.name}
+                        </h3>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
+                          {booking.service.name}
+                        </p>
+                      </div>
+                      
+                      {/* Data e hora */}
+                      <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-2 mb-2">
+                        <div className="flex items-center space-x-1 text-xs">
+                          <Calendar className="h-3 w-3 text-gray-500" />
+                          <span className="font-medium text-gray-900 dark:text-gray-100">{date}</span>
+                        </div>
+                        <div className="flex items-center space-x-1 text-xs">
+                          <Clock className="h-3 w-3 text-gray-500" />
+                          <span className="text-gray-600 dark:text-gray-400">{time}</span>
+                        </div>
+                      </div>
+                      
+                      {/* Preço e barbeiro */}
+                      <div className="flex items-center justify-between mb-2">
+                        <div>
+                          <p className="font-bold text-xs text-gray-900 dark:text-gray-100">
+                            R$ {booking.service.price.toFixed(2)}
+                          </p>
+                          <p className="text-xs text-gray-500 dark:text-gray-500">{booking.service.duration} min</p>
+                        </div>
+                        <div className="flex items-center space-x-1">
+                          <Avatar className="h-4 w-4">
+                            <AvatarImage src={booking.barber.photo} />
+                            <AvatarFallback className="text-xs bg-gray-200 dark:bg-gray-700">
+                              {booking.barber.name.charAt(0).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <p className="text-xs font-medium text-gray-900 dark:text-gray-100 truncate max-w-[40px]">
+                            {booking.barber.name}
+                          </p>
+                        </div>
+                      </div>
+                      
+                      {/* Botões de ação */}
+                      <div className="mt-auto space-y-1">
+                        {/* Botões de ação para agendamentos pendentes e confirmados */}
+                        {(() => {
+                          const normalizedStatus = booking.status.toUpperCase();
+                          const canCancel = normalizedStatus === "PENDING" || normalizedStatus === "PENDENTE" || 
+                                           normalizedStatus === "CONFIRMED" || normalizedStatus === "CONFIRMADA";
+                          return canCancel;
+                        })() && (
+                          <div className="flex space-x-1">
+                            {/* Botão Confirmar - apenas para agendamentos pendentes */}
+                            {(() => {
+                              const normalizedStatus = booking.status.toUpperCase();
+                              const isPending = normalizedStatus === "PENDING" || normalizedStatus === "PENDENTE";
+                              return isPending;
+                            })() && (
+                              <Button
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleStatusChange(booking.id, "Confirmada");
+                                }}
+                                disabled={loadingBookings.has(booking.id)}
+                                className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-6 px-2"
+                              >
+                                {loadingBookings.has(booking.id) ? (
+                                  <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                                ) : (
+                                  <CheckCircle className="h-3 w-3 mr-1" />
+                                )}
+                                <span className="hidden sm:inline">Confirmar</span>
+                              </Button>
+                            )}
+                            
+                            {/* Botão Cancelar - para agendamentos pendentes e confirmados */}
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStatusChange(booking.id, "Cancelada");
+                              }}
+                              disabled={loadingBookings.has(booking.id)}
+                              className="flex-1 border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 text-xs h-6 px-2"
+                            >
+                              {loadingBookings.has(booking.id) ? (
+                                <Loader2 className="h-3 w-3 mr-1 animate-spin" />
+                              ) : (
+                                <XCircle className="h-3 w-3 mr-1" />
+                              )}
+                              <span className="hidden sm:inline">Cancelar</span>
+                            </Button>
+                          </div>
+                        )}
+                        
+                        {/* Botão para ver detalhes */}
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            toggleExpanded(booking.id);
+                          }}
+                          className="w-full border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400 text-xs h-6"
+                        >
+                          <Eye className="h-3 w-3 mr-1" />
+                          <span className="hidden sm:inline">Detalhes</span>
+                        </Button>
+                      </div>
+                    </div>
+                  ) : (
+                    // Card expandido com todos os detalhes
+                    <div className="space-y-4">
+                      {/* Header expandido */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-3">
                         <Avatar className="h-12 w-12">
                           <AvatarImage src={booking.user.image} />
                           <AvatarFallback className="bg-primary/10 text-primary font-semibold">
@@ -480,86 +685,150 @@ export default function BookingsManagement() {
                         </Avatar>
                         <div>
                           <h3 className="font-semibold text-lg">{booking.user.name}</h3>
-                          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                            <Mail className="h-3 w-3" />
+                            <p className="text-sm text-muted-foreground">{booking.service.name}</p>
+                          </div>
+                        </div>
+                        
+                        <div className="flex items-center space-x-3">
+                          <Badge 
+                            variant={booking.status.toUpperCase() === "CONFIRMED" || booking.status === "Confirmada" ? "default" : 
+                                    booking.status.toUpperCase() === "PENDING" || booking.status === "Pendente" ? "secondary" : "destructive"}
+                            className="flex items-center space-x-1 px-3 py-1"
+                          >
+                            {getStatusIcon(booking.status)}
+                            <span>{getStatusText(booking.status)}</span>
+                          </Badge>
+                          
+                          <div className="text-right">
+                            <p className="font-semibold text-lg">R$ {booking.service.price.toFixed(2)}</p>
+                            <p className="text-sm text-muted-foreground">{booking.service.duration} min</p>
+                          </div>
+                          
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleExpanded(booking.id);
+                            }}
+                            className="border-gray-300 text-gray-600 hover:bg-gray-50 hover:border-gray-400"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Informações detalhadas */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                          <div>
+                            <h4 className="font-medium text-sm text-muted-foreground mb-2">Informações do Cliente</h4>
+                            <div className="space-y-2">
+                              <div className="flex items-center space-x-2 text-sm">
+                                <Mail className="h-4 w-4 text-muted-foreground" />
                             <span>{booking.user.email}</span>
                           </div>
                           {booking.user.phone && (
-                            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-                              <Phone className="h-3 w-3" />
+                                <div className="flex items-center space-x-2 text-sm">
+                                  <Phone className="h-4 w-4 text-muted-foreground" />
                               <span>{booking.user.phone}</span>
                             </div>
                           )}
                         </div>
                       </div>
 
-                      {/* Detalhes do agendamento */}
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-4 flex-1">
-                        <div className="flex items-center space-x-2">
+                          <div>
+                            <h4 className="font-medium text-sm text-muted-foreground mb-2">Detalhes do Agendamento</h4>
+                            <div className="space-y-2">
+                              <div className="flex items-center space-x-2 text-sm">
                           <Calendar className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm font-medium">{date}</span>
-                          <Clock className="h-4 w-4 text-muted-foreground ml-2" />
-                          <span className="text-sm font-medium">{time}</span>
+                                <span>{date}</span>
                         </div>
-
-                        <div className="flex items-center space-x-2">
-                          <Scissors className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{booking.service.name}</span>
-                          <span className="text-sm text-muted-foreground">
-                            ({booking.service.duration} min)
-                          </span>
+                              <div className="flex items-center space-x-2 text-sm">
+                                <Clock className="h-4 w-4 text-muted-foreground" />
+                                <span>{time}</span>
                         </div>
-
-                        <div className="flex items-center space-x-2">
+                              <div className="flex items-center space-x-2 text-sm">
                           <User className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{booking.barber.name}</span>
+                                <span>{booking.barber.name}</span>
+                              </div>
+                              <div className="flex items-center space-x-2 text-sm">
+                                <Scissors className="h-4 w-4 text-muted-foreground" />
+                                <span>{booking.service.name} ({booking.service.duration} min)</span>
+                              </div>
                         </div>
                       </div>
                     </div>
 
-                    {/* Status e ações */}
-                    <div className="flex items-center space-x-4">
-                      <div className="text-right">
-                        <p className="font-semibold text-lg">
-                          R$ {booking.service.price.toFixed(2)}
-                        </p>
+                        <div className="space-y-4">
+                          {booking.comment && (
+                            <div>
+                              <h4 className="font-medium text-sm text-muted-foreground mb-2">Comentário</h4>
+                              <p className="text-sm bg-muted/50 p-3 rounded-lg">{booking.comment}</p>
+                            </div>
+                          )}
+                          
                         {booking.rating && (
+                            <div>
+                              <h4 className="font-medium text-sm text-muted-foreground mb-2">Avaliação</h4>
                           <div className="flex items-center space-x-1">
                             <Star className="h-4 w-4 text-yellow-500 fill-current" />
                             <span className="text-sm">{booking.rating}/5</span>
+                              </div>
                           </div>
                         )}
+                        </div>
                       </div>
 
-                      <Badge 
-                        variant={booking.status === "Confirmada" ? "default" : 
-                                booking.status === "Pendente" ? "secondary" : "destructive"}
-                        className="flex items-center space-x-1 px-3 py-1"
-                      >
-                        {getStatusIcon(booking.status)}
-                        <span>{booking.status}</span>
-                      </Badge>
-
-                      <div className="flex space-x-2">
-                        {booking.status === "Pendente" && (
+                      {/* Botões de ação */}
+                      <div className="flex flex-wrap gap-2 justify-end pt-4 border-t border-border/50">
+                        {(() => {
+                          const normalizedStatus = booking.status.toUpperCase();
+                          const canCancel = normalizedStatus === "PENDING" || normalizedStatus === "PENDENTE" || 
+                                           normalizedStatus === "CONFIRMED" || normalizedStatus === "CONFIRMADA";
+                          return canCancel;
+                        })() && (
                           <>
+                            {/* Botão Confirmar - apenas para agendamentos pendentes */}
+                            {(() => {
+                              const normalizedStatus = booking.status.toUpperCase();
+                              const isPending = normalizedStatus === "PENDING" || normalizedStatus === "PENDENTE";
+                              return isPending;
+                            })() && (
                             <Button
                               size="sm"
-                              onClick={() => handleStatusChange(booking.id, "Confirmada")}
-                              disabled={saving}
-                              className="bg-emerald-600 hover:bg-emerald-700"
-                            >
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleStatusChange(booking.id, "Confirmada");
+                                }}
+                                disabled={loadingBookings.has(booking.id)}
+                                className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-md hover:shadow-lg transition-all duration-200"
+                              >
+                                {loadingBookings.has(booking.id) ? (
+                                  <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                                ) : (
                               <CheckCircle className="h-4 w-4 mr-1" />
+                                )}
                               Confirmar
                             </Button>
+                            )}
+                            
+                            {/* Botão Cancelar - para agendamentos pendentes e confirmados */}
                             <Button
                               size="sm"
                               variant="outline"
-                              onClick={() => handleStatusChange(booking.id, "Cancelada")}
-                              disabled={saving}
-                              className="border-red-300 text-red-600 hover:bg-red-50"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleStatusChange(booking.id, "Cancelada");
+                              }}
+                              disabled={loadingBookings.has(booking.id)}
+                              className="border-red-300 text-red-600 hover:bg-red-50 hover:border-red-400 transition-all duration-200"
                             >
+                              {loadingBookings.has(booking.id) ? (
+                                <Loader2 className="h-4 w-4 mr-1 animate-spin" />
+                              ) : (
                               <XCircle className="h-4 w-4 mr-1" />
+                              )}
                               Cancelar
                             </Button>
                           </>
@@ -568,11 +837,12 @@ export default function BookingsManagement() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setSelectedBooking(booking);
                             setShowRescheduleModal(true);
                           }}
-                          className="border-blue-300 text-blue-600 hover:bg-blue-50"
+                          className="border-blue-300 text-blue-600 hover:bg-blue-50 hover:border-blue-400 transition-all duration-200"
                         >
                           <Edit className="h-4 w-4 mr-1" />
                           Reagendar
@@ -581,102 +851,17 @@ export default function BookingsManagement() {
                         <Button
                           size="sm"
                           variant="outline"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setSelectedBooking(booking);
                             setShowMessageModal(true);
                           }}
-                          className="border-purple-300 text-purple-600 hover:bg-purple-50"
+                          className="border-purple-300 text-purple-600 hover:bg-purple-50 hover:border-purple-400 transition-all duration-200"
                         >
                           <MessageSquare className="h-4 w-4 mr-1" />
                           Mensagem
                         </Button>
-
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => toggleExpanded(booking.id)}
-                        >
-                          {isExpanded ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-                        </Button>
                       </div>
-                    </div>
-                  </div>
-
-                  {/* Detalhes expandidos */}
-                  {isExpanded && (
-                    <div className="mt-6 pt-6 border-t border-border/50">
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Informações do serviço */}
-                        <div>
-                          <h4 className="font-semibold mb-3 flex items-center">
-                            <Scissors className="h-4 w-4 mr-2" />
-                            Detalhes do Serviço
-                          </h4>
-                          <div className="space-y-2 text-sm">
-                            <p><span className="font-medium">Serviço:</span> {booking.service.name}</p>
-                            <p><span className="font-medium">Duração:</span> {booking.service.duration} minutos</p>
-                            <p><span className="font-medium">Preço:</span> R$ {booking.service.price.toFixed(2)}</p>
-                            {booking.service.description && (
-                              <p><span className="font-medium">Descrição:</span> {booking.service.description}</p>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Informações do barbeiro */}
-                        <div>
-                          <h4 className="font-semibold mb-3 flex items-center">
-                            <User className="h-4 w-4 mr-2" />
-                            Barbeiro Responsável
-                          </h4>
-                          <div className="flex items-center space-x-3">
-                            <Avatar className="h-10 w-10">
-                              <AvatarImage src={booking.barber.photo} />
-                              <AvatarFallback>
-                                {booking.barber.name.charAt(0).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium">{booking.barber.name}</p>
-                              <p className="text-sm text-muted-foreground">Barbeiro</p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Comentário e avaliação */}
-                      {(booking.comment || booking.rating) && (
-                        <div className="mt-6 pt-6 border-t border-border/50">
-                          <h4 className="font-semibold mb-3 flex items-center">
-                            <Star className="h-4 w-4 mr-2" />
-                            Avaliação do Cliente
-                          </h4>
-                          <div className="bg-muted/50 rounded-lg p-4">
-                            {booking.rating && (
-                              <div className="flex items-center space-x-2 mb-2">
-                                <span className="font-medium">Avaliação:</span>
-                                <div className="flex items-center space-x-1">
-                                  {[...Array(5)].map((_, i) => (
-                                    <Star
-                                      key={i}
-                                      className={`h-4 w-4 ${
-                                        i < booking.rating! ? 'text-yellow-500 fill-current' : 'text-gray-300'
-                                      }`}
-                                    />
-                                  ))}
-                                </div>
-                                <span className="text-sm text-muted-foreground">
-                                  ({booking.rating}/5)
-                                </span>
-                              </div>
-                            )}
-                            {booking.comment && (
-                              <p className="text-sm">
-                                <span className="font-medium">Comentário:</span> {booking.comment}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      )}
                     </div>
                   )}
                 </CardContent>

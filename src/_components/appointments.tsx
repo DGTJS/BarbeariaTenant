@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
@@ -29,16 +30,10 @@ interface AppointmentsProps {
   bookings?: Booking[];
 }
 
-const Appointments = ({ bookings = [] }: AppointmentsProps) => {
-  // Filtrar apenas agendamentos futuros e confirmados
-  const upcomingBookings = bookings
-    .filter(booking => {
-      const bookingDate = new Date(booking.dateTime);
-      const now = new Date();
-      return bookingDate >= now && booking.status === 'CONFIRMED';
-    })
-    .sort((a, b) => new Date(a.dateTime).getTime() - new Date(b.dateTime).getTime())
-    .slice(0, 3); // Mostrar apenas os próximos 3 agendamentos
+const Appointments = memo(({ bookings = [] }: AppointmentsProps) => {
+  // Os agendamentos já vêm filtrados e ordenados da query
+  // Mostrar apenas os próximos 3 agendamentos
+  const upcomingBookings = bookings.slice(0, 3);
 
   if (upcomingBookings.length === 0) {
     return (
@@ -69,7 +64,8 @@ const Appointments = ({ bookings = [] }: AppointmentsProps) => {
         });
 
         const getStatusBadge = (status: string) => {
-          switch (status) {
+          const normalizedStatus = status.toUpperCase();
+          switch (normalizedStatus) {
             case 'CONFIRMED':
               return (
                 <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
@@ -79,7 +75,7 @@ const Appointments = ({ bookings = [] }: AppointmentsProps) => {
             case 'PENDING':
               return (
                 <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
-                  Pendente
+                  Agendado
                 </Badge>
               );
             case 'CANCELLED':
@@ -153,5 +149,9 @@ const Appointments = ({ bookings = [] }: AppointmentsProps) => {
     </div>
   );
 };
+
+});
+
+Appointments.displayName = 'Appointments';
 
 export default Appointments;

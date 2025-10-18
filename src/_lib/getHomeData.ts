@@ -2,8 +2,7 @@ import { cache } from "react";
 import { db } from "./prisma";
 
 // Função unificada para buscar todos os dados da página inicial
-export const getHomeData = cache(async () => {
-  console.log("Fetching home data from database...");
+export const getHomeData = cache(async (userId: string) => {
   
   // Busca todos os dados em paralelo para otimizar performance
   const [
@@ -47,7 +46,7 @@ export const getHomeData = cache(async () => {
     }),
     
     // Categorias
-    db.BarberCategory.findMany({
+    db.barberCategory.findMany({
       orderBy: { createdAt: "desc" },
     }),
     
@@ -56,8 +55,14 @@ export const getHomeData = cache(async () => {
       where: { status: true },
     }),
     
-    // Agendamentos
-    db.booking.findMany({
+    // Agendamentos - apenas do usuário atual e futuros
+    userId ? db.booking.findMany({
+      where: {
+        userId: userId,
+        dateTime: {
+          gte: new Date(), // Apenas agendamentos futuros
+        },
+      },
       include: {
         user: {
           select: {
@@ -81,7 +86,10 @@ export const getHomeData = cache(async () => {
           },
         },
       },
-    }),
+      orderBy: {
+        dateTime: 'asc', // Ordenar por data crescente
+      },
+    }) : Promise.resolve([]),
   ]);
 
   // Deduplica categorias por nome
@@ -116,11 +124,6 @@ export const getHomeData = cache(async () => {
     }
   }
 
-  console.log("Home data fetched successfully");
-  console.log(`Services: ${services.length} -> ${Array.from(uniqueServices.values()).length}`);
-  console.log(`Barbers: ${barbers.length} -> ${Array.from(uniqueBarbers.values()).length}`);
-  console.log(`Categories: ${categories.length} -> ${Array.from(uniqueCategories.values()).length}`);
-  console.log(`BarberShops: ${barberShops.length} -> ${Array.from(uniqueBarberShops.values()).length}`);
   
   return {
     services: Array.from(uniqueServices.values()),

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/_components/ui/card";
 import { Button } from "@/_components/ui/button";
 import { Badge } from "@/_components/ui/badge";
@@ -45,7 +45,7 @@ export default function BookingCalendar({ bookings, onDateSelect }: BookingCalen
 
   const dayNames = ["Dom", "Seg", "Ter", "Qua", "Qui", "Sex", "Sáb"];
 
-  const getDaysInMonth = (date: Date) => {
+  const getDaysInMonth = useCallback((date: Date) => {
     const year = date.getFullYear();
     const month = date.getMonth();
     const firstDay = new Date(year, month, 1);
@@ -75,17 +75,17 @@ export default function BookingCalendar({ bookings, onDateSelect }: BookingCalen
     }
     
     return days;
-  };
+  }, []);
 
-  const getBookingsForDate = (date: Date) => {
+  const getBookingsForDate = useCallback((date: Date) => {
     const dateStr = date.toDateString();
     return bookings.filter(booking => {
       const bookingDate = new Date(booking.dateTime);
       return bookingDate.toDateString() === dateStr;
     });
-  };
+  }, [bookings]);
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = useCallback((status: string) => {
     switch (status) {
       case "Confirmada":
         return "bg-emerald-500";
@@ -96,9 +96,26 @@ export default function BookingCalendar({ bookings, onDateSelect }: BookingCalen
       default:
         return "bg-gray-500";
     }
-  };
+  }, []);
 
-  const navigateMonth = (direction: 'prev' | 'next') => {
+  const getStatusText = useCallback((status: string) => {
+    const normalizedStatus = status.toLowerCase();
+    switch (normalizedStatus) {
+      case "confirmada":
+      case "confirmed":
+        return "Confirmada";
+      case "pendente":
+      case "pending":
+        return "Agendado";
+      case "cancelada":
+      case "cancelled":
+        return "Cancelada";
+      default:
+        return status;
+    }
+  }, []);
+
+  const navigateMonth = useCallback((direction: 'prev' | 'next') => {
     setCurrentDate(prev => {
       const newDate = new Date(prev);
       if (direction === 'prev') {
@@ -108,18 +125,21 @@ export default function BookingCalendar({ bookings, onDateSelect }: BookingCalen
       }
       return newDate;
     });
-  };
+  }, []);
 
-  const handleDateClick = (date: Date) => {
+  const handleDateClick = useCallback((date: Date) => {
     setSelectedDate(date);
     if (onDateSelect) {
       onDateSelect(date);
     }
-  };
+  }, [onDateSelect]);
 
-  const days = getDaysInMonth(currentDate);
-  const today = new Date();
-  const selectedDateBookings = selectedDate ? getBookingsForDate(selectedDate) : [];
+  const days = useMemo(() => getDaysInMonth(currentDate), [currentDate, getDaysInMonth]);
+  const today = useMemo(() => new Date(), []);
+  const selectedDateBookings = useMemo(() => 
+    selectedDate ? getBookingsForDate(selectedDate) : [], 
+    [selectedDate, getBookingsForDate]
+  );
 
   return (
     <div className="space-y-6">
@@ -247,7 +267,7 @@ export default function BookingCalendar({ bookings, onDateSelect }: BookingCalen
                                 booking.status === "Pendente" ? "secondary" : "destructive"}
                         className="text-xs"
                       >
-                        {booking.status}
+                        {getStatusText(booking.status)}
                       </Badge>
                     </div>
                   </div>

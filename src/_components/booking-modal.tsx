@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useSession } from "next-auth/react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/_components/ui/dialog";
 import { Button } from "@/_components/ui/button";
@@ -12,7 +12,6 @@ import { createBooking } from "@/app/_actions/create-booking";
 import { set } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { CalendarIcon, ChevronLeft, ChevronRight, Scissors, User, Clock, CheckCircle } from "lucide-react";
-import Image from "next/image";
 
 interface BarberWithWorkingHours {
   id: string;
@@ -84,6 +83,7 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
   const [selectedTime, setSelectedTime] = useState<string | undefined>(undefined);
   const [availableTimes, setAvailableTimes] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
+
 
   useEffect(() => {
     if (isOpen) {
@@ -189,34 +189,35 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
   }, [selectBarber, selectedDate, barbers, bookings]);
 
   // Filtrar serviços por categoria
-  const filteredServices = selectedCategory 
-    ? services.filter(service => service.categoryId === selectedCategory.id)
-    : [];
+  const filteredServices = useMemo(() => 
+    selectedCategory 
+      ? services.filter(service => service.categoryId === selectedCategory.id)
+      : [],
+    [selectedCategory, services]
+  );
 
   // Filtrar barbeiros que oferecem o serviço selecionado
-  const filteredBarbers = selectedService 
-    ? barbers.filter(barber => {
-        // Aqui você pode adicionar lógica para verificar se o barbeiro oferece o serviço
-        // Por enquanto, retorna todos os barbeiros
-        return true;
-      })
-    : [];
+  const filteredBarbers = useMemo(() => 
+    selectedService 
+      ? barbers.filter(barber => {
+          // Aqui você pode adicionar lógica para verificar se o barbeiro oferece o serviço
+          // Por enquanto, retorna todos os barbeiros
+          return true;
+        })
+      : [],
+    [selectedService, barbers]
+  );
 
 
-  const handleSelectTime = (time: string | undefined) => {
+  const handleSelectTime = useCallback((time: string | undefined) => {
     setSelectedTime(time);
-  };
+  }, []);
 
-  const handleDateSelect = (date: Date | undefined) => {
+  const handleDateSelect = useCallback((date: Date | undefined) => {
     setSelectedDate(date);
-  };
+  }, []);
 
-  const handleCreateBooking = async () => {
-    if (!session?.user?.id) {
-      toast.error("Você precisa estar logado para fazer um agendamento");
-      return;
-    }
-
+  const handleCreateBooking = useCallback(async () => {
     if (!selectBarber || !selectedDate || !selectedTime || !selectedService) {
       toast.error("Por favor, preencha todos os campos");
       return;
@@ -234,20 +235,22 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
         dateTime: newData,
         serviceId: selectedService.id,
         status: "pending",
-        userId: session.user.id,
+        userId: session?.user?.id || "",
       });
 
       toast.success("Agendamento criado com sucesso");
       handleClose();
+      // Atualizar a página para mostrar o novo agendamento
+      window.location.reload();
     } catch (error) {
       console.error("Erro ao criar agendamento:", error);
       toast.error("Erro ao criar agendamento");
     } finally {
       setLoading(false);
     }
-  };
+  }, [selectBarber, selectedDate, selectedTime, selectedService, session?.user?.id]);
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setCurrentStep(1);
     setSelectedCategory(null);
     setSelectedService(null);
@@ -256,15 +259,15 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
     setSelectedTime(undefined);
     setAvailableTimes([]);
     onClose();
-  };
+  }, [onClose]);
 
-  const nextStep = () => {
+  const nextStep = useCallback(() => {
     setCurrentStep(prev => prev + 1);
-  };
+  }, []);
 
-  const prevStep = () => {
+  const prevStep = useCallback(() => {
     setCurrentStep(prev => prev - 1);
-  };
+  }, []);
 
   const getStepTitle = () => {
     switch (currentStep) {
@@ -290,7 +293,7 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
     }
   };
 
-  const getLowestPrice = (service: Service) => {
+  const getLowestPrice = useCallback((service: Service) => {
     const basePrice = Number(service.price);
     const adjustments = service.priceAdjustments || [];
 
@@ -300,64 +303,12 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
       (adj) => basePrice + Number(adj.priceAdjustment),
     );
     return Math.min(...pricesWithAdjustments);
-  };
+  }, []);
 
-  // Debug logs
-  console.log("Modal Debug:", {
-    isOpen,
-    status,
-    session: !!session,
-    categories: categories?.length,
-    services: services?.length,
-    barbers: barbers?.length,
-    currentStep
-  });
 
-  // Debug das categorias
-  if (categories && categories.length > 0) {
-    console.log("Categorias Debug:", categories.map(cat => ({
-      id: cat.id,
-      name: cat.name,
-      IconUrl: cat.IconUrl
-    })));
-  }
-
-  if (status === "loading") {
-    return (
-      <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-white">Agendar Serviço</DialogTitle>
-          </DialogHeader>
-          <div className="flex items-center justify-center p-8">
-            <div className="text-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-gray-400">Carregando sessão...</p>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
-  }
-
-  if (!session) {
-    return (
-      <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-white">Acesso Necessário</DialogTitle>
-          </DialogHeader>
-          <div className="p-6 text-center">
-            <p className="mb-6 text-gray-400">
-              Você precisa estar logado para fazer um agendamento
-            </p>
-            <Button onClick={() => window.location.href = "/api/auth/signin"}>
-              Fazer Login
-            </Button>
-          </div>
-        </DialogContent>
-      </Dialog>
-    );
+  // Se o modal não estiver aberto, não renderizar nada
+  if (!isOpen) {
+    return null;
   }
 
   // Verificar se os dados estão carregados
@@ -428,24 +379,13 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
                     onClick={() => setSelectedCategory(category)}
                   >
                     <div className="flex items-center gap-3">
-                      <div className="relative h-12 w-12">
-                        {category.IconUrl ? (
-                          <Image
-                            src={category.IconUrl}
-                            alt={category.name}
-                            fill
-                            className="rounded-lg object-cover"
-                            onError={(e) => {
-                              console.error("Erro ao carregar ícone:", category.IconUrl);
-                              e.currentTarget.style.display = 'none';
-                            }}
-                          />
-                        ) : (
-                          <div className="h-12 w-12 rounded-lg bg-gray-600 flex items-center justify-center">
-                            <Scissors className="h-6 w-6 text-gray-400" />
-                          </div>
-                        )}
-                      </div>
+                      <img 
+                        src={category.IconUrl} 
+                        alt={category.name} 
+                        width={24} 
+                        height={24}
+                        className="flex-shrink-0 rounded-lg object-cover"
+                      />
                       <div>
                         <h4 className="font-semibold text-white">{category.name}</h4>
                         {category.description && (
@@ -478,12 +418,13 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
                     }`}
                     onClick={() => setSelectedService(service)}
                   >
-                    <div className="relative mb-3 h-24 w-full">
-                      <Image
+                    <div className="mb-3 h-16 w-full">
+                      <img
                         src={service.imageUrl}
                         alt={service.name}
-                        fill
-                        className="rounded-lg object-cover"
+                        width={200}
+                        height={64}
+                        className="w-full h-16 rounded-lg object-cover"
                       />
                     </div>
                     <h4 className="mb-2 font-semibold text-white">{service.name}</h4>
@@ -531,14 +472,13 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
                     onClick={() => setSelectBarber(barber.id)}
                   >
                     <div className="flex items-center gap-4">
-                      <div className="relative h-12 w-12">
-                        <Image
-                          src={barber.photo}
-                          alt={barber.name}
-                          fill
-                          className="rounded-full object-cover"
-                        />
-                      </div>
+                      <img
+                        src={barber.photo}
+                        alt={barber.name}
+                        width={40}
+                        height={40}
+                        className="h-10 w-10 rounded-full object-cover"
+                      />
                       <div className="flex-1">
                         <h4 className="font-semibold text-white">{barber.name}</h4>
                         <p className="text-sm text-gray-400">Barbeiro Profissional</p>
@@ -564,15 +504,88 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
 
           {/* Step 4: Data */}
           {currentStep === 4 && (
-            <div className="space-y-4">
-              <Calendar
-                mode="single"
-                selected={selectedDate}
-                onSelect={handleDateSelect}
-                disabled={(date) => date < new Date()}
-                className="rounded-md border border-border bg-card"
-                locale={ptBR}
-              />
+            <div className="space-y-6">
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-white mb-2">Selecione a Data</h3>
+                <p className="text-sm text-gray-400">Escolha uma data disponível para seu agendamento</p>
+              </div>
+              
+              <div className="w-full">
+                <div className="calendar-container">
+                  <Calendar
+                    mode="single"
+                    selected={selectedDate}
+                    onSelect={handleDateSelect}
+                    disabled={(date) => date < new Date()}
+                    className="rounded-lg border border-border bg-card p-4 w-full"
+                    locale={ptBR}
+                    classNames={{
+                      months: "flex flex-col space-y-4",
+                      month: "space-y-4",
+                      caption: "flex justify-between items-center mb-4 px-2",
+                      caption_label: "text-lg font-semibold text-white",
+                      nav: "flex items-center justify-between w-full",
+                      nav_button: "h-8 w-8 bg-transparent p-0 opacity-70 hover:opacity-100 text-white hover:bg-white/10 rounded-md transition-all flex items-center justify-center",
+                      nav_button_previous: "order-first",
+                      nav_button_next: "order-last",
+                      table: "w-full border-collapse space-y-1",
+                      head_row: "flex w-full",
+                      head_cell: "text-gray-400 rounded-md flex-1 font-normal text-[0.8rem] text-center",
+                      row: "flex w-full mt-2",
+                      cell: "flex-1 h-9 text-center text-sm p-0 relative [&:has([aria-selected].day-range-end)]:rounded-r-md [&:has([aria-selected].day-outside)]:bg-accent/50 [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+                      day: "w-full h-9 p-0 font-normal aria-selected:opacity-100 text-white hover:bg-primary hover:text-white rounded-md transition-colors flex items-center justify-center",
+                      day_selected: "bg-primary text-white hover:bg-primary hover:text-white focus:bg-primary focus:text-white",
+                      day_today: "bg-accent text-accent-foreground",
+                      day_outside: "day-outside text-gray-400 opacity-50 aria-selected:bg-accent/50 aria-selected:text-gray-400 aria-selected:opacity-30",
+                      day_disabled: "text-gray-400 opacity-50",
+                      day_range_middle: "aria-selected:bg-accent aria-selected:text-accent-foreground",
+                      day_hidden: "invisible",
+                    }}
+                  />
+                </div>
+                <style jsx>{`
+                  .calendar-container :global(table) {
+                    width: 100% !important;
+                  }
+                  .calendar-container :global(thead tr) {
+                    display: flex !important;
+                    width: 100% !important;
+                  }
+                  .calendar-container :global(thead th) {
+                    flex: 1 !important;
+                    text-align: center !important;
+                  }
+                  .calendar-container :global(tbody tr) {
+                    display: flex !important;
+                    width: 100% !important;
+                  }
+                  .calendar-container :global(tbody td) {
+                    flex: 1 !important;
+                    text-align: center !important;
+                  }
+                  .calendar-container :global(tbody button) {
+                    width: 100% !important;
+                    height: 36px !important;
+                    display: flex !important;
+                    align-items: center !important;
+                    justify-content: center !important;
+                  }
+                `}</style>
+              </div>
+
+              {selectedDate && (
+                <div className="text-center p-4 bg-primary/10 border border-primary/30 rounded-lg">
+                  <p className="text-sm text-primary font-medium">
+                    Data selecionada: {selectedDate.toLocaleDateString("pt-BR", {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric"
+                    })}
+                  </p>
+                </div>
+              )}
+
               <div className="flex justify-between">
                 <Button variant="outline" onClick={prevStep}>
                   <ChevronLeft className="h-4 w-4 mr-1" />
@@ -590,25 +603,46 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
 
           {/* Step 5: Horário */}
           {currentStep === 5 && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto">
-                {availableTimes.map((time) => (
-                  <Button
-                    key={time}
-                    variant={selectedTime === time ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => handleSelectTime(time)}
-                    className="text-sm"
-                  >
-                    {time}
-                  </Button>
-                ))}
+            <div className="space-y-6">
+              <div className="text-center">
+                <h3 className="text-lg font-semibold text-white mb-2">Selecione o Horário</h3>
+                <p className="text-sm text-gray-400">Escolha um horário disponível para {selectedDate?.toLocaleDateString("pt-BR", { weekday: "long", day: "numeric", month: "long" })}</p>
               </div>
-              {availableTimes.length === 0 && (
-                <p className="text-sm text-gray-400">
-                  Nenhum horário disponível para esta data
-                </p>
+
+              {availableTimes.length > 0 ? (
+                <div className="grid grid-cols-3 sm:grid-cols-4 gap-3 max-h-64 overflow-y-auto p-2">
+                  {availableTimes.map((time) => (
+                    <Button
+                      key={time}
+                      variant={selectedTime === time ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => handleSelectTime(time)}
+                      className={`text-sm h-12 transition-all duration-200 ${
+                        selectedTime === time 
+                          ? "bg-primary text-white shadow-lg scale-105" 
+                          : "hover:scale-105 hover:border-primary/50"
+                      }`}
+                    >
+                      {time}
+                    </Button>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center p-8 bg-gray-800/50 border border-gray-600 rounded-lg">
+                  <Clock className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                  <p className="text-gray-400 mb-2">Nenhum horário disponível</p>
+                  <p className="text-sm text-gray-500">Tente selecionar outra data</p>
+                </div>
               )}
+
+              {selectedTime && (
+                <div className="text-center p-4 bg-primary/10 border border-primary/30 rounded-lg">
+                  <p className="text-sm text-primary font-medium">
+                    Horário selecionado: {selectedTime}
+                  </p>
+                </div>
+              )}
+
               <div className="flex justify-between">
                 <Button variant="outline" onClick={prevStep}>
                   <ChevronLeft className="h-4 w-4 mr-1" />

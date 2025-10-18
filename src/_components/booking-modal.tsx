@@ -313,6 +313,15 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
     currentStep
   });
 
+  // Debug das categorias
+  if (categories && categories.length > 0) {
+    console.log("Categorias Debug:", categories.map(cat => ({
+      id: cat.id,
+      name: cat.name,
+      IconUrl: cat.IconUrl
+    })));
+  }
+
   if (status === "loading") {
     return (
       <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -420,12 +429,22 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
                   >
                     <div className="flex items-center gap-3">
                       <div className="relative h-12 w-12">
-                        <Image
-                          src={category.IconUrl}
-                          alt={category.name}
-                          fill
-                          className="rounded-lg object-cover"
-                        />
+                        {category.IconUrl ? (
+                          <Image
+                            src={category.IconUrl}
+                            alt={category.name}
+                            fill
+                            className="rounded-lg object-cover"
+                            onError={(e) => {
+                              console.error("Erro ao carregar ícone:", category.IconUrl);
+                              e.currentTarget.style.display = 'none';
+                            }}
+                          />
+                        ) : (
+                          <div className="h-12 w-12 rounded-lg bg-gray-600 flex items-center justify-center">
+                            <Scissors className="h-6 w-6 text-gray-400" />
+                          </div>
+                        )}
                       </div>
                       <div>
                         <h4 className="font-semibold text-white">{category.name}</h4>

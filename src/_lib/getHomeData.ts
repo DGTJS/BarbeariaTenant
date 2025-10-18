@@ -47,7 +47,7 @@ export const getHomeData = cache(async () => {
     }),
     
     // Categorias
-    db.barberCategory.findMany({
+    db.BarberCategory.findMany({
       orderBy: { createdAt: "desc" },
     }),
     

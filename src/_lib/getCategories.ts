@@ -3,7 +3,19 @@ import { cache } from "react";
 import { db } from "./prisma";
 
 export const getCategories = cache(async () => {
-  return db.barberCategory.findMany();
+  const categories = await db.barberCategory.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+
+  // Deduplica por nome, mantendo a mais recente (devido ao orderBy desc)
+  const uniqueByName = new Map<string, (typeof categories)[number]>();
+  for (const category of categories) {
+    if (!uniqueByName.has(category.name)) {
+      uniqueByName.set(category.name, category);
+    }
+  }
+
+  return Array.from(uniqueByName.values());
 });
 
 export const getCategoriesId = cache(async (id: string) => {

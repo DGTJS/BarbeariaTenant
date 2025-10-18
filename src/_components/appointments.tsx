@@ -2,7 +2,9 @@ import { memo } from "react";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
-import { Calendar, Clock, MapPin } from "lucide-react";
+import { Button } from "./ui/button";
+import { Calendar, Clock, MapPin, Eye } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface Booking {
   id: string;
@@ -31,9 +33,15 @@ interface AppointmentsProps {
 }
 
 const Appointments = memo(({ bookings = [] }: AppointmentsProps) => {
+  const router = useRouter();
+  
   // Os agendamentos já vêm filtrados e ordenados da query
   // Mostrar apenas os próximos 3 agendamentos
   const upcomingBookings = bookings.slice(0, 3);
+  
+  const handleViewAllAppointments = () => {
+    router.push('/booking');
+  };
 
   if (upcomingBookings.length === 0) {
     return (
@@ -44,9 +52,18 @@ const Appointments = memo(({ bookings = [] }: AppointmentsProps) => {
           <p className="text-sm text-muted-foreground">
             Nenhum agendamento próximo
           </p>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs text-muted-foreground mb-4">
             Agende um horário para aparecer aqui
           </p>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleViewAllAppointments}
+            className="border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/50 transition-all duration-200"
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            Ver todos os agendamentos
+          </Button>
         </div>
       </div>
     );
@@ -146,6 +163,21 @@ const Appointments = memo(({ bookings = [] }: AppointmentsProps) => {
           </Card>
         );
       })}
+      
+      {/* Botão para ver todos os agendamentos */}
+      {bookings.length > 3 && (
+        <div className="pt-4">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleViewAllAppointments}
+            className="w-full border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/50 transition-all duration-200"
+          >
+            <Eye className="h-4 w-4 mr-2" />
+            Ver todos os agendamentos ({bookings.length})
+          </Button>
+        </div>
+      )}
     </div>
   );
 })  ;

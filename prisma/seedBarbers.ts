@@ -31,8 +31,7 @@ async function seedDatabase() {
           email: emails[i],
           name: names[i],
           phone: phones[i],
-          photo: images[i],
-          password: "123456",
+          image: images[i],
           role: "Barbeiro",
         },
       });

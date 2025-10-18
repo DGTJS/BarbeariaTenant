@@ -42,7 +42,6 @@ const SideBarButton = ({ category }: SideBarButtonProps) => {
   const handleLoginGoogleClick = () => signIn("google");
   const handleLogoutClick = () => signOut();
 
-  console.log("User data:", data?.user);
 
   return (
     <Sheet>
@@ -55,7 +54,7 @@ const SideBarButton = ({ category }: SideBarButtonProps) => {
           <MenuIcon className="h-10 w-10 text-white" />
         </Button>
       </SheetTrigger>
-      <SheetContent>
+      <SheetContent side="right" className="bg-background border-border">
         <SheetTitle className="mx-5 pt-5 pl-3 text-left text-2xl">
           Menu
         </SheetTitle>
@@ -131,7 +130,7 @@ const SideBarButton = ({ category }: SideBarButtonProps) => {
             variant="ghost"
             className="flex cursor-pointer justify-start gap-2"
           >
-            <Calendar className="width={15} height={15}" />
+            <Calendar className="text-white" width={15} height={15} />
             <p className="text-sm font-normal">Agendamentos</p>
           </Button>
         </div>

@@ -5,13 +5,37 @@ import { useSession } from "next-auth/react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/_components/ui/dialog";
 import { Button } from "@/_components/ui/button";
 import { Badge } from "@/_components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/_components/ui/avatar";
 import { Calendar } from "@/_components/ui/calendar";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/_components/ui/select";
 import { toast } from "sonner";
-import { createBooking } from "@/_actions/create-booking";
+import { createBooking } from "@/app/_actions/create-booking";
 import { getHomeData, sanitizeDecimal } from "@/_lib/getHomeData";
-import { Clock, Star, Calendar as CalendarIcon, User, Scissors, X } from "lucide-react";
+import { set } from "date-fns";
+import { CalendarIcon } from "lucide-react";
 import Image from "next/image";
+
+interface BarberWithWorkingHours {
+  id: string;
+  name: string;
+  photo: string;
+  phone: string | null;
+  barberShopId: string;
+  userId: string;
+  createdAt: Date;
+  updatedAt: Date;
+  workingHours: {
+    id: string;
+    barberId: string;
+    weekday: number;
+    startTime: string;
+    endTime: string;
+    pauses: {
+      id: string;
+      startTime: string;
+      endTime: string;
+    }[];
+  }[];
+}
 
 interface Service {
   id: string;
@@ -22,40 +46,16 @@ interface Service {
   categoryId: string | null;
   barberShopId: string;
   description?: string;
-  category?: {
-    id: string;
-    name: string;
-    IconUrl: string;
-  };
-  barberShop: {
-    id: string;
-    name: string;
-    address: string | null;
-    phones: string[];
-    imageUrl: string | null;
-  };
+  priceAdjustments?: Array<{ priceAdjustment: any }>;
 }
 
-interface Barber {
+interface Booking {
   id: string;
-  name: string;
-  photo: string;
-  phone: string | null;
-  barberShopId: string;
-  categories: Array<{ id: string; name: string; IconUrl: string }>;
-  workingHours: Array<{
-    id: string;
-    barberId: string;
-    weekday: number;
-    startTime: string;
-    endTime: string;
-    pauses: Array<{
-      id: string;
-      startTime: string;
-      endTime: string;
-    }>;
-  }>;
-  booking: Array<{ rating: number | null }>;
+  dateTime: Date;
+  status: string;
+  barberId: string;
+  serviceId: string;
+  userId: string;
 }
 
 interface BookingModalProps {
@@ -66,14 +66,14 @@ interface BookingModalProps {
 export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   const { data: session, status } = useSession();
   const [services, setServices] = useState<Service[]>([]);
-  const [barbers, setBarbers] = useState<Barber[]>([]);
+  const [barbers, setBarbers] = useState<BarberWithWorkingHours[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
-  const [selectedBarber, setSelectedBarber] = useState<Barber | null>(null);
-  const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
-  const [selectedTime, setSelectedTime] = useState<string>("");
+  const [selectBarber, setSelectBarber] = useState<string>("");
+  const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
+  const [selectedTime, setSelectedTime] = useState<string | undefined>(undefined);
   const [availableTimes, setAvailableTimes] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
-  const [currentStep, setCurrentStep] = useState(1);
 
   useEffect(() => {
     if (isOpen) {
@@ -82,71 +82,148 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   }, [isOpen]);
 
   useEffect(() => {
-    if (selectedBarber && selectedDate) {
-      generateAvailableTimes();
+    if (!selectBarber || !selectedDate) {
+      setAvailableTimes([]);
+      return;
     }
-  }, [selectedBarber, selectedDate]);
+
+    const selectedBarberObj = barbers.find((b) => b.id === selectBarber);
+    if (!selectedBarberObj) {
+      setAvailableTimes([]);
+      return;
+    }
+
+    // Descobrir o dia da semana (0=domingo, 1=segunda, ...)
+    const weekday = selectedDate.getDay();
+    const workingHour = selectedBarberObj.workingHours?.find(
+      (wh) => wh.weekday === weekday,
+    );
+
+    if (!workingHour) {
+      setAvailableTimes([]);
+      return;
+    }
+
+    // Parse início e fim do expediente
+    const [startHour, startMinute] = workingHour.startTime
+      .split(":")
+      .map(Number);
+    const [endHour, endMinute] = workingHour.endTime.split(":").map(Number);
+
+    const start = new Date(selectedDate);
+    start.setHours(startHour, startMinute, 0, 0);
+    const end = new Date(selectedDate);
+    end.setHours(endHour, endMinute, 0, 0);
+
+    // Pausas
+    const pauses = workingHour.pauses || [];
+
+    const bookingsForBarberAndDate = bookings.filter(
+      (booking) =>
+        booking.barberId === selectBarber &&
+        new Date(booking.dateTime).toDateString() ===
+          selectedDate.toDateString(),
+    );
+
+    // Gera slots de 30 em 30 minutos
+    let slot = new Date(start);
+    const slots: string[] = [];
+    while (slot < end) {
+      const slotEnd = new Date(slot.getTime() + 30 * 60 * 1000); // 30 minutos
+
+      // Verifica se o slot está em uma pausa
+      const isInPause = pauses.some((pause) => {
+        const pauseStart = new Date(selectedDate);
+        const [pauseStartHour, pauseStartMinute] = pause.startTime
+          .split(":")
+          .map(Number);
+        pauseStart.setHours(pauseStartHour, pauseStartMinute, 0, 0);
+
+        const pauseEnd = new Date(selectedDate);
+        const [pauseEndHour, pauseEndMinute] = pause.endTime
+          .split(":")
+          .map(Number);
+        pauseEnd.setHours(pauseEndHour, pauseEndMinute, 0, 0);
+
+        return slot >= pauseStart && slotEnd <= pauseEnd;
+      });
+
+      // Verifica se já existe um agendamento neste horário
+      const hasBooking = bookingsForBarberAndDate.some((booking) => {
+        const bookingTime = new Date(booking.dateTime);
+        return (
+          bookingTime.getHours() === slot.getHours() &&
+          bookingTime.getMinutes() === slot.getMinutes()
+        );
+      });
+
+      if (!isInPause && !hasBooking) {
+        slots.push(
+          `${slot.getHours().toString().padStart(2, "0")}:${slot
+            .getMinutes()
+            .toString()
+            .padStart(2, "0")}`,
+        );
+      }
+
+      slot = new Date(slot.getTime() + 30 * 60 * 1000); // Próximo slot
+    }
+
+    setAvailableTimes(slots);
+  }, [selectBarber, selectedDate, barbers, bookings]);
 
   const loadData = async () => {
     try {
       const homeData = await getHomeData();
       setServices(sanitizeDecimal(homeData.services));
       setBarbers(sanitizeDecimal(homeData.barbers));
+      setBookings(sanitizeDecimal(homeData.bookings));
+      
+      // Selecionar o primeiro serviço por padrão
+      if (homeData.services.length > 0) {
+        setSelectedService(sanitizeDecimal(homeData.services)[0]);
+      }
     } catch (error) {
       console.error("Erro ao carregar dados:", error);
       toast.error("Erro ao carregar dados");
     }
   };
 
-  const generateAvailableTimes = () => {
-    if (!selectedBarber || !selectedDate) return;
-
-    const dayOfWeek = selectedDate.getDay();
-    const workingHours = selectedBarber.workingHours.find(wh => wh.weekday === dayOfWeek);
-    
-    if (!workingHours) {
-      setAvailableTimes([]);
-      return;
-    }
-
-    const times: string[] = [];
-    const startHour = parseInt(workingHours.startTime.split(':')[0]);
-    const endHour = parseInt(workingHours.endTime.split(':')[0]);
-    
-    for (let hour = startHour; hour < endHour; hour++) {
-      times.push(`${hour.toString().padStart(2, '0')}:00`);
-      times.push(`${hour.toString().padStart(2, '0')}:30`);
-    }
-    
-    setAvailableTimes(times);
+  const handleSelectTime = (time: string | undefined) => {
+    setSelectedTime(time);
   };
 
-  const handleBooking = async () => {
+  const handleDateSelect = (date: Date | undefined) => {
+    setSelectedDate(date);
+  };
+
+  const handleCreateBooking = async () => {
     if (!session?.user?.id) {
       toast.error("Você precisa estar logado para fazer um agendamento");
       return;
     }
 
-    if (!selectedService || !selectedBarber || !selectedDate || !selectedTime) {
+    if (!selectBarber || !selectedDate || !selectedTime || !selectedService) {
       toast.error("Por favor, preencha todos os campos");
       return;
     }
 
     setLoading(true);
     try {
-      const [hours, minutes] = selectedTime.split(':').map(Number);
-      const bookingDateTime = new Date(selectedDate);
-      bookingDateTime.setHours(hours, minutes, 0, 0);
+      const hours = Number(selectedTime.split(":")[0]);
+      const minutes = Number(selectedTime.split(":")[1]);
+
+      const newData = set(selectedDate, { hours: hours, minutes: minutes });
 
       await createBooking({
-        userId: session.user.id,
+        barberId: selectBarber,
+        dateTime: newData,
         serviceId: selectedService.id,
-        barberId: selectedBarber.id,
-        dateTime: bookingDateTime,
-        status: "PENDING"
+        status: "pending",
+        userId: session.user.id,
       });
 
-      toast.success("Agendamento realizado com sucesso!");
+      toast.success("Agendamento criado com sucesso");
       handleClose();
     } catch (error) {
       console.error("Erro ao criar agendamento:", error);
@@ -157,32 +234,29 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
   };
 
   const handleClose = () => {
-    setSelectedService(null);
-    setSelectedBarber(null);
-    setSelectedDate(new Date());
-    setSelectedTime("");
-    setCurrentStep(1);
+    setSelectBarber("");
+    setSelectedDate(undefined);
+    setSelectedTime(undefined);
+    setAvailableTimes([]);
     onClose();
   };
 
-  const getBarberAverageRating = (barber: Barber) => {
-    const ratings = barber.booking.filter(b => b.rating !== null).map(b => b.rating!);
-    if (ratings.length === 0) return 5.0;
-    return ratings.reduce((sum, rating) => sum + rating, 0) / ratings.length;
-  };
+  const getLowestPrice = (service: Service) => {
+    const basePrice = Number(service.price);
+    const adjustments = service.priceAdjustments || [];
 
-  const getServicePrice = (service: Service) => {
-    const base = Number(service.price) || 0;
-    return Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(base);
+    if (adjustments.length === 0) return basePrice;
+
+    const pricesWithAdjustments = adjustments.map(
+      (adj) => basePrice + Number(adj.priceAdjustment),
+    );
+    return Math.min(...pricesWithAdjustments);
   };
 
   if (status === "loading") {
     return (
       <Dialog open={isOpen} onOpenChange={handleClose}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-center p-8">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
@@ -214,247 +288,164 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
     );
   }
 
+  if (!selectedService) {
+    return (
+      <Dialog open={isOpen} onOpenChange={handleClose}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="flex items-center justify-center p-8">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
+              <p className="text-gray-400">Carregando serviços...</p>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center justify-between text-white">
-            <span className="flex items-center gap-2">
-              <CalendarIcon className="h-5 w-5" />
-              Agendar Serviço
-            </span>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleClose}
-              className="text-gray-400 hover:text-white"
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </DialogTitle>
+          <DialogTitle className="text-white">Agendar Serviço</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Progress Steps */}
-          <div className="flex items-center justify-center space-x-4">
-            {[1, 2, 3].map((step) => (
-              <div key={step} className="flex items-center">
-                <div
-                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                    currentStep >= step
-                      ? "bg-primary text-white"
-                      : "bg-gray-600 text-gray-400"
-                  }`}
-                >
-                  {step}
-                </div>
-                {step < 3 && (
-                  <div
-                    className={`w-16 h-1 mx-2 ${
-                      currentStep > step ? "bg-primary" : "bg-gray-600"
-                    }`}
-                  />
-                )}
+          {/* Service Info */}
+          <div className="rounded-lg border border-border p-4">
+            <div className="flex items-center gap-4">
+              <div className="relative h-16 w-16">
+                <Image
+                  src={selectedService.imageUrl}
+                  alt={selectedService.name}
+                  fill
+                  className="rounded-lg object-cover"
+                />
               </div>
-            ))}
+              <div className="flex-1">
+                <h3 className="text-lg font-semibold text-white">{selectedService.name}</h3>
+                <p className="text-sm text-gray-400">{selectedService.description}</p>
+                <div className="mt-2 flex items-center gap-4">
+                  <Badge variant="secondary" className="text-xs">
+                    <CalendarIcon className="mr-1 h-3 w-3" />
+                    {selectedService.duration}min
+                  </Badge>
+                  <span className="text-lg font-bold text-primary">
+                    {Intl.NumberFormat("pt-BR", {
+                      style: "currency",
+                      currency: "BRL",
+                    }).format(getLowestPrice(selectedService))}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
 
-          {/* Step 1: Selecionar Serviço */}
-          {currentStep === 1 && (
-            <div>
-              <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
-                <Scissors className="h-5 w-5" />
-                Escolha o Serviço
-              </h3>
-              <div className="grid gap-4 md:grid-cols-2">
-                {services.map((service) => (
-                  <div
-                    key={service.id}
-                    className={`cursor-pointer rounded-lg border p-4 transition-all hover:border-primary ${
-                      selectedService?.id === service.id ? "border-primary bg-primary/10" : "border-border"
-                    }`}
-                    onClick={() => setSelectedService(service)}
-                  >
-                    <div className="relative mb-3 h-24 w-full">
-                      <Image
-                        src={service.imageUrl}
-                        alt={service.name}
-                        fill
-                        className="rounded-lg object-cover"
-                      />
-                    </div>
-                    <h4 className="mb-2 font-semibold text-white">{service.name}</h4>
-                    <p className="mb-2 text-sm text-gray-400">{service.description}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-lg font-bold text-primary">
-                        {getServicePrice(service)}
-                      </span>
-                      <Badge variant="secondary" className="text-xs">
-                        <Clock className="mr-1 h-3 w-3" />
-                        {service.duration}min
-                      </Badge>
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {selectedService && (
-                <div className="mt-4 flex justify-end">
-                  <Button onClick={() => setCurrentStep(2)}>
-                    Continuar
-                  </Button>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Step 2: Selecionar Barbeiro */}
-          {currentStep === 2 && (
-            <div>
-              <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
-                <User className="h-5 w-5" />
-                Escolha o Barbeiro
-              </h3>
-              <div className="grid gap-4 md:grid-cols-2">
+          {/* Barber Selection */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-white">Selecione o Barbeiro</label>
+            <Select value={selectBarber} onValueChange={setSelectBarber}>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Escolha um barbeiro" />
+              </SelectTrigger>
+              <SelectContent>
                 {barbers.map((barber) => (
-                  <div
-                    key={barber.id}
-                    className={`cursor-pointer rounded-lg border p-4 transition-all hover:border-primary ${
-                      selectedBarber?.id === barber.id ? "border-primary bg-primary/10" : "border-border"
-                    }`}
-                    onClick={() => setSelectedBarber(barber)}
-                  >
-                    <div className="flex items-center gap-4">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage src={barber.photo} alt={barber.name} />
-                        <AvatarFallback>{barber.name[0]}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1">
-                        <h4 className="font-semibold text-white">{barber.name}</h4>
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                          <span className="text-sm text-gray-400">
-                            {getBarberAverageRating(barber).toFixed(1)}
-                          </span>
-                        </div>
-                        <div className="mt-1 flex flex-wrap gap-1">
-                          {barber.categories.slice(0, 2).map((category) => (
-                            <Badge key={category.id} variant="outline" className="text-xs">
-                              {category.name}
-                            </Badge>
-                          ))}
-                        </div>
+                  <SelectItem key={barber.id} value={barber.id}>
+                    <div className="flex items-center gap-2">
+                      <div className="relative h-6 w-6">
+                        <Image
+                          src={barber.photo}
+                          alt={barber.name}
+                          fill
+                          className="rounded-full object-cover"
+                        />
                       </div>
+                      <span>{barber.name}</span>
                     </div>
-                  </div>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Date Selection */}
+          <div className="space-y-3">
+            <label className="text-sm font-medium text-white">Selecione a Data</label>
+            <Calendar
+              mode="single"
+              selected={selectedDate}
+              onSelect={handleDateSelect}
+              disabled={(date) => date < new Date()}
+              className="rounded-md border border-border bg-card"
+            />
+          </div>
+
+          {/* Time Selection */}
+          {selectBarber && selectedDate && (
+            <div className="space-y-3">
+              <label className="text-sm font-medium text-white">Selecione o Horário</label>
+              <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto">
+                {availableTimes.map((time) => (
+                  <Button
+                    key={time}
+                    variant={selectedTime === time ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => handleSelectTime(time)}
+                    className="text-sm"
+                  >
+                    {time}
+                  </Button>
                 ))}
               </div>
-              <div className="mt-4 flex justify-between">
-                <Button variant="outline" onClick={() => setCurrentStep(1)}>
-                  Voltar
-                </Button>
-                {selectedBarber && (
-                  <Button onClick={() => setCurrentStep(3)}>
-                    Continuar
-                  </Button>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Step 3: Selecionar Data e Horário */}
-          {currentStep === 3 && (
-            <div>
-              <h3 className="mb-4 flex items-center gap-2 text-lg font-semibold text-white">
-                <CalendarIcon className="h-5 w-5" />
-                Escolha Data e Horário
-              </h3>
-              <div className="grid gap-6 md:grid-cols-2">
-                {/* Calendar */}
-                <div>
-                  <h4 className="mb-3 font-semibold text-white">Selecione a Data</h4>
-                  <Calendar
-                    mode="single"
-                    selected={selectedDate}
-                    onSelect={setSelectedDate}
-                    disabled={(date) => date < new Date()}
-                    className="rounded-md border border-border bg-card"
-                  />
-                </div>
-
-                {/* Time Selection */}
-                <div>
-                  <h4 className="mb-3 font-semibold text-white">Selecione o Horário</h4>
-                  <div className="grid grid-cols-3 gap-2 max-h-48 overflow-y-auto">
-                    {availableTimes.map((time) => (
-                      <Button
-                        key={time}
-                        variant={selectedTime === time ? "default" : "outline"}
-                        size="sm"
-                        onClick={() => setSelectedTime(time)}
-                        className="text-sm"
-                      >
-                        {time}
-                      </Button>
-                    ))}
-                  </div>
-                  {availableTimes.length === 0 && (
-                    <p className="text-sm text-gray-400">
-                      Nenhum horário disponível para esta data
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Resumo */}
-              {selectedService && selectedBarber && selectedDate && selectedTime && (
-                <div className="mt-6 rounded-lg border border-primary bg-primary/5 p-4">
-                  <h4 className="mb-3 font-semibold text-white">Resumo do Agendamento</h4>
-                  <div className="grid gap-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Serviço:</span>
-                      <span className="text-white">{selectedService.name}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Barbeiro:</span>
-                      <span className="text-white">{selectedBarber.name}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Data:</span>
-                      <span className="text-white">
-                        {selectedDate.toLocaleDateString("pt-BR", {
-                          weekday: "long",
-                          day: "numeric",
-                          month: "long",
-                        })}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-400">Horário:</span>
-                      <span className="text-white">{selectedTime}</span>
-                    </div>
-                    <div className="flex justify-between border-t border-border pt-2 mt-2">
-                      <span className="text-gray-400">Total:</span>
-                      <span className="text-primary font-semibold">
-                        {getServicePrice(selectedService)}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+              {availableTimes.length === 0 && (
+                <p className="text-sm text-gray-400">
+                  Nenhum horário disponível para esta data
+                </p>
               )}
+            </div>
+          )}
 
-              <div className="mt-4 flex justify-between">
-                <Button variant="outline" onClick={() => setCurrentStep(2)}>
-                  Voltar
-                </Button>
-                <Button
-                  onClick={handleBooking}
-                  disabled={loading || !selectedService || !selectedBarber || !selectedDate || !selectedTime}
-                >
-                  {loading ? "Agendando..." : "Confirmar Agendamento"}
-                </Button>
+          {/* Summary */}
+          {selectBarber && selectedDate && selectedTime && (
+            <div className="rounded-lg border border-primary bg-primary/5 p-4">
+              <h4 className="mb-3 font-semibold text-white">Resumo do Agendamento</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Barbeiro:</span>
+                  <span className="text-white">
+                    {barbers.find((b) => b.id === selectBarber)?.name || "Selecione um barbeiro"}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Data:</span>
+                  <span className="text-white">
+                    {selectedDate.toLocaleDateString("pt-BR", {
+                      weekday: "long",
+                      day: "numeric",
+                      month: "long",
+                    })}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Horário:</span>
+                  <span className="text-white">{selectedTime}</span>
+                </div>
               </div>
             </div>
           )}
+
+          {/* Action Buttons */}
+          <div className="flex justify-end gap-3">
+            <Button variant="outline" onClick={handleClose}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleCreateBooking}
+              disabled={loading || !selectBarber || !selectedDate || !selectedTime}
+            >
+              {loading ? "Agendando..." : "Confirmar Agendamento"}
+            </Button>
+          </div>
         </div>
       </DialogContent>
     </Dialog>

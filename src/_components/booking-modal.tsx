@@ -302,6 +302,17 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
     return Math.min(...pricesWithAdjustments);
   };
 
+  // Debug logs
+  console.log("Modal Debug:", {
+    isOpen,
+    status,
+    session: !!session,
+    categories: categories?.length,
+    services: services?.length,
+    barbers: barbers?.length,
+    currentStep
+  });
+
   if (status === "loading") {
     return (
       <Dialog open={isOpen} onOpenChange={handleClose}>
@@ -312,7 +323,7 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
           <div className="flex items-center justify-center p-8">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-gray-400">Carregando...</p>
+              <p className="text-gray-400">Carregando sessão...</p>
             </div>
           </div>
         </DialogContent>
@@ -340,7 +351,8 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
     );
   }
 
-  if (!selectedService) {
+  // Verificar se os dados estão carregados
+  if (!categories || categories.length === 0) {
     return (
       <Dialog open={isOpen} onOpenChange={handleClose}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
@@ -350,13 +362,14 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
           <div className="flex items-center justify-center p-8">
             <div className="text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-4"></div>
-              <p className="text-gray-400">Carregando serviços...</p>
+              <p className="text-gray-400">Carregando categorias...</p>
             </div>
           </div>
         </DialogContent>
       </Dialog>
     );
   }
+
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>

@@ -10,7 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { createBooking } from "@/app/_actions/create-booking";
 import { set } from "date-fns";
-import { CalendarIcon } from "lucide-react";
+import { ptBR } from "date-fns/locale";
+import { CalendarIcon, ChevronLeft, ChevronRight, Scissors, User, Clock, CheckCircle } from "lucide-react";
 import Image from "next/image";
 
 interface BarberWithWorkingHours {
@@ -57,16 +58,26 @@ interface Booking {
   userId: string;
 }
 
+interface Category {
+  id: string;
+  name: string;
+  IconUrl: string;
+  description?: string;
+}
+
 interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   services: Service[];
   barbers: BarberWithWorkingHours[];
   bookings: Booking[];
+  categories: Category[];
 }
 
-export default function BookingModal({ isOpen, onClose, services, barbers, bookings }: BookingModalProps) {
+export default function BookingModal({ isOpen, onClose, services, barbers, bookings, categories }: BookingModalProps) {
   const { data: session, status } = useSession();
+  const [currentStep, setCurrentStep] = useState(1);
+  const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
   const [selectedService, setSelectedService] = useState<Service | null>(null);
   const [selectBarber, setSelectBarber] = useState<string>("");
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
@@ -75,10 +86,16 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (isOpen && services.length > 0 && !selectedService) {
-      setSelectedService(services[0]);
+    if (isOpen) {
+      setCurrentStep(1);
+      setSelectedCategory(null);
+      setSelectedService(null);
+      setSelectBarber("");
+      setSelectedDate(undefined);
+      setSelectedTime(undefined);
+      setAvailableTimes([]);
     }
-  }, [isOpen, services, selectedService]);
+  }, [isOpen]);
 
   useEffect(() => {
     if (!selectBarber || !selectedDate) {
@@ -171,6 +188,20 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
     setAvailableTimes(slots);
   }, [selectBarber, selectedDate, barbers, bookings]);
 
+  // Filtrar serviços por categoria
+  const filteredServices = selectedCategory 
+    ? services.filter(service => service.categoryId === selectedCategory.id)
+    : [];
+
+  // Filtrar barbeiros que oferecem o serviço selecionado
+  const filteredBarbers = selectedService 
+    ? barbers.filter(barber => {
+        // Aqui você pode adicionar lógica para verificar se o barbeiro oferece o serviço
+        // Por enquanto, retorna todos os barbeiros
+        return true;
+      })
+    : [];
+
 
   const handleSelectTime = (time: string | undefined) => {
     setSelectedTime(time);
@@ -217,11 +248,46 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
   };
 
   const handleClose = () => {
+    setCurrentStep(1);
+    setSelectedCategory(null);
+    setSelectedService(null);
     setSelectBarber("");
     setSelectedDate(undefined);
     setSelectedTime(undefined);
     setAvailableTimes([]);
     onClose();
+  };
+
+  const nextStep = () => {
+    setCurrentStep(prev => prev + 1);
+  };
+
+  const prevStep = () => {
+    setCurrentStep(prev => prev - 1);
+  };
+
+  const getStepTitle = () => {
+    switch (currentStep) {
+      case 1: return "Escolha a Categoria";
+      case 2: return "Escolha o Serviço";
+      case 3: return "Escolha o Barbeiro";
+      case 4: return "Escolha a Data";
+      case 5: return "Escolha o Horário";
+      case 6: return "Resumo do Agendamento";
+      default: return "Agendar Serviço";
+    }
+  };
+
+  const getStepIcon = () => {
+    switch (currentStep) {
+      case 1: return <Scissors className="h-5 w-5" />;
+      case 2: return <Scissors className="h-5 w-5" />;
+      case 3: return <User className="h-5 w-5" />;
+      case 4: return <CalendarIcon className="h-5 w-5" />;
+      case 5: return <Clock className="h-5 w-5" />;
+      case 6: return <CheckCircle className="h-5 w-5" />;
+      default: return <CalendarIcon className="h-5 w-5" />;
+    }
   };
 
   const getLowestPrice = (service: Service) => {
@@ -296,52 +362,144 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-white">Agendar Serviço</DialogTitle>
+          <DialogTitle className="flex items-center gap-2 text-white">
+            {getStepIcon()}
+            {getStepTitle()}
+          </DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6">
-          {/* Service Info */}
-          <div className="rounded-lg border border-border p-4">
-            <div className="flex items-center gap-4">
-              <div className="relative h-16 w-16">
-                <Image
-                  src={selectedService.imageUrl}
-                  alt={selectedService.name}
-                  fill
-                  className="rounded-lg object-cover"
-                />
-              </div>
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold text-white">{selectedService.name}</h3>
-                <p className="text-sm text-gray-400">{selectedService.description}</p>
-                <div className="mt-2 flex items-center gap-4">
-                  <Badge variant="secondary" className="text-xs">
-                    <CalendarIcon className="mr-1 h-3 w-3" />
-                    {selectedService.duration}min
-                  </Badge>
-                  <span className="text-lg font-bold text-primary">
-                    {Intl.NumberFormat("pt-BR", {
-                      style: "currency",
-                      currency: "BRL",
-                    }).format(getLowestPrice(selectedService))}
-                  </span>
+          {/* Progress Steps */}
+          <div className="flex items-center justify-center space-x-2">
+            {[1, 2, 3, 4, 5, 6].map((step) => (
+              <div key={step} className="flex items-center">
+                <div
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
+                    currentStep >= step
+                      ? "bg-primary text-white"
+                      : "bg-gray-600 text-gray-400"
+                  }`}
+                >
+                  {step}
                 </div>
+                {step < 6 && (
+                  <div
+                    className={`w-8 h-1 mx-1 ${
+                      currentStep > step ? "bg-primary" : "bg-gray-600"
+                    }`}
+                  />
+                )}
               </div>
-            </div>
+            ))}
           </div>
 
-          {/* Barber Selection */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-white">Selecione o Barbeiro</label>
-            <Select value={selectBarber} onValueChange={setSelectBarber}>
-              <SelectTrigger className="w-full">
-                <SelectValue placeholder="Escolha um barbeiro" />
-              </SelectTrigger>
-              <SelectContent>
-                {barbers.map((barber) => (
-                  <SelectItem key={barber.id} value={barber.id}>
-                    <div className="flex items-center gap-2">
-                      <div className="relative h-6 w-6">
+          {/* Step 1: Categoria */}
+          {currentStep === 1 && (
+            <div className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                {categories.map((category) => (
+                  <div
+                    key={category.id}
+                    className={`cursor-pointer rounded-lg border p-4 transition-all hover:border-primary ${
+                      selectedCategory?.id === category.id ? "border-primary bg-primary/10" : "border-border"
+                    }`}
+                    onClick={() => setSelectedCategory(category)}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="relative h-12 w-12">
+                        <Image
+                          src={category.IconUrl}
+                          alt={category.name}
+                          fill
+                          className="rounded-lg object-cover"
+                        />
+                      </div>
+                      <div>
+                        <h4 className="font-semibold text-white">{category.name}</h4>
+                        {category.description && (
+                          <p className="text-sm text-gray-400">{category.description}</p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              {selectedCategory && (
+                <div className="flex justify-end">
+                  <Button onClick={nextStep}>
+                    Continuar
+                  </Button>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Step 2: Serviço */}
+          {currentStep === 2 && (
+            <div className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                {filteredServices.map((service) => (
+                  <div
+                    key={service.id}
+                    className={`cursor-pointer rounded-lg border p-4 transition-all hover:border-primary ${
+                      selectedService?.id === service.id ? "border-primary bg-primary/10" : "border-border"
+                    }`}
+                    onClick={() => setSelectedService(service)}
+                  >
+                    <div className="relative mb-3 h-24 w-full">
+                      <Image
+                        src={service.imageUrl}
+                        alt={service.name}
+                        fill
+                        className="rounded-lg object-cover"
+                      />
+                    </div>
+                    <h4 className="mb-2 font-semibold text-white">{service.name}</h4>
+                    <p className="mb-2 text-sm text-gray-400">{service.description}</p>
+                    <div className="flex items-center justify-between">
+                      <span className="text-lg font-bold text-primary">
+                        {Intl.NumberFormat("pt-BR", {
+                          style: "currency",
+                          currency: "BRL",
+                        }).format(getLowestPrice(service))}
+                      </span>
+                      <Badge variant="secondary" className="text-xs">
+                        <Clock className="mr-1 h-3 w-3" />
+                        {service.duration}min
+                      </Badge>
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={prevStep}>
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Voltar
+                </Button>
+                {selectedService && (
+                  <Button onClick={nextStep}>
+                    Continuar
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Step 3: Barbeiro */}
+          {currentStep === 3 && (
+            <div className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                {filteredBarbers.map((barber) => (
+                  <div
+                    key={barber.id}
+                    className={`cursor-pointer rounded-lg border p-4 transition-all hover:border-primary ${
+                      selectBarber === barber.id ? "border-primary bg-primary/10" : "border-border"
+                    }`}
+                    onClick={() => setSelectBarber(barber.id)}
+                  >
+                    <div className="flex items-center gap-4">
+                      <div className="relative h-12 w-12">
                         <Image
                           src={barber.photo}
                           alt={barber.name}
@@ -349,30 +507,58 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
                           className="rounded-full object-cover"
                         />
                       </div>
-                      <span>{barber.name}</span>
+                      <div className="flex-1">
+                        <h4 className="font-semibold text-white">{barber.name}</h4>
+                        <p className="text-sm text-gray-400">Barbeiro Profissional</p>
+                      </div>
                     </div>
-                  </SelectItem>
+                  </div>
                 ))}
-              </SelectContent>
-            </Select>
-          </div>
+              </div>
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={prevStep}>
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Voltar
+                </Button>
+                {selectBarber && (
+                  <Button onClick={nextStep}>
+                    Continuar
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
 
-          {/* Date Selection */}
-          <div className="space-y-3">
-            <label className="text-sm font-medium text-white">Selecione a Data</label>
-            <Calendar
-              mode="single"
-              selected={selectedDate}
-              onSelect={handleDateSelect}
-              disabled={(date) => date < new Date()}
-              className="rounded-md border border-border bg-card"
-            />
-          </div>
+          {/* Step 4: Data */}
+          {currentStep === 4 && (
+            <div className="space-y-4">
+              <Calendar
+                mode="single"
+                selected={selectedDate}
+                onSelect={handleDateSelect}
+                disabled={(date) => date < new Date()}
+                className="rounded-md border border-border bg-card"
+                locale={ptBR}
+              />
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={prevStep}>
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Voltar
+                </Button>
+                {selectedDate && (
+                  <Button onClick={nextStep}>
+                    Continuar
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          )}
 
-          {/* Time Selection */}
-          {selectBarber && selectedDate && (
-            <div className="space-y-3">
-              <label className="text-sm font-medium text-white">Selecione o Horário</label>
+          {/* Step 5: Horário */}
+          {currentStep === 5 && (
+            <div className="space-y-4">
               <div className="grid grid-cols-4 gap-2 max-h-48 overflow-y-auto">
                 {availableTimes.map((time) => (
                   <Button
@@ -391,50 +577,81 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
                   Nenhum horário disponível para esta data
                 </p>
               )}
-            </div>
-          )}
-
-          {/* Summary */}
-          {selectBarber && selectedDate && selectedTime && (
-            <div className="rounded-lg border border-primary bg-primary/5 p-4">
-              <h4 className="mb-3 font-semibold text-white">Resumo do Agendamento</h4>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Barbeiro:</span>
-                  <span className="text-white">
-                    {barbers.find((b) => b.id === selectBarber)?.name || "Selecione um barbeiro"}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Data:</span>
-                  <span className="text-white">
-                    {selectedDate.toLocaleDateString("pt-BR", {
-                      weekday: "long",
-                      day: "numeric",
-                      month: "long",
-                    })}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Horário:</span>
-                  <span className="text-white">{selectedTime}</span>
-                </div>
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={prevStep}>
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Voltar
+                </Button>
+                {selectedTime && (
+                  <Button onClick={nextStep}>
+                    Continuar
+                    <ChevronRight className="h-4 w-4 ml-1" />
+                  </Button>
+                )}
               </div>
             </div>
           )}
 
-          {/* Action Buttons */}
-          <div className="flex justify-end gap-3">
-            <Button variant="outline" onClick={handleClose}>
-              Cancelar
-            </Button>
-            <Button
-              onClick={handleCreateBooking}
-              disabled={loading || !selectBarber || !selectedDate || !selectedTime}
-            >
-              {loading ? "Agendando..." : "Confirmar Agendamento"}
-            </Button>
-          </div>
+          {/* Step 6: Resumo */}
+          {currentStep === 6 && (
+            <div className="space-y-4">
+              <div className="rounded-lg border border-primary bg-primary/5 p-4">
+                <h4 className="mb-3 font-semibold text-white">Resumo do Agendamento</h4>
+                <div className="space-y-2 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Categoria:</span>
+                    <span className="text-white">{selectedCategory?.name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Serviço:</span>
+                    <span className="text-white">{selectedService?.name}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Barbeiro:</span>
+                    <span className="text-white">
+                      {barbers.find((b) => b.id === selectBarber)?.name}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Data:</span>
+                    <span className="text-white">
+                      {selectedDate?.toLocaleDateString("pt-BR", {
+                        weekday: "long",
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric"
+                      })}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-400">Horário:</span>
+                    <span className="text-white">{selectedTime}</span>
+                  </div>
+                  <div className="flex justify-between border-t border-border pt-2 mt-2">
+                    <span className="text-gray-400">Total:</span>
+                    <span className="text-primary font-semibold">
+                      {selectedService && Intl.NumberFormat("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      }).format(getLowestPrice(selectedService))}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="flex justify-between">
+                <Button variant="outline" onClick={prevStep}>
+                  <ChevronLeft className="h-4 w-4 mr-1" />
+                  Voltar
+                </Button>
+                <Button
+                  onClick={handleCreateBooking}
+                  disabled={loading}
+                >
+                  {loading ? "Agendando..." : "Confirmar Agendamento"}
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </DialogContent>
     </Dialog>

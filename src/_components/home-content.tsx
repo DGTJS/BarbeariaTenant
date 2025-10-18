@@ -257,6 +257,7 @@ const HomeContent = ({
         services={services}
         barbers={barbers}
         bookings={bookings}
+        categories={categories}
       />
     </>
   );

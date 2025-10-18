@@ -1,8 +1,11 @@
+"use client";
+
 import { BarberShopService } from "@/generated/prisma";
 import { AlarmClock, Calendar } from "lucide-react";
 import { Button } from "./ui/button";
 import Image from "next/image";
 import { Card, CardContent } from "./ui/card";
+import { useRouter } from "next/navigation";
 
 interface PriceAdjustment {
   priceAdjustment: number;
@@ -15,6 +18,13 @@ interface ServiceBarberCardProps {
 }
 
 const ServiceBarberCard = ({ service }: ServiceBarberCardProps) => {
+  const router = useRouter();
+
+  const handleBookingClick = () => {
+    // Passar o ID do serviço como query parameter
+    router.push(`/booking?serviceId=${service.id}`);
+  };
+
   return (
     <Card className="my-3 min-w-[calc(100%-10px)] border-indigo-950 p-0">
       <CardContent className="flex items-center gap-3 p-3">
@@ -53,7 +63,10 @@ const ServiceBarberCard = ({ service }: ServiceBarberCardProps) => {
                 }).format(final)} `;
               })()}
             </span>
-            <Button className="h-7 bg-indigo-950 px-2 text-xs text-white sm:h-9 sm:px-3 sm:text-sm">
+            <Button 
+              onClick={handleBookingClick}
+              className="h-7 bg-indigo-950 px-2 text-xs text-white sm:h-9 sm:px-3 sm:text-sm"
+            >
               <Calendar size={15} /> Agendar
             </Button>
           </div>

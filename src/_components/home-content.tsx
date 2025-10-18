@@ -6,60 +6,15 @@ import Appointments from "./appointments";
 import CategoryButtons from "./category-buttons";
 import FilteredSections from "./filtered-sections";
 import Search from "./search";
-
-interface Category {
-  id: string;
-  name: string;
-  IconUrl: string;
-}
-
-interface Barber {
-  id: string;
-  name: string;
-  photo: string;
-  phone: string | null;
-  categories: Array<{ id: string; name: string; IconUrl: string }>;
-  workingHours: Array<{
-    id: string;
-    barberId: string;
-    weekday: number;
-    startTime: string;
-    endTime: string;
-  }>;
-}
-
-interface Service {
-  id: string;
-  name: string;
-  price: any; // Decimal from Prisma
-  duration: number;
-  imageUrl: string;
-  categoryId: string | null;
-  description?: string;
-  priceAdjustments?: Array<{ priceAdjustment: any }>;
-}
-
-interface BarberShop {
-  id: string;
-  name: string;
-  address: string | null;
-  phone?: string;
-  imageUrl?: string | null;
-}
-
-interface Booking {
-  dateTime: Date;
-  service: { duration: number };
-  barberId: string;
-}
+import BookingModal from "./booking-modal";
 
 interface HomeContentProps {
   user: { name?: string | null } | null;
-  categories: Category[];
-  barbers: Barber[];
-  services: Service[];
-  barberShops: BarberShop[];
-  bookings: Booking[];
+  categories: any[];
+  barbers: any[];
+  services: any[];
+  barberShops: any[];
+  bookings: any[];
 }
 
 const HomeContent = ({
@@ -71,10 +26,14 @@ const HomeContent = ({
   bookings,
 }: HomeContentProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
   const handleCategoryChange = (categoryId: string | null) => {
     setSelectedCategory(categoryId);
+  };
+
+  const handleBookingClick = () => {
+    setIsBookingModalOpen(true);
   };
 
   return (
@@ -132,7 +91,7 @@ const HomeContent = ({
         <div className="mt-8">
           <FilteredSections
             selectedCategory={selectedCategory}
-            barbers={barbers.map(barber => ({ ...barber, bookings: [] }))}
+            barbers={barbers}
             services={services}
             barberShops={barberShops}
             bookings={bookings}
@@ -219,7 +178,7 @@ const HomeContent = ({
               <div className="mt-8">
                 <FilteredSections
                   selectedCategory={selectedCategory}
-                  barbers={barbers.map(barber => ({ ...barber, bookings: [] }))}
+                  barbers={barbers}
                   services={services}
                   barberShops={barberShops}
                   bookings={bookings}
@@ -271,7 +230,10 @@ const HomeContent = ({
                     Ações Rápidas
                   </h3>
                   <div className="space-y-3">
-                    <button className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90">
+                    <button 
+                      onClick={handleBookingClick}
+                      className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                    >
                       Agendar Serviço
                     </button>
                     <button className="w-full rounded-lg border border-border px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-accent">
@@ -287,6 +249,12 @@ const HomeContent = ({
           </div>
         </div>
       </div>
+
+      {/* Booking Modal */}
+      <BookingModal 
+        isOpen={isBookingModalOpen} 
+        onClose={() => setIsBookingModalOpen(false)} 
+      />
     </>
   );
 };

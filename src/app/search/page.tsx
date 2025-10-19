@@ -2,7 +2,7 @@
 import CardBarbers from "@/_components/CardBarbers";
 import CardBarber from "@/_components/cardBarberShop";
 import CardServices from "@/_components/cardServices";
-import Header from "@/_components/header";
+import HeaderWrapper from "@/_components/header-wrapper";
 import { db } from "@/_lib/prisma";
 import Search from "@/_components/search";
 
@@ -96,7 +96,11 @@ const SearchPage = async ({ searchParams }: SearchPageProps) => {
   return (
     <>
       <div>
-        <Header />
+        <HeaderWrapper 
+          categories={[]} 
+          user={null}
+          bookings={[]}
+        />
         <div className="my-6 px-3">
           <Search />
           <h2 className="mt-4 text-xs font-bold text-gray-400 uppercase">

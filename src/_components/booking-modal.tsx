@@ -71,9 +71,11 @@ interface BookingModalProps {
   barbers: BarberWithWorkingHours[];
   bookings: Booking[];
   categories: Category[];
+  preselectedService?: Service | null;
+  preselectedBarber?: BarberWithWorkingHours | null;
 }
 
-export default function BookingModal({ isOpen, onClose, services, barbers, bookings, categories }: BookingModalProps) {
+export default function BookingModal({ isOpen, onClose, services, barbers, bookings, categories, preselectedService, preselectedBarber }: BookingModalProps) {
   const { data: session, status } = useSession();
   const [currentStep, setCurrentStep] = useState(1);
   const [selectedCategory, setSelectedCategory] = useState<Category | null>(null);
@@ -87,15 +89,26 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
 
   useEffect(() => {
     if (isOpen) {
-      setCurrentStep(1);
-      setSelectedCategory(null);
-      setSelectedService(null);
-      setSelectBarber("");
+      if (preselectedService && preselectedBarber) {
+        // Se temos serviço e barbeiro pré-selecionados, começar no step 4 (Data)
+        setCurrentStep(4);
+        setSelectedService(preselectedService);
+        setSelectBarber(preselectedBarber.id);
+        // Encontrar a categoria do serviço
+        const serviceCategory = categories.find(cat => cat.id === preselectedService.categoryId);
+        setSelectedCategory(serviceCategory || null);
+      } else {
+        // Fluxo normal começando no step 1
+        setCurrentStep(1);
+        setSelectedCategory(null);
+        setSelectedService(null);
+        setSelectBarber("");
+      }
       setSelectedDate(undefined);
       setSelectedTime(undefined);
       setAvailableTimes([]);
     }
-  }, [isOpen]);
+  }, [isOpen, preselectedService?.id, preselectedBarber?.id, categories.length]);
 
   useEffect(() => {
     if (!selectBarber || !selectedDate) {
@@ -334,7 +347,7 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+        <DialogHeader className="pb-0">
           <DialogTitle className="flex items-center gap-2 text-white">
             {getStepIcon()}
             {getStepTitle()}

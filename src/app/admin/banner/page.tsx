@@ -6,6 +6,7 @@ import { Button } from "@/_components/ui/button";
 import { Input } from "@/_components/ui/input";
 import { Label } from "@/_components/ui/label";
 import { Badge } from "@/_components/ui/badge";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/_components/ui/dialog";
 import { 
   Upload, 
   Image as ImageIcon, 
@@ -13,7 +14,10 @@ import {
   Eye,
   Save,
   Plus,
-  Loader2
+  Loader2,
+  X,
+  Edit,
+  CheckCircle
 } from "lucide-react";
 // Removido import das funções do Prisma - agora usando API routes
 
@@ -32,8 +36,21 @@ export default function BannerConfig() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [viewingBanner, setViewingBanner] = useState<Banner | null>(null);
+  const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
+  const [deletingBanner, setDeletingBanner] = useState<string | null>(null);
+  const [bannerToDelete, setBannerToDelete] = useState<Banner | null>(null);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const [newBanner, setNewBanner] = useState({
+    title: "",
+    subtitle: "",
+    imageUrl: "",
+    isActive: true,
+    order: 1
+  });
+
+  const [editBanner, setEditBanner] = useState({
     title: "",
     subtitle: "",
     imageUrl: "",
@@ -95,23 +112,40 @@ export default function BannerConfig() {
     }
   };
 
-  const handleDeleteBanner = async (id: string) => {
-    if (confirm('Tem certeza que deseja deletar este banner?')) {
-      try {
-        const response = await fetch(`/api/admin/banners?id=${id}`, {
-          method: 'DELETE'
-        });
+  const handleDeleteBanner = (banner: Banner) => {
+    setBannerToDelete(banner);
+  };
 
-        if (!response.ok) {
-          throw new Error('Erro ao deletar banner');
-        }
+  const confirmDeleteBanner = async () => {
+    if (!bannerToDelete) return;
 
-        await loadBanners(); // Recarregar lista
-      } catch (error) {
-        console.error('Erro ao deletar banner:', error);
-        alert('Erro ao deletar banner');
+    try {
+      setDeletingBanner(bannerToDelete.id);
+      const response = await fetch(`/api/admin/banners?id=${bannerToDelete.id}`, {
+        method: 'DELETE'
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao deletar banner');
       }
+
+      await loadBanners(); // Recarregar lista
+      setBannerToDelete(null);
+      setShowSuccessModal(true);
+    } catch (error) {
+      console.error('Erro ao deletar banner:', error);
+      alert('Erro ao deletar banner. Tente novamente.');
+    } finally {
+      setDeletingBanner(null);
     }
+  };
+
+  const cancelDeleteBanner = () => {
+    setBannerToDelete(null);
+  };
+
+  const closeSuccessModal = () => {
+    setShowSuccessModal(false);
   };
 
   const handleToggleBannerStatus = async (id: string) => {
@@ -141,12 +175,67 @@ export default function BannerConfig() {
     }
   };
 
+  const handleViewBanner = (banner: Banner) => {
+    setViewingBanner(banner);
+  };
+
+  const handleEditBanner = (banner: Banner) => {
+    setEditingBanner(banner);
+    setEditBanner({
+      title: banner.title,
+      subtitle: banner.subtitle,
+      imageUrl: banner.imageUrl,
+      isActive: banner.isActive,
+      order: banner.order
+    });
+  };
+
+  const handleUpdateBanner = async () => {
+    if (!editingBanner) return;
+
+    try {
+      setSaving(true);
+      const response = await fetch('/api/admin/banners', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          id: editingBanner.id,
+          ...editBanner
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro ao atualizar banner');
+      }
+
+      await loadBanners();
+      setEditingBanner(null);
+      alert('Banner atualizado com sucesso!');
+    } catch (error) {
+      console.error('Erro ao atualizar banner:', error);
+      alert('Erro ao atualizar banner. Tente novamente.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
       // Aqui você implementaria o upload real da imagem
       const imageUrl = URL.createObjectURL(file);
       setNewBanner({ ...newBanner, imageUrl });
+    }
+  };
+
+  const handleEditImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      // Aqui você implementaria o upload real da imagem
+      const imageUrl = URL.createObjectURL(file);
+      setEditBanner({ ...editBanner, imageUrl });
     }
   };
 
@@ -290,16 +379,40 @@ export default function BannerConfig() {
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleToggleBannerStatus(banner.id)}
+                          onClick={() => handleViewBanner(banner)}
+                          title="Visualizar banner"
                         >
                           <Eye className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => handleDeleteBanner(banner.id)}
+                          onClick={() => handleEditBanner(banner)}
+                          title="Editar banner"
                         >
-                          <Trash2 className="h-4 w-4" />
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleToggleBannerStatus(banner.id)}
+                          title={banner.isActive ? "Desativar banner" : "Ativar banner"}
+                        >
+                          {banner.isActive ? "Desativar" : "Ativar"}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleDeleteBanner(banner)}
+                          disabled={deletingBanner === banner.id}
+                          title="Deletar banner"
+                          className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          {deletingBanner === banner.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            <Trash2 className="h-4 w-4" />
+                          )}
                         </Button>
                       </div>
                     </div>
@@ -320,6 +433,293 @@ export default function BannerConfig() {
           </Card>
         </div>
       </div>
+
+      {/* Modal de Visualização */}
+      <Dialog open={!!viewingBanner} onOpenChange={() => setViewingBanner(null)}>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <span>Visualizar Banner</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setViewingBanner(null)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+          
+          {viewingBanner && (
+            <div className="space-y-6">
+              <div className="relative h-64 w-full overflow-hidden rounded-lg">
+                <img
+                  src={viewingBanner.imageUrl}
+                  alt={viewingBanner.title}
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
+                <div className="absolute bottom-4 left-4 text-white">
+                  <h3 className="text-2xl font-bold">{viewingBanner.title}</h3>
+                  <p className="text-base opacity-90">{viewingBanner.subtitle}</p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-semibold">Título</Label>
+                  <p className="text-sm text-muted-foreground">{viewingBanner.title}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-semibold">Subtítulo</Label>
+                  <p className="text-sm text-muted-foreground">{viewingBanner.subtitle}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-semibold">Status</Label>
+                  <Badge variant={viewingBanner.isActive ? "default" : "secondary"}>
+                    {viewingBanner.isActive ? "Ativo" : "Inativo"}
+                  </Badge>
+                </div>
+                <div>
+                  <Label className="text-sm font-semibold">Ordem</Label>
+                  <p className="text-sm text-muted-foreground">{viewingBanner.order}</p>
+                </div>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Edição */}
+      <Dialog open={!!editingBanner} onOpenChange={() => setEditingBanner(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-between">
+              <span>Editar Banner</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setEditingBanner(null)}
+              >
+                <X className="h-4 w-4" />
+              </Button>
+            </DialogTitle>
+          </DialogHeader>
+          
+          {editingBanner && (
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="edit-title">Título</Label>
+                <Input
+                  id="edit-title"
+                  value={editBanner.title}
+                  onChange={(e) => setEditBanner({ ...editBanner, title: e.target.value })}
+                  placeholder="Digite o título do banner"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="edit-subtitle">Subtítulo</Label>
+                <Input
+                  id="edit-subtitle"
+                  value={editBanner.subtitle}
+                  onChange={(e) => setEditBanner({ ...editBanner, subtitle: e.target.value })}
+                  placeholder="Digite o subtítulo do banner"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="edit-image">Imagem</Label>
+                <div className="flex items-center space-x-2">
+                  <Input
+                    id="edit-image"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleEditImageUpload}
+                    className="hidden"
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={() => document.getElementById('edit-image')?.click()}
+                    className="w-full"
+                  >
+                    <Upload className="h-4 w-4 mr-2" />
+                    Alterar Imagem
+                  </Button>
+                </div>
+                {editBanner.imageUrl && (
+                  <div className="mt-2">
+                    <img
+                      src={editBanner.imageUrl}
+                      alt="Preview"
+                      className="w-full h-32 object-cover rounded-lg"
+                    />
+                  </div>
+                )}
+              </div>
+
+              <div>
+                <Label htmlFor="edit-order">Ordem</Label>
+                <Input
+                  id="edit-order"
+                  type="number"
+                  value={editBanner.order}
+                  onChange={(e) => setEditBanner({ ...editBanner, order: parseInt(e.target.value) })}
+                  min="1"
+                />
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <input
+                  type="checkbox"
+                  id="edit-active"
+                  checked={editBanner.isActive}
+                  onChange={(e) => setEditBanner({ ...editBanner, isActive: e.target.checked })}
+                  className="rounded"
+                />
+                <Label htmlFor="edit-active">Banner ativo</Label>
+              </div>
+
+              <div className="flex space-x-2 pt-4">
+                <Button
+                  onClick={handleUpdateBanner}
+                  disabled={saving}
+                  className="flex-1"
+                >
+                  {saving ? (
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4 mr-2" />
+                  )}
+                  {saving ? "Salvando..." : "Salvar Alterações"}
+                </Button>
+                <Button
+                  variant="outline"
+                  onClick={() => setEditingBanner(null)}
+                >
+                  Cancelar
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Confirmação de Deleção */}
+      <Dialog open={!!bannerToDelete} onOpenChange={() => setBannerToDelete(null)}>
+        <DialogContent className="max-w-md bg-background border-border">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <Trash2 className="h-5 w-5" />
+              Confirmar Exclusão
+            </DialogTitle>
+          </DialogHeader>
+          
+          {bannerToDelete && (
+            <div className="space-y-4">
+              <div className="text-center">
+                <div className="mx-auto mb-4 p-3 bg-destructive/10 rounded-full w-fit">
+                  <Trash2 className="h-8 w-8 text-destructive" />
+                </div>
+                <h3 className="text-lg font-semibold text-foreground mb-2">
+                  Tem certeza que deseja deletar este banner?
+                </h3>
+                <p className="text-sm text-muted-foreground mb-4">
+                  Esta ação não pode ser desfeita.
+                </p>
+              </div>
+
+              {/* Preview do banner que será deletado */}
+              <div className="border border-border rounded-lg p-3 bg-muted/50">
+                <div className="flex items-center gap-3">
+                  {bannerToDelete.imageUrl && (
+                    <img
+                      src={bannerToDelete.imageUrl}
+                      alt={bannerToDelete.title}
+                      className="w-16 h-16 object-cover rounded-lg"
+                    />
+                  )}
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-foreground">{bannerToDelete.title}</h4>
+                    <p className="text-sm text-muted-foreground">{bannerToDelete.subtitle}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Badge variant={bannerToDelete.isActive ? "default" : "secondary"}>
+                        {bannerToDelete.isActive ? "Ativo" : "Inativo"}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">Ordem: {bannerToDelete.order}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex space-x-3 pt-4">
+                <Button
+                  variant="outline"
+                  onClick={cancelDeleteBanner}
+                  className="flex-1"
+                  disabled={deletingBanner === bannerToDelete.id}
+                >
+                  Cancelar
+                </Button>
+                <Button
+                  variant="destructive"
+                  onClick={confirmDeleteBanner}
+                  disabled={deletingBanner === bannerToDelete.id}
+                  className="flex-1"
+                >
+                  {deletingBanner === bannerToDelete.id ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Deletando...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Deletar Banner
+                    </>
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal de Sucesso */}
+      <Dialog open={showSuccessModal} onOpenChange={() => setShowSuccessModal(false)}>
+        <DialogContent className="max-w-md bg-background border-border">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-green-600">
+              <CheckCircle className="h-5 w-5" />
+              Banner Deletado
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="space-y-4">
+            <div className="text-center">
+              <div className="mx-auto mb-4 p-3 bg-green-100 dark:bg-green-900/20 rounded-full w-fit">
+                <CheckCircle className="h-8 w-8 text-green-600 dark:text-green-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-foreground mb-2">
+                Banner deletado com sucesso!
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                O banner foi removido permanentemente da base de dados.
+              </p>
+            </div>
+
+            <div className="flex justify-center pt-4">
+              <Button
+                onClick={closeSuccessModal}
+                className="px-8"
+              >
+                <CheckCircle className="h-4 w-4 mr-2" />
+                Entendi
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

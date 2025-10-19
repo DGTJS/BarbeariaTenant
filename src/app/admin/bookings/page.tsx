@@ -121,14 +121,14 @@ export default function BookingsManagement() {
       
       // Calcular estatísticas
       const total = data.length;
-      const confirmed = data.filter((b: Booking) => b.status === "Confirmada").length;
+      const confirmed = data.filter((b: Booking) => b.status === "Confirmado").length;
       const pending = data.filter((b: Booking) => b.status === "Pendente").length;
       const cancelled = data.filter((b: Booking) => b.status === "Cancelada").length;
       const todayRevenue = data
         .filter((b: Booking) => {
           const bookingDate = new Date(b.dateTime);
           const today = new Date();
-          return bookingDate.toDateString() === today.toDateString() && b.status === "Confirmada";
+          return bookingDate.toDateString() === today.toDateString() && b.status === "Confirmado";
         })
         .reduce((sum: number, b: Booking) => sum + b.service.price, 0);
       const avgRating = data
@@ -276,7 +276,7 @@ export default function BookingsManagement() {
     const normalizedStatus = status.toUpperCase();
     switch (normalizedStatus) {
       case "CONFIRMED":
-      case "CONFIRMADA":
+      case "CONFIRMADO":
         return "bg-emerald-500";
       case "PENDING":
       case "PENDENTE":
@@ -293,7 +293,7 @@ export default function BookingsManagement() {
     const normalizedStatus = status.toUpperCase();
     switch (normalizedStatus) {
       case "CONFIRMED":
-      case "CONFIRMADA":
+      case "CONFIRMADO":
         return <CheckCircle className="h-4 w-4" />;
       case "PENDING":
       case "PENDENTE":
@@ -310,7 +310,7 @@ export default function BookingsManagement() {
     const normalizedStatus = status.toUpperCase();
     switch (normalizedStatus) {
       case "CONFIRMED":
-      case "CONFIRMADA":
+      case "CONFIRMADO":
         return "Confirmado";
       case "PENDING":
       case "PENDENTE":
@@ -395,7 +395,7 @@ export default function BookingsManagement() {
                 className="px-4 py-2 border border-input bg-background rounded-md text-sm"
               >
                 <option value="all">Todos</option>
-                <option value="Confirmada">Confirmados</option>
+                <option value="Confirmado">Confirmados</option>
                 <option value="Pendente">Pendentes</option>
                 <option value="Cancelada">Cancelados</option>
               </select>
@@ -549,7 +549,7 @@ export default function BookingsManagement() {
                           </AvatarFallback>
                         </Avatar>
                         <Badge 
-                          variant={booking.status.toUpperCase() === "CONFIRMED" || booking.status === "Confirmada" ? "default" : 
+                          variant={booking.status.toUpperCase() === "CONFIRMED" || booking.status === "Confirmado" ? "default" : 
                                   booking.status.toUpperCase() === "PENDING" || booking.status === "Pendente" ? "secondary" : "destructive"}
                           className="flex items-center space-x-1 px-1.5 py-0.5 text-xs shadow-sm"
                         >
@@ -607,7 +607,7 @@ export default function BookingsManagement() {
                         {(() => {
                           const normalizedStatus = booking.status.toUpperCase();
                           const canCancel = normalizedStatus === "PENDING" || normalizedStatus === "PENDENTE" || 
-                                           normalizedStatus === "CONFIRMED" || normalizedStatus === "CONFIRMADA";
+                                           normalizedStatus === "CONFIRMED" || normalizedStatus === "CONFIRMADO";
                           return canCancel;
                         })() && (
                           <div className="flex space-x-1">
@@ -621,7 +621,7 @@ export default function BookingsManagement() {
                                 size="sm"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleStatusChange(booking.id, "Confirmada");
+                                  handleStatusChange(booking.id, "Confirmado");
                                 }}
                                 disabled={loadingBookings.has(booking.id)}
                                 className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-6 px-2"
@@ -691,7 +691,7 @@ export default function BookingsManagement() {
                         
                         <div className="flex items-center space-x-3">
                           <Badge 
-                            variant={booking.status.toUpperCase() === "CONFIRMED" || booking.status === "Confirmada" ? "default" : 
+                            variant={booking.status.toUpperCase() === "CONFIRMED" || booking.status === "Confirmado" ? "default" : 
                                     booking.status.toUpperCase() === "PENDING" || booking.status === "Pendente" ? "secondary" : "destructive"}
                             className="flex items-center space-x-1 px-3 py-1"
                           >
@@ -785,7 +785,7 @@ export default function BookingsManagement() {
                         {(() => {
                           const normalizedStatus = booking.status.toUpperCase();
                           const canCancel = normalizedStatus === "PENDING" || normalizedStatus === "PENDENTE" || 
-                                           normalizedStatus === "CONFIRMED" || normalizedStatus === "CONFIRMADA";
+                                           normalizedStatus === "CONFIRMED" || normalizedStatus === "CONFIRMADO";
                           return canCancel;
                         })() && (
                           <>
@@ -799,7 +799,7 @@ export default function BookingsManagement() {
                               size="sm"
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  handleStatusChange(booking.id, "Confirmada");
+                                  handleStatusChange(booking.id, "Confirmado");
                                 }}
                                 disabled={loadingBookings.has(booking.id)}
                                 className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-md hover:shadow-lg transition-all duration-200"

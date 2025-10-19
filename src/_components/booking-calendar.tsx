@@ -87,7 +87,7 @@ export default function BookingCalendar({ bookings, onDateSelect }: BookingCalen
 
   const getStatusColor = useCallback((status: string) => {
     switch (status) {
-      case "Confirmada":
+      case "Confirmado":
         return "bg-emerald-500";
       case "Pendente":
         return "bg-amber-500";
@@ -101,9 +101,9 @@ export default function BookingCalendar({ bookings, onDateSelect }: BookingCalen
   const getStatusText = useCallback((status: string) => {
     const normalizedStatus = status.toLowerCase();
     switch (normalizedStatus) {
-      case "confirmada":
+      case "confirmado":
       case "confirmed":
-        return "Confirmada";
+        return "Confirmado";
       case "pendente":
       case "pending":
         return "Agendado";
@@ -263,7 +263,7 @@ export default function BookingCalendar({ bookings, onDateSelect }: BookingCalen
                         })}
                       </p>
                       <Badge
-                        variant={booking.status === "Confirmada" ? "default" : 
+                        variant={booking.status === "Confirmado" ? "default" : 
                                 booking.status === "Pendente" ? "secondary" : "destructive"}
                         className="text-xs"
                       >

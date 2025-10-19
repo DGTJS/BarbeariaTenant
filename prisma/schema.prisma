@@ -1,9 +1,3 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 generator client {
   provider = "prisma-client-js"
   output   = "../src/generated/prisma"
@@ -20,15 +14,14 @@ model Account {
   type              String
   provider          String
   providerAccountId String  @map("provider_account_id")
-  refresh_token     String? @db.Text
-  access_token      String? @db.Text
+  refresh_token     String?
+  access_token      String?
   expires_at        Int?
   token_type        String?
   scope             String?
-  id_token          String? @db.Text
+  id_token          String?
   session_state     String?
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([provider, providerAccountId])
   @@map("accounts")
@@ -49,17 +42,17 @@ model User {
   email         String    @unique
   emailVerified DateTime? @map("email_verified")
   name          String?
-  image         String?
   phone         String?
   googleId      String?   @unique
   password      String?
-  booking       booking[]
-  barber        barber?
-  accounts      Account[]
-  sessions      Session[]
-  role          String    @default("Cliente") // Permissão: Cliente, Admin, Barbeiro
+  role          String    @default("Cliente")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @default(now()) @updatedAt
+  image         String?
+  accounts      Account[]
+  barber        barber?
+  booking       booking[]
+  sessions      Session[]
 
   @@map("users")
 }
@@ -77,60 +70,60 @@ model BarberShop {
   id          String              @id @default(uuid())
   name        String
   address     String?
-  phones      String[]
-  imageUrl    String?
-  rating      String?
   description String?
-  services    BarberShopService[]
-  barbers     barber[]
   status      Boolean             @default(true)
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @default(now()) @updatedAt
+  imageUrl    String?
+  phones      String[]
+  rating      String?
+  services    BarberShopService[]
+  barbers     barber[]
 }
 
 model BarberCategory {
   id          String              @id @default(uuid())
   name        String
   IconUrl     String
-  services    BarberShopService[]
-  barbers     barber[]            @relation("BarberToCategory")
   description String?
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @default(now()) @updatedAt
+  services    BarberShopService[]
+  barbers     barber[]            @relation("BarberToCategory")
 }
 
 model BarberShopService {
   id               String                   @id @default(uuid())
-  barberShop       BarberShop               @relation(fields: [barberShopId], references: [id])
   barberShopId     String
-  booking          booking[]
-  categoryId       String?
-  category         BarberCategory?          @relation(fields: [categoryId], references: [id])
   name             String
   description      String?
   price            Decimal                  @db.Decimal(10, 2)
-  duration         Int // Duration in minutes
-  imageUrl         String
-  priceAdjustments ServicePriceAdjustment[]
+  duration         Int
   status           Boolean                  @default(true)
   createdAt        DateTime                 @default(now())
   updatedAt        DateTime                 @default(now()) @updatedAt
+  imageUrl         String
+  categoryId       String?
+  barberShop       BarberShop               @relation(fields: [barberShopId], references: [id])
+  category         BarberCategory?          @relation(fields: [categoryId], references: [id])
+  priceAdjustments ServicePriceAdjustment[]
+  booking          booking[]
 }
 
 model booking {
   id        String            @id @default(uuid())
   userId    String
-  user      User              @relation(fields: [userId], references: [id])
-  serviceId String
-  service   BarberShopService @relation(fields: [serviceId], references: [id])
-  barberId  String
-  barber    barber            @relation(fields: [barberId], references: [id])
   dateTime  DateTime
-  rating    Int? // ⭐ Avaliação de 1 a 5
-  comment   String? // 💬 Comentário opcional do cliente
-  status    String            @default("Pendente") // Status: Pendente, Confirmada, Cancelada
+  status    String            @default("Pendente")
   createdAt DateTime          @default(now())
   updatedAt DateTime          @default(now()) @updatedAt
+  serviceId String
+  barberId  String
+  comment   String?
+  rating    Int?
+  barber    barber            @relation(fields: [barberId], references: [id])
+  service   BarberShopService @relation(fields: [serviceId], references: [id])
+  user      User              @relation(fields: [userId], references: [id])
 }
 
 model barber {
@@ -139,44 +132,44 @@ model barber {
   phone           String?
   photo           String
   userId          String                   @unique
-  user            User                     @relation(fields: [userId], references: [id])
-  booking         booking[]
-  priceAdjustment ServicePriceAdjustment[]
   barberShopId    String
-  barberShop      BarberShop               @relation(fields: [barberShopId], references: [id])
-  categories      BarberCategory[]         @relation("BarberToCategory")
-  workingHours    BarberWorkingHour[]      // Horários de trabalho do barbeiro
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @default(now()) @updatedAt
+  workingHours    BarberWorkingHour[]
+  priceAdjustment ServicePriceAdjustment[]
+  barberShop      BarberShop               @relation(fields: [barberShopId], references: [id])
+  user            User                     @relation(fields: [userId], references: [id])
+  booking         booking[]
+  categories      BarberCategory[]         @relation("BarberToCategory")
 }
 
 model ServicePriceAdjustment {
   id              String            @id @default(uuid())
   serviceId       String
-  service         BarberShopService @relation(fields: [serviceId], references: [id])
   barberId        String
-  barber          barber            @relation(fields: [barberId], references: [id])
   priceAdjustment Decimal           @db.Decimal(10, 2)
   createAt        DateTime          @default(now())
   updateAt        DateTime          @default(now()) @updatedAt
+  barber          barber            @relation(fields: [barberId], references: [id])
+  service         BarberShopService @relation(fields: [serviceId], references: [id])
 }
 
 model BarberWorkingHour {
-  id        String   @id @default(uuid())
+  id        String  @id @default(uuid())
   barberId  String
-  barber    barber   @relation(fields: [barberId], references: [id])
-  weekday   Int      // 0 = Domingo, 1 = Segunda, ..., 6 = Sábado
-  startTime String   // "09:00"
-  endTime   String   // "18:00"
-  pauses    Pause[]  // Relação com as pausas desse dia
+  weekday   Int
+  startTime String
+  endTime   String
+  barber    barber  @relation(fields: [barberId], references: [id])
+  pauses    Pause[]
 }
 
 model Pause {
-  id        String   @id @default(uuid())
+  id            String            @id @default(uuid())
   workingHourId String
+  startTime     String
+  endTime       String
   workingHour   BarberWorkingHour @relation(fields: [workingHourId], references: [id])
-  startTime String   // "12:00"
-  endTime   String   // "13:00"
 }
 
 model Banner {
@@ -194,7 +187,7 @@ model SiteConfig {
   id        String   @id @default(uuid())
   key       String   @unique
   value     String
-  type      String   @default("string") // string, color, number, boolean
+  type      String   @default("string")
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
 }

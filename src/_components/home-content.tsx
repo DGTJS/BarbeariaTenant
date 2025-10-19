@@ -7,6 +7,9 @@ import CategoryButtons from "./category-buttons";
 import FilteredSections from "./filtered-sections";
 import Search from "./search";
 import BookingModal from "./booking-modal";
+import HistoryModal from "./history-modal";
+import FavoritesModal from "./favorites-modal";
+import BannerCarousel from "./banner-carousel";
 
 interface HomeContentProps {
   user: { name?: string | null } | null;
@@ -15,6 +18,7 @@ interface HomeContentProps {
   services?: any[];
   barberShops?: any[];
   bookings?: any[];
+  banners?: any[];
 }
 
 const HomeContent = ({
@@ -24,9 +28,12 @@ const HomeContent = ({
   services = [],
   barberShops = [],
   bookings = [],
+  banners = [],
 }: HomeContentProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
+  const [isHistoryModalOpen, setIsHistoryModalOpen] = useState(false);
+  const [isFavoritesModalOpen, setIsFavoritesModalOpen] = useState(false);
 
   const handleCategoryChange = (categoryId: string | null) => {
     setSelectedCategory(categoryId);
@@ -34,6 +41,14 @@ const HomeContent = ({
 
   const handleBookingClick = () => {
     setIsBookingModalOpen(true);
+  };
+
+  const handleHistoryClick = () => {
+    setIsHistoryModalOpen(true);
+  };
+
+  const handleFavoritesClick = () => {
+    setIsFavoritesModalOpen(true);
   };
 
   return (
@@ -71,21 +86,16 @@ const HomeContent = ({
           />
         </div>
 
-        {/* BANNER */}
-        <div className="relative mt-5 h-[190px] w-full">
-          <Image
-            src="/banner-01.png"
-            alt="Banner"
-            fill
-            className="rounded-lg object-cover"
-          />
+        {/* BANNER CAROUSEL */}
+        <div className="mt-5">
+          <BannerCarousel banners={banners} />
         </div>
 
         {/* AGENDAMENTOS */}
                 <h2 className="font mt-5 text-sm font-semibold text-gray-400 uppercase">
                   Agendamentos
                 </h2>
-                <Appointments bookings={bookings} />
+                <Appointments bookings={bookings} user={user} />
 
         {/* Filtered Sections */}
         <div className="mt-8">
@@ -157,20 +167,8 @@ const HomeContent = ({
 
               {/* Banner Section */}
               <section className="mb-12">
-                <div className="relative h-64 w-full overflow-hidden rounded-2xl bg-gradient-to-r from-primary/20 to-secondary/20">
-                  <Image
-                    src="/banner-01.png"
-                    alt="Banner"
-                    fill
-                    className="object-cover"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
-                  <div className="absolute bottom-6 left-6 text-white">
-                    <h3 className="text-2xl font-bold">Promoções Especiais</h3>
-                    <p className="text-sm opacity-90">
-                      Agende seu horário e aproveite nossas ofertas
-                    </p>
-                  </div>
+                <div className="h-64 w-full overflow-hidden rounded-2xl">
+                  <BannerCarousel banners={banners} />
                 </div>
               </section>
 
@@ -194,7 +192,7 @@ const HomeContent = ({
                           <h3 className="mb-4 text-lg font-semibold text-white">
                             Próximos Agendamentos
                           </h3>
-                          <Appointments bookings={bookings} />
+                          <Appointments bookings={bookings} user={user} />
                         </div>
 
                 {/* Quick Stats */}
@@ -236,10 +234,16 @@ const HomeContent = ({
                     >
                       Agendar Serviço
                     </button>
-                    <button className="w-full rounded-lg border border-border px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-accent">
+                    <button 
+                      onClick={handleHistoryClick}
+                      className="w-full rounded-lg border border-border px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-accent"
+                    >
                       Ver Histórico
                     </button>
-                    <button className="w-full rounded-lg border border-border px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-accent">
+                    <button 
+                      onClick={handleFavoritesClick}
+                      className="w-full rounded-lg border border-border px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-accent"
+                    >
                       Favoritos
                     </button>
                   </div>
@@ -258,6 +262,22 @@ const HomeContent = ({
         barbers={barbers}
         bookings={bookings}
         categories={categories}
+      />
+
+      {/* History Modal */}
+      <HistoryModal
+        isOpen={isHistoryModalOpen}
+        onClose={() => setIsHistoryModalOpen(false)}
+        user={user}
+        bookings={bookings}
+      />
+
+      {/* Favorites Modal */}
+      <FavoritesModal
+        isOpen={isFavoritesModalOpen}
+        onClose={() => setIsFavoritesModalOpen(false)}
+        user={user}
+        barbers={barbers}
       />
     </>
   );

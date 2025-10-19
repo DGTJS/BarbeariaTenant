@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Nunito } from "next/font/google";
 import "./globals.css";
+import "@/_styles/scrollbar.css";
 import AuthProviders from "@/_providers/auth";
 import FooterBar from "@/_components/footerbar";
 import { Toaster } from "sonner";

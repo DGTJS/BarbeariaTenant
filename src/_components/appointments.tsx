@@ -1,46 +1,32 @@
-import { memo } from "react";
+import { memo, useState } from "react";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
 import { Button } from "./ui/button";
 import { Calendar, Clock, MapPin, Eye } from "lucide-react";
 import { useRouter } from "next/navigation";
-
-interface Booking {
-  id: string;
-  dateTime: Date;
-  status: string;
-  comment: string | null;
-  user: {
-    id: string;
-    name: string | null;
-    image: string | null;
-  };
-  barber: {
-    id: string;
-    name: string;
-    photo: string;
-  };
-  service: {
-    id: string;
-    name: string;
-    duration: number;
-  };
-}
+import AppointmentsModal from "./appointments-modal";
+import { Booking } from "@/_types/booking";
 
 interface AppointmentsProps {
   bookings?: Booking[];
+  user?: { name?: string | null; id?: string } | null;
 }
 
-const Appointments = memo(({ bookings = [] }: AppointmentsProps) => {
+const Appointments = memo(({ bookings = [], user }: AppointmentsProps) => {
   const router = useRouter();
+  const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Os agendamentos já vêm filtrados e ordenados da query
   // Mostrar apenas os próximos 3 agendamentos
   const upcomingBookings = bookings.slice(0, 3);
   
   const handleViewAllAppointments = () => {
-    router.push('/booking');
+    if (!user) {
+      router.push('/api/auth/signin');
+    } else {
+      setIsModalOpen(true);
+    }
   };
 
   if (upcomingBookings.length === 0) {
@@ -49,21 +35,43 @@ const Appointments = memo(({ bookings = [] }: AppointmentsProps) => {
         {/* No appointments message */}
         <div className="rounded-lg border border-dashed border-border/50 p-6 text-center">
           <Calendar className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
-          <p className="text-sm text-muted-foreground">
-            Nenhum agendamento próximo
-          </p>
-          <p className="text-xs text-muted-foreground mb-4">
-            Agende um horário para aparecer aqui
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleViewAllAppointments}
-            className="border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/50 transition-all duration-200"
-          >
-            <Eye className="h-4 w-4 mr-2" />
-            Ver todos os agendamentos
-          </Button>
+          {!user ? (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Faça login para ver seus agendamentos
+              </p>
+              <p className="text-xs text-muted-foreground mb-4">
+                Entre com sua conta para acessar seus agendamentos
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => router.push('/api/auth/signin')}
+                className="border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/50 transition-all duration-200"
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                Fazer login
+              </Button>
+            </>
+          ) : (
+            <>
+              <p className="text-sm text-muted-foreground">
+                Nenhum agendamento próximo
+              </p>
+              <p className="text-xs text-muted-foreground mb-4">
+                Agende um horário para aparecer aqui
+              </p>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleViewAllAppointments}
+                className="border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/50 transition-all duration-200"
+              >
+                <Eye className="h-4 w-4 mr-2" />
+                Ver todos os agendamentos
+              </Button>
+            </>
+          )}
         </div>
       </div>
     );
@@ -84,18 +92,21 @@ const Appointments = memo(({ bookings = [] }: AppointmentsProps) => {
           const normalizedStatus = status.toUpperCase();
           switch (normalizedStatus) {
             case 'CONFIRMED':
+            case 'CONFIRMADO':
               return (
                 <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
                   Confirmado
                 </Badge>
               );
             case 'PENDING':
+            case 'PENDENTE':
               return (
                 <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
                   Agendado
                 </Badge>
               );
             case 'CANCELLED':
+            case 'CANCELADO':
               return (
                 <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
                   Cancelado
@@ -178,6 +189,14 @@ const Appointments = memo(({ bookings = [] }: AppointmentsProps) => {
           </Button>
         </div>
       )}
+      
+      {/* Modal para ver todos os agendamentos */}
+      <AppointmentsModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        user={user || null}
+        bookings={bookings}
+      />
     </div>
   );
 })  ;

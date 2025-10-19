@@ -35,9 +35,10 @@ interface CategoryProps {
 
 interface SideBarButtonProps {
   category: CategoryProps[];
+  onAppointmentsClick?: () => void;
 }
 
-const SideBarButton = ({ category }: SideBarButtonProps) => {
+const SideBarButton = ({ category, onAppointmentsClick }: SideBarButtonProps) => {
   const { data } = useSession();
   const handleLoginGoogleClick = () => signIn("google");
   const handleLogoutClick = () => signOut();
@@ -129,6 +130,7 @@ const SideBarButton = ({ category }: SideBarButtonProps) => {
           <Button
             variant="ghost"
             className="flex cursor-pointer justify-start gap-2"
+            onClick={onAppointmentsClick}
           >
             <Calendar className="text-white" width={15} height={15} />
             <p className="text-sm font-normal">Agendamentos</p>

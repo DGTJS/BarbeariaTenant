@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { BarberShopService } from "@/generated/prisma";
 import { AlarmClock, Calendar } from "lucide-react";
 import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 import Image from "next/image";
 import { Card, CardContent } from "./ui/card";
-import { useRouter } from "next/navigation";
+import BookingSidebar from "./booking-sidebar";
 
 interface PriceAdjustment {
   priceAdjustment: number;
@@ -15,64 +17,118 @@ interface ServiceBarberCardProps {
   service: BarberShopService & {
     priceAdjustments?: PriceAdjustment[];
   };
+  barber: {
+    id: string;
+    name: string;
+    photo: string;
+    workingHours?: {
+      id: string;
+      barberId: string;
+      weekday: number;
+      startTime: string;
+      endTime: string;
+      pauses: {
+        id: string;
+        startTime: string;
+        endTime: string;
+      }[];
+    }[];
+    barberShop?: {
+      name: string;
+      address?: string;
+    };
+  };
+  user: { id: string; name?: string | null } | null;
+  bookings: any[];
 }
 
-const ServiceBarberCard = ({ service }: ServiceBarberCardProps) => {
-  const router = useRouter();
+const ServiceBarberCard = ({ service, barber, user, bookings }: ServiceBarberCardProps) => {
+  const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
 
   const handleBookingClick = () => {
-    // Passar o ID do serviço como query parameter
-    router.push(`/booking?serviceId=${service.id}`);
+    setIsBookingModalOpen(true);
   };
 
   return (
-    <Card className="my-3 min-w-[calc(100%-10px)] border-indigo-950 p-0">
-      <CardContent className="flex items-center gap-3 p-3">
-        {/* IMAGE */}
-        <div className="relative min-h-[100px] min-w-[100px] sm:h-[130px] sm:w-[130px] md:h-[140px] md:w-[140px]">
-          <Image
-            src={service.imageUrl}
-            alt="Logo"
-            fill
-            className="objet-cover rounded-lg"
-          />
-        </div>
-        {/* CONTEUDO */}
-        <div className="w-full space-y-2">
-          <div className="flex justify-between">
-            <h3 className="truncate text-base text-sm font-semibold sm:text-lg">
-              {service.name}
-            </h3>
-            <h3 className="flex items-center gap-1 text-center text-xs text-gray-500">
-              <AlarmClock size={12} /> {service.duration} : Min
-            </h3>
+    <>
+      <Card className="group hover:shadow-lg transition-all duration-300 bg-slate-700/30 border-slate-600 hover:border-primary/50 hover:bg-slate-700/50">
+        <CardContent className="p-0">
+          <div className="flex flex-col sm:flex-row">
+            {/* IMAGE */}
+            <div className="relative h-48 sm:h-32 sm:w-32 md:h-36 md:w-36 flex-shrink-0">
+              <Image
+                src={service.imageUrl}
+                alt={service.name}
+                fill
+                className="object-cover rounded-t-lg sm:rounded-l-lg sm:rounded-t-none"
+              />
+              <div className="absolute top-2 right-2">
+                <Badge variant="secondary" className="bg-black/50 text-white border-0">
+                  {service.category?.name}
+                </Badge>
+              </div>
+            </div>
+            
+            {/* CONTEUDO */}
+            <div className="flex-1 p-4 space-y-3">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-white mb-1 group-hover:text-primary transition-colors">
+                    {service.name}
+                  </h3>
+                  <p className="text-sm text-gray-300 line-clamp-2">
+                    {service.description}
+                  </p>
+                </div>
+                <div className="flex items-center gap-1 text-sm text-gray-400">
+                  <AlarmClock size={14} />
+                  <span>{service.duration} min</span>
+                </div>
+              </div>
+              
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-2xl font-bold text-primary">
+                    {(() => {
+                      const base = Number(service.price) || 0;
+                      const adjustment =
+                        service.priceAdjustments?.[0]?.priceAdjustment || 0;
+                      const final = base + Number(adjustment);
+                      return Intl.NumberFormat("pt-BR", {
+                        style: "currency",
+                        currency: "BRL",
+                      }).format(final);
+                    })()}
+                  </span>
+                  {service.priceAdjustments?.[0]?.priceAdjustment && (
+                    <Badge variant="outline" className="text-xs">
+                      Preço personalizado
+                    </Badge>
+                  )}
+                </div>
+                
+                <Button 
+                  onClick={handleBookingClick}
+                  className="bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-2 transition-all duration-200 hover:scale-105"
+                >
+                  <Calendar size={16} className="mr-2" />
+                  Agendar
+                </Button>
+              </div>
+            </div>
           </div>
-          <p className="max-w-[calc(100%- 5px)] tuppercase text-xs text-gray-500 sm:text-sm">
-            {service.description}
-          </p>
-          <div className="mt-3 flex justify-between gap-1">
-            <span className="flex items-center text-sm font-semibold text-indigo-500 sm:text-base">
-              {(() => {
-                const base = Number(service.price) || 0;
-                const adjustment =
-                  service.priceAdjustments?.[0]?.priceAdjustment || 0;
-                const final = base + Number(adjustment);
-                return `${Intl.NumberFormat("pt-BR", {
-                  style: "currency",
-                  currency: "BRL",
-                }).format(final)} `;
-              })()}
-            </span>
-            <Button 
-              onClick={handleBookingClick}
-              className="h-7 bg-indigo-950 px-2 text-xs text-white sm:h-9 sm:px-3 sm:text-sm"
-            >
-              <Calendar size={15} /> Agendar
-            </Button>
-          </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+
+      {/* Sidebar de Agendamento */}
+      <BookingSidebar
+        isOpen={isBookingModalOpen}
+        onClose={() => setIsBookingModalOpen(false)}
+        service={service}
+        barber={barber}
+        bookings={bookings}
+      />
+    </>
   );
 };
 

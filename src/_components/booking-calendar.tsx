@@ -263,9 +263,13 @@ export default function BookingCalendar({ bookings, onDateSelect }: BookingCalen
                         })}
                       </p>
                       <Badge
-                        variant={booking.status === "Confirmado" ? "default" : 
-                                booking.status === "Pendente" ? "secondary" : "destructive"}
-                        className="text-xs"
+                        className={`text-xs font-semibold px-3 py-1.5 rounded-lg shadow-md ${
+                          booking.status === "Confirmado" || booking.status === "confirmed"
+                            ? "bg-emerald-500 text-white border-emerald-600 shadow-emerald-500/25"
+                            : booking.status === "Pendente" || booking.status === "pending"
+                            ? "bg-amber-500 text-white border-amber-600 shadow-amber-500/25"
+                            : "bg-red-500 text-white border-red-600 shadow-red-500/25"
+                        }`}
                       >
                         {getStatusText(booking.status)}
                       </Badge>

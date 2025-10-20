@@ -11,7 +11,7 @@ import {
 import Category from "@/_components/category";
 import ServiceBarberCard from "@/_components/cardServiceBarber";
 import { getServiceBarberShop } from "@/_lib/getServiceShop";
-import Barbers from "@/_components/CardBarbers";
+import BarberCardHorizontal from "@/_components/BarberCardHorizontal";
 
 interface BarberShopPageProps {
   params: {
@@ -26,7 +26,7 @@ const BarberShopPage = async ({ params }: BarberShopPageProps) => {
   const barberBarberShop = await getBarberFromBarberShop(params.id);
 
   return (
-    <div>
+    <div className="min-h-screen bg-background">
       <div className="relative h-[300px] w-full">
         <Image
           src={barberShop?.imageUrl ?? "/default-image.png"}
@@ -37,11 +37,11 @@ const BarberShopPage = async ({ params }: BarberShopPageProps) => {
       </div>
       <Button
         variant="outline"
-        className="fixed top-4 left-4 z-50 bg-gray-600"
+        className="fixed top-4 left-4 z-50 bg-card-secondary border-card-border"
         asChild
       >
         <Link href="/">
-          <ChevronLeftIcon className="text-white" />
+          <ChevronLeftIcon className="text-card-foreground" />
         </Link>
       </Button>
       <div className="fixed top-4 right-4 z-50">
@@ -49,16 +49,16 @@ const BarberShopPage = async ({ params }: BarberShopPageProps) => {
       </div>
       <div className="flex flex-row justify-between p-5">
         <div>
-          <h1 className="text-2xl font-semibold">{barberShop?.name}</h1>
-          <p className="text-gray-500">{barberShop?.address}</p>
+          <h1 className="text-2xl font-semibold text-foreground">{barberShop?.name}</h1>
+          <p className="text-foreground-muted">{barberShop?.address}</p>
         </div>
         <Button variant="outline" className="mt-2">
           <StarIcon className="fill-primary text-primary h-4 w-4" />
           {barberShop?.rating}
         </Button>
       </div>
-      <div className="border-t border-solid border-gray-800 p-5">
-        <h3 className="text-sm font-semibold text-gray-200">Categoria</h3>
+      <div className="border-t border-solid border-card-border p-5">
+        <h3 className="text-sm font-semibold text-foreground">Categoria</h3>
         <div className="mt-5 flex gap-3 overflow-auto pb-5 [&::-webkit-scrollbar]:hidden">
           {categoriesBarberShop.map((category) => (
             <Category
@@ -69,18 +69,19 @@ const BarberShopPage = async ({ params }: BarberShopPageProps) => {
             />
           ))}
         </div>
-        <h3 className="text-sm font-semibold text-gray-200">Barbeiros</h3>
+        <h3 className="text-sm font-semibold text-foreground">Barbeiros</h3>
         <div className="mt-5 flex gap-3 overflow-auto pb-5 [&::-webkit-scrollbar]:hidden">
           {barberBarberShop.map((barberBarberShop) => (
-            <Barbers
+            <BarberCardHorizontal
               key={barberBarberShop.id}
               barber={barberBarberShop}
               nameButton={"Agendar"}
+              averageRating={barberBarberShop.averageRating}
             />
           ))}
         </div>
-        <div className="border-t border-solid border-gray-800">
-          <h3 className="pt-4 text-sm font-semibold text-gray-400 uppercase">
+        <div className="border-t border-solid border-card-border">
+          <h3 className="pt-4 text-sm font-semibold text-foreground-muted uppercase">
             Serviços
           </h3>
           <div className="mt-5 gap-3">
@@ -89,7 +90,7 @@ const BarberShopPage = async ({ params }: BarberShopPageProps) => {
                 <ServiceBarberCard key={service.id} service={service} />
               ))
             ) : (
-              <p className="text-sm text-gray-400">
+              <p className="text-sm text-foreground-muted">
                 Nenhum serviço disponível.
               </p>
             )}

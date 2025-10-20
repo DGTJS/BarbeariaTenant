@@ -79,7 +79,7 @@ const BannerCarousel = ({ banners }: BannerCarouselProps) => {
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
-        <div className="absolute bottom-4 left-4 text-white">
+        <div className="absolute bottom-4 left-4 text-card-foreground">
           <h3 className="text-lg sm:text-2xl font-bold">{banner.title}</h3>
           <p className="text-sm sm:text-base opacity-90">{banner.subtitle}</p>
         </div>
@@ -110,7 +110,7 @@ const BannerCarousel = ({ banners }: BannerCarouselProps) => {
               }}
             />
             <div className="absolute inset-0 bg-gradient-to-r from-black/50 to-transparent" />
-            <div className="absolute bottom-4 left-4 text-white">
+            <div className="absolute bottom-4 left-4 text-card-foreground">
               <h3 className="text-lg sm:text-2xl font-bold">{banner.title}</h3>
               <p className="text-sm sm:text-base opacity-90">{banner.subtitle}</p>
             </div>
@@ -122,7 +122,7 @@ const BannerCarousel = ({ banners }: BannerCarouselProps) => {
       <Button
         variant="ghost"
         size="sm"
-        className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute left-2 top-1/2 transform -translate-y-1/2 bg-card/20 hover:bg-card/40 text-card-foreground opacity-0 group-hover:opacity-100 transition-opacity"
         onClick={goToPrevious}
       >
         <ChevronLeft className="h-4 w-4" />
@@ -131,7 +131,7 @@ const BannerCarousel = ({ banners }: BannerCarouselProps) => {
       <Button
         variant="ghost"
         size="sm"
-        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-black/20 hover:bg-black/40 text-white opacity-0 group-hover:opacity-100 transition-opacity"
+        className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-card/20 hover:bg-card/40 text-card-foreground opacity-0 group-hover:opacity-100 transition-opacity"
         onClick={goToNext}
       >
         <ChevronRight className="h-4 w-4" />
@@ -144,8 +144,8 @@ const BannerCarousel = ({ banners }: BannerCarouselProps) => {
             key={index}
             className={`w-2 h-2 rounded-full transition-colors ${
               index === currentIndex 
-                ? 'bg-white' 
-                : 'bg-white/50 hover:bg-white/75'
+                ? 'bg-primary-foreground' 
+                : 'bg-primary-foreground/50 hover:bg-primary-foreground/75'
             }`}
             onClick={() => goToSlide(index)}
           />

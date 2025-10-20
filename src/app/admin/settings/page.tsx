@@ -19,7 +19,10 @@ import {
   Clock,
   CreditCard,
   AlertTriangle,
-  CheckCircle
+  CheckCircle,
+  Building2,
+  Users,
+  Scissors
 } from "lucide-react";
 
 interface BarberShopSettings {
@@ -54,9 +57,12 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("general");
+  const [barbershopSystemEnabled, setBarbershopSystemEnabled] = useState(false);
+  const [barbershopSystemLoading, setBarbershopSystemLoading] = useState(false);
 
   useEffect(() => {
     loadSettings();
+    loadBarbershopSystemConfig();
   }, []);
 
   const loadSettings = async () => {
@@ -134,10 +140,52 @@ export default function SettingsPage() {
     setSettings(newSettings);
   };
 
+  const loadBarbershopSystemConfig = async () => {
+    try {
+      const response = await fetch('/api/admin/barbershop-system');
+      if (response.ok) {
+        const data = await response.json();
+        setBarbershopSystemEnabled(data.enabled);
+      }
+    } catch (error) {
+      console.error('Erro ao carregar configuração do sistema de barbearias:', error);
+    }
+  };
+
+  const toggleBarbershopSystem = async () => {
+    try {
+      setBarbershopSystemLoading(true);
+      const newEnabled = !barbershopSystemEnabled;
+      
+      const response = await fetch('/api/admin/barbershop-system', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ enabled: newEnabled }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setBarbershopSystemEnabled(newEnabled);
+        alert(data.message);
+      } else {
+        const error = await response.json();
+        alert(`Erro: ${error.error}`);
+      }
+    } catch (error) {
+      console.error('Erro ao atualizar sistema de barbearias:', error);
+      alert('Erro ao atualizar configuração');
+    } finally {
+      setBarbershopSystemLoading(false);
+    }
+  };
+
   const tabs = [
     { id: "general", name: "Geral", icon: Settings },
     { id: "notifications", name: "Notificações", icon: Bell },
     { id: "business", name: "Negócio", icon: CreditCard },
+    { id: "barbershops", name: "Barbearias", icon: Building2 },
     { id: "security", name: "Segurança", icon: Shield }
   ];
 
@@ -449,6 +497,121 @@ export default function SettingsPage() {
                       className="w-full p-2 border border-input bg-background rounded-md"
                       rows={3}
                     />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {activeTab === "barbershops" && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center">
+                    <Building2 className="h-5 w-5 mr-2" />
+                    Sistema de Barbearias
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  <div className="p-6 border rounded-lg bg-card-secondary">
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="text-lg font-semibold mb-2">Sistema de Barbearias Individuais</h3>
+                        <p className="text-sm text-muted-foreground mb-4">
+                          {barbershopSystemEnabled 
+                            ? "Sistema individual ativado - todas as barbearias foram removidas. Barbeiros e serviços funcionam independentemente."
+                            : "Todos os barbeiros e serviços estão unificados em uma única barbearia. Sistema simplificado para uma única localização."
+                          }
+                        </p>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Badge variant={barbershopSystemEnabled ? "default" : "secondary"}>
+                          {barbershopSystemEnabled ? "Ativado" : "Desativado"}
+                        </Badge>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                      <div className="p-4 border rounded-lg">
+                        <div className="flex items-center mb-2">
+                          <Users className="h-5 w-5 mr-2 text-primary" />
+                          <h4 className="font-medium">Barbeiros</h4>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {barbershopSystemEnabled 
+                            ? "Barbeiros funcionam independentemente, sem associação a barbearias"
+                            : "Todos os barbeiros estão disponíveis em uma barbearia única"
+                          }
+                        </p>
+                      </div>
+
+                      <div className="p-4 border rounded-lg">
+                        <div className="flex items-center mb-2">
+                          <Scissors className="h-5 w-5 mr-2 text-primary" />
+                          <h4 className="font-medium">Serviços</h4>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                          {barbershopSystemEnabled 
+                            ? "Serviços funcionam independentemente, sem associação a barbearias"
+                            : "Todos os serviços estão disponíveis globalmente"
+                          }
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
+                      <div className="flex items-start">
+                        <AlertTriangle className="h-5 w-5 text-yellow-600 dark:text-yellow-400 mr-2 mt-0.5" />
+                        <div>
+                          <h4 className="font-medium text-yellow-800 dark:text-yellow-200 mb-1">
+                            Atenção
+                          </h4>
+                          <p className="text-sm text-yellow-700 dark:text-yellow-300">
+                            {barbershopSystemEnabled 
+                              ? "Ao desativar, todos os barbeiros e serviços serão movidos para a barbearia global."
+                              : "Ao ativar, todas as barbearias serão removidas do sistema e barbeiros/serviços funcionarão independentemente."
+                            }
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button 
+                      onClick={toggleBarbershopSystem}
+                      disabled={barbershopSystemLoading}
+                      variant={barbershopSystemEnabled ? "destructive" : "default"}
+                      className="w-full"
+                    >
+                      {barbershopSystemLoading ? (
+                        <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+                      ) : barbershopSystemEnabled ? (
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                      ) : (
+                        <Building2 className="h-4 w-4 mr-2" />
+                      )}
+                      {barbershopSystemLoading 
+                        ? "Processando..." 
+                        : barbershopSystemEnabled 
+                          ? "Desativar Sistema Individual" 
+                          : "Ativar Sistema Individual"
+                      }
+                    </Button>
+                  </div>
+
+                  <div className="p-4 border rounded-lg">
+                    <h4 className="font-medium mb-3">Como funciona:</h4>
+                    <div className="space-y-3 text-sm text-muted-foreground">
+                      <div className="flex items-start">
+                        <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                        <div>
+                          <strong>Sistema Unificado (Desativado):</strong> Ideal para uma única barbearia. Todos os barbeiros e serviços ficam disponíveis em um local.
+                        </div>
+                      </div>
+                      <div className="flex items-start">
+                        <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                        <div>
+                          <strong>Sistema Individual (Ativado):</strong> Todas as barbearias são removidas. Barbeiros e serviços funcionam independentemente, sem associação a localizações específicas.
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>

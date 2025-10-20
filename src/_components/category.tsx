@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import { Button } from "./ui/button";
+import { useTheme, getIconFilter } from "../_hooks/useTheme";
 
 interface CategorySearchProps {
   name: string;
@@ -8,12 +11,25 @@ interface CategorySearchProps {
 }
 
 const Category = ({ id, name, IconUrl }: CategorySearchProps) => {
+  const { isLight, isLoading } = useTheme();
+
+  const getIconFilterStyle = () => {
+    if (isLoading) return '';
+    return getIconFilter(isLight);
+  };
+
   return (
     <>
       {/* Mobile Layout */}
       <Link href={`/search?category=${id}`} className="lg:hidden">
         <Button variant="outline" className="columns h-[50px] justify-center w-full">
-          <img src={IconUrl} alt="Logo" width={15} height={15} />
+          <img 
+            src={IconUrl} 
+            alt="Logo" 
+            width={15} 
+            height={15}
+            style={{ filter: getIconFilterStyle() }}
+          />
           <span className="justify-center text-center text-xs">{name}</span>
         </Button>
       </Link>
@@ -30,8 +46,9 @@ const Category = ({ id, name, IconUrl }: CategorySearchProps) => {
             width={20} 
             height={20}
             className="transition-transform duration-200 group-hover:scale-110"
+            style={{ filter: getIconFilterStyle() }}
           />
-          <span className="text-xs font-medium text-white group-hover:text-primary">
+          <span className="text-xs font-medium text-card-foreground group-hover:text-primary">
             {name}
           </span>
         </Button>

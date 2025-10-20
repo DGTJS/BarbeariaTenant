@@ -44,7 +44,42 @@ export const getCategoriesFromBarberShop = async (barberShopId: string) => {
 };
 
 export const getBarberFromBarberShop = async (barberShopId: string) => {
-  return db.barber.findMany({
+  const barbers = await db.barber.findMany({
     where: { barberShopId },
+  });
+
+  // Buscar avaliações para cada barbeiro individualmente
+  const reviewsMap = new Map();
+  
+  for (const barber of barbers) {
+    const reviews = await db.booking.aggregate({
+      where: {
+        barberId: barber.id,
+        rating: {
+          not: null,
+        },
+      },
+      _avg: {
+        rating: true,
+      },
+      _count: {
+        rating: true,
+      },
+    });
+    
+    reviewsMap.set(barber.id, {
+      average: reviews._avg.rating || 0,
+      count: reviews._count.rating || 0,
+    });
+  }
+
+  // Adicionar avaliações aos barbeiros
+  return barbers.map(barber => {
+    const review = reviewsMap.get(barber.id);
+    return {
+      ...barber,
+      averageRating: review?.average ? Math.min(review.average, 5) : null,
+      totalReviews: review?.count || 0,
+    };
   });
 };

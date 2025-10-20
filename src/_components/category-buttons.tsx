@@ -1,5 +1,7 @@
 "use client";
 
+import { useTheme, getIconFilter } from "../_hooks/useTheme";
+
 interface Category {
   id: string;
   name: string;
@@ -13,12 +15,20 @@ interface CategoryButtonsProps {
 }
 
 const CategoryButtons = ({ categories, selectedCategory, onCategorySelect }: CategoryButtonsProps) => {
+  const { isLight, isLoading } = useTheme();
+
   const handleCategoryClick = (categoryId: string) => {
     if (selectedCategory === categoryId) {
       onCategorySelect(null); // Deselecionar se já estiver selecionado
     } else {
       onCategorySelect(categoryId);
     }
+  };
+
+  // Função para obter o filtro CSS baseado no tema
+  const getIconFilterStyle = () => {
+    if (isLoading) return '';
+    return getIconFilter(isLight);
   };
 
   return (
@@ -32,8 +42,8 @@ const CategoryButtons = ({ categories, selectedCategory, onCategorySelect }: Cat
               onClick={() => handleCategoryClick(category.id)}
               className={`flex-shrink-0 flex items-center gap-2 px-4 py-3 rounded-lg border transition-all duration-200 ${
                 selectedCategory === category.id
-                  ? "bg-primary text-white border-primary shadow-lg"
-                  : "bg-gray-800 text-white border-gray-600 hover:bg-gray-700 hover:border-primary/50"
+                  ? "bg-primary text-primary-foreground border-primary shadow-lg"
+                  : "bg-card-secondary text-card-foreground border-border hover:bg-card-hover hover:border-primary/50"
               }`}
             >
               <img 
@@ -42,6 +52,7 @@ const CategoryButtons = ({ categories, selectedCategory, onCategorySelect }: Cat
                 width={20} 
                 height={20}
                 className="flex-shrink-0"
+                style={{ filter: getIconFilterStyle() }}
               />
               <span className="text-sm font-medium whitespace-nowrap">{category.name}</span>
             </button>
@@ -58,8 +69,8 @@ const CategoryButtons = ({ categories, selectedCategory, onCategorySelect }: Cat
               onClick={() => handleCategoryClick(category.id)}
               className={`group h-16 w-full flex items-center gap-3 px-4 transition-all duration-200 rounded-xl border cursor-pointer ${
                 selectedCategory === category.id
-                  ? "border-primary bg-primary text-white shadow-lg scale-105"
-                  : "border-gray-600 bg-gray-800 hover:scale-105 hover:border-primary/50 hover:bg-gray-700 hover:shadow-lg"
+                  ? "border-primary bg-primary text-primary-foreground shadow-lg scale-105"
+                  : "border-border bg-card-secondary hover:scale-105 hover:border-primary/50 hover:bg-card-hover hover:shadow-lg"
               }`}
             >
               <img 
@@ -70,6 +81,7 @@ const CategoryButtons = ({ categories, selectedCategory, onCategorySelect }: Cat
                 className={`flex-shrink-0 transition-transform duration-200 ${
                   selectedCategory === category.id ? "scale-110" : "group-hover:scale-110"
                 }`}
+                style={{ filter: getIconFilterStyle() }}
               />
               <span className="text-sm font-medium transition-colors truncate">
                 {category.name}
@@ -85,7 +97,7 @@ const CategoryButtons = ({ categories, selectedCategory, onCategorySelect }: Cat
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
               <span className="text-sm text-primary font-medium">Filtro ativo:</span>
-              <span className="bg-primary text-white px-2 py-1 rounded text-sm">
+              <span className="bg-primary text-primary-foreground px-2 py-1 rounded text-sm">
                 {categories.find(cat => cat.id === selectedCategory)?.name}
               </span>
             </div>

@@ -38,21 +38,27 @@ model Session {
 }
 
 model User {
-  id            String    @id @default(uuid())
-  email         String    @unique
-  emailVerified DateTime? @map("email_verified")
-  name          String?
-  phone         String?
-  googleId      String?   @unique
-  password      String?
-  role          String    @default("Cliente")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @default(now()) @updatedAt
-  image         String?
-  accounts      Account[]
-  barber        barber?
-  booking       booking[]
-  sessions      Session[]
+  id                    String    @id @default(uuid())
+  email                 String    @unique
+  emailVerified         DateTime? @map("email_verified")
+  name                  String?
+  phone                 String?
+  googleId              String?   @unique
+  password              String?
+  role                  String    @default("Cliente")
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @default(now()) @updatedAt
+  image                 String?
+  emailNotifications    Boolean   @default(true)
+  whatsappNotifications Boolean   @default(true)
+  whatsappNumber        String?
+  pushNotifications     Boolean   @default(true)
+  soundNotifications    Boolean   @default(true)
+  accounts              Account[]
+  barber                barber?
+  booking               booking[]
+  sessions              Session[]
+  favoriteBarbers       FavoriteBarber[]
 
   @@map("users")
 }
@@ -108,6 +114,8 @@ model BarberShopService {
   category         BarberCategory?          @relation(fields: [categoryId], references: [id])
   priceAdjustments ServicePriceAdjustment[]
   booking          booking[]
+  serviceOptions   ServiceOption[]
+  barberServices   BarberService[]
 }
 
 model booking {
@@ -141,6 +149,8 @@ model barber {
   user            User                     @relation(fields: [userId], references: [id])
   booking         booking[]
   categories      BarberCategory[]         @relation("BarberToCategory")
+  favoriteBarbers FavoriteBarber[]
+  barberServices  BarberService[]
 }
 
 model ServicePriceAdjustment {
@@ -190,4 +200,88 @@ model SiteConfig {
   type      String   @default("string")
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now()) @updatedAt
+}
+
+model ColorConfig {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  category    String   // background, card, text, etc.
+  value       String   // valor da cor em hex, rgb, oklch, etc.
+  description String?
+  isActive    Boolean  @default(true)
+  order       Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+}
+
+model Theme {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  type        String   // light, dark, custom
+  isActive    Boolean  @default(false)
+  colors      Json     // Array de cores do tema
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @default(now()) @updatedAt
+}
+
+model FavoriteBarber {
+  id        String   @id @default(uuid())
+  userId    String
+  barberId  String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  barber    barber   @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, barberId])
+  @@map("favorite_barbers")
+}
+
+// Modelo para opções de serviços (ex: degrade, social, etc.)
+model ServiceOption {
+  id          String            @id @default(uuid())
+  serviceId   String
+  name        String
+  description String?
+  price       Decimal           @db.Decimal(10, 2)
+  duration    Int
+  status      Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @default(now()) @updatedAt
+  
+  service     BarberShopService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  bookings    ServiceOptionBooking[]
+  
+  @@map("service_options")
+}
+
+// Modelo para relacionar barbeiros com serviços
+model BarberService {
+  id        String            @id @default(uuid())
+  barberId  String
+  serviceId String
+  createdAt DateTime          @default(now())
+  updatedAt DateTime          @default(now()) @updatedAt
+  
+  barber    barber            @relation(fields: [barberId], references: [id], onDelete: Cascade)
+  service   BarberShopService @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  
+  @@unique([barberId, serviceId])
+  @@map("barber_services")
+}
+
+// Modelo para agendamentos com opções específicas
+model ServiceOptionBooking {
+  id              String        @id @default(uuid())
+  bookingId       String
+  serviceOptionId String
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @default(now()) @updatedAt
+  
+  serviceOption   ServiceOption @relation(fields: [serviceOptionId], references: [id], onDelete: Cascade)
+  
+  @@unique([bookingId, serviceOptionId])
+  @@map("service_option_bookings")
 }

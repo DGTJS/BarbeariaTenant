@@ -58,8 +58,14 @@ interface Booking {
     name: string;
     description?: string;
     duration: number;
+    price?: number;
+  };
+  serviceOption?: {
+    id: string;
+    name: string;
+    description?: string;
     price: number;
-    imageUrl: string;
+    duration: number;
   };
   barber: {
     id: string;
@@ -130,7 +136,7 @@ export default function BookingsManagement() {
           const today = new Date();
           return bookingDate.toDateString() === today.toDateString() && b.status === "Confirmado";
         })
-        .reduce((sum: number, b: Booking) => sum + b.service.price, 0);
+        .reduce((sum: number, b: Booking) => sum + (b.service.price || 0), 0);
       const avgRating = data
         .filter((b: Booking) => b.rating)
         .reduce((sum: number, b: Booking) => sum + (b.rating || 0), 0) / 
@@ -549,9 +555,13 @@ export default function BookingsManagement() {
                           </AvatarFallback>
                         </Avatar>
                         <Badge 
-                          variant={booking.status.toUpperCase() === "CONFIRMED" || booking.status === "Confirmado" ? "default" : 
-                                  booking.status.toUpperCase() === "PENDING" || booking.status === "Pendente" ? "secondary" : "destructive"}
-                          className="flex items-center space-x-1 px-1.5 py-0.5 text-xs shadow-sm"
+                          className={`flex items-center space-x-1 px-3 py-1.5 text-xs font-semibold rounded-lg shadow-md ${
+                            booking.status.toUpperCase() === "CONFIRMED" || booking.status === "Confirmado"
+                              ? "bg-emerald-500 text-white border-emerald-600 shadow-emerald-500/25"
+                              : booking.status.toUpperCase() === "PENDING" || booking.status === "Pendente"
+                              ? "bg-amber-500 text-white border-amber-600 shadow-amber-500/25"
+                              : "bg-red-500 text-white border-red-600 shadow-red-500/25"
+                          }`}
                         >
                           {getStatusIcon(booking.status)}
                           <span className="hidden sm:inline">{getStatusText(booking.status)}</span>
@@ -565,6 +575,11 @@ export default function BookingsManagement() {
                         </h3>
                         <p className="text-xs text-gray-600 dark:text-gray-400 truncate">
                           {booking.service.name}
+                          {booking.serviceOption && (
+                            <span className="ml-1 text-primary">
+                              - {booking.serviceOption.name}
+                            </span>
+                          )}
                         </p>
                       </div>
                       
@@ -584,7 +599,7 @@ export default function BookingsManagement() {
                       <div className="flex items-center justify-between mb-2">
                         <div>
                           <p className="font-bold text-xs text-gray-900 dark:text-gray-100">
-                            R$ {booking.service.price.toFixed(2)}
+                            R$ {(booking.service.price || 0).toFixed(2)}
                           </p>
                           <p className="text-xs text-gray-500 dark:text-gray-500">{booking.service.duration} min</p>
                         </div>
@@ -685,22 +700,33 @@ export default function BookingsManagement() {
                         </Avatar>
                         <div>
                           <h3 className="font-semibold text-lg">{booking.user.name}</h3>
-                            <p className="text-sm text-muted-foreground">{booking.service.name}</p>
+                            <p className="text-sm text-muted-foreground">
+                              {booking.service.name}
+                              {booking.serviceOption && (
+                                <span className="ml-1 text-primary">
+                                  - {booking.serviceOption.name}
+                                </span>
+                              )}
+                            </p>
                           </div>
                         </div>
                         
                         <div className="flex items-center space-x-3">
                           <Badge 
-                            variant={booking.status.toUpperCase() === "CONFIRMED" || booking.status === "Confirmado" ? "default" : 
-                                    booking.status.toUpperCase() === "PENDING" || booking.status === "Pendente" ? "secondary" : "destructive"}
-                            className="flex items-center space-x-1 px-3 py-1"
+                            className={`flex items-center space-x-1 px-4 py-2 font-semibold rounded-lg shadow-lg ${
+                              booking.status.toUpperCase() === "CONFIRMED" || booking.status === "Confirmado"
+                                ? "bg-emerald-500 text-white border-emerald-600 shadow-emerald-500/25"
+                                : booking.status.toUpperCase() === "PENDING" || booking.status === "Pendente"
+                                ? "bg-amber-500 text-white border-amber-600 shadow-amber-500/25"
+                                : "bg-red-500 text-white border-red-600 shadow-red-500/25"
+                            }`}
                           >
                             {getStatusIcon(booking.status)}
                             <span>{getStatusText(booking.status)}</span>
                           </Badge>
                           
                           <div className="text-right">
-                            <p className="font-semibold text-lg">R$ {booking.service.price.toFixed(2)}</p>
+                            <p className="font-semibold text-lg">R$ {(booking.service.price || 0).toFixed(2)}</p>
                             <p className="text-sm text-muted-foreground">{booking.service.duration} min</p>
                           </div>
                           
@@ -754,7 +780,11 @@ export default function BookingsManagement() {
                               </div>
                               <div className="flex items-center space-x-2 text-sm">
                                 <Scissors className="h-4 w-4 text-muted-foreground" />
-                                <span>{booking.service.name} ({booking.service.duration} min)</span>
+                                <span>
+                                  {booking.service.name}
+                                  {booking.serviceOption && ` - ${booking.serviceOption.name}`}
+                                  ({booking.serviceOption?.duration || booking.service.duration} min)
+                                </span>
                               </div>
                         </div>
                       </div>

@@ -8,6 +8,7 @@ import { Card, CardContent } from "./ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Heart, MapPin, Clock, User, X, Star, Phone, Mail } from "lucide-react";
 import { Booking } from "@/_types/booking";
+import Image from "next/image";
 
 interface Barber {
   id: string;
@@ -20,6 +21,7 @@ interface Barber {
     name: string;
   }>;
   rating?: number;
+  totalReviews?: number;
   isFavorite?: boolean;
 }
 
@@ -32,14 +34,32 @@ interface FavoritesModalProps {
 
 const FavoritesModal = ({ isOpen, onClose, user, barbers }: FavoritesModalProps) => {
   const [favoriteBarbers, setFavoriteBarbers] = useState<Barber[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (isOpen && barbers) {
-      // Simular barbeiros favoritos (em uma aplicação real, isso viria do banco de dados)
-      const favorites = barbers.filter(barber => barber.isFavorite).slice(0, 10);
-      setFavoriteBarbers(favorites);
-    }
-  }, [isOpen, barbers]);
+    const fetchFavorites = async () => {
+      if (isOpen && user?.id) {
+        setIsLoading(true);
+        try {
+          const response = await fetch("/api/favorites");
+          if (response.ok) {
+            const favorites = await response.json();
+            setFavoriteBarbers(favorites);
+          } else {
+            console.error("Erro ao buscar favoritos");
+            setFavoriteBarbers([]);
+          }
+        } catch (error) {
+          console.error("Erro ao buscar favoritos:", error);
+          setFavoriteBarbers([]);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchFavorites();
+  }, [isOpen, user?.id]);
 
   const toggleFavorite = (barberId: string) => {
     setFavoriteBarbers(prev => 
@@ -52,7 +72,7 @@ const FavoritesModal = ({ isOpen, onClose, user, barbers }: FavoritesModalProps)
   };
 
   const getAverageRating = (barber: Barber) => {
-    return barber.rating || 4.5; // Simular rating
+    return barber.rating || 0;
   };
 
   if (!user) {
@@ -63,7 +83,7 @@ const FavoritesModal = ({ isOpen, onClose, user, barbers }: FavoritesModalProps)
             <div className="mx-auto mb-4 p-4 bg-primary/20 rounded-full w-fit">
               <User className="h-8 w-8 text-primary" />
             </div>
-            <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">
+            <DialogTitle className="text-xl font-bold text-foreground">
               Acesso Necessário
             </DialogTitle>
           </DialogHeader>
@@ -87,15 +107,15 @@ const FavoritesModal = ({ isOpen, onClose, user, barbers }: FavoritesModalProps)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden flex flex-col bg-white dark:bg-slate-900 border shadow-lg [&>button]:hidden">
-        <DialogHeader className="flex-shrink-0 bg-slate-50 dark:bg-slate-800 p-6 -m-6 mb-0 border-b border-slate-200 dark:border-slate-700">
-          <DialogTitle className="flex items-center justify-between text-xl font-bold">
+      <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden flex flex-col bg-card border-card-border shadow-lg [&>button]:hidden z-50">
+        <DialogHeader className="flex-shrink-0 bg-card-secondary p-6 -m-6 mb-0 border-b border-card-border">
+          <DialogTitle className="flex items-center justify-between text-xl font-bold text-foreground">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary/20 rounded-lg">
                 <Heart className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                <h2 className="text-2xl font-bold text-card-foreground">
                   Meus Favoritos
                 </h2>
                 <p className="text-sm text-muted-foreground font-normal">
@@ -107,97 +127,103 @@ const FavoritesModal = ({ isOpen, onClose, user, barbers }: FavoritesModalProps)
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
+              className="h-8 w-8 p-0 hover:bg-accent-hover"
             >
               <X className="h-4 w-4" />
             </Button>
           </DialogTitle>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto p-6 -m-6 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 scrollbar-track-transparent hover:scrollbar-thumb-slate-400 dark:hover:scrollbar-thumb-slate-500">
-          {favoriteBarbers.length === 0 ? (
+        <div className="flex-1 overflow-y-auto p-6 -m-6 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent hover:scrollbar-thumb-border-focus">
+          {isLoading ? (
             <div className="text-center py-16">
-              <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-lg border">
+              <div className="bg-card-secondary p-8 rounded-xl shadow-lg border-card-border">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                <h3 className="text-xl font-semibold mb-2 text-card-foreground">Carregando favoritos...</h3>
+                <p className="text-muted-foreground">
+                  Buscando seus barbeiros favoritos
+                </p>
+              </div>
+            </div>
+          ) : favoriteBarbers.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="bg-card-secondary p-8 rounded-xl shadow-lg border-card-border">
                 <Heart className="h-16 w-16 mx-auto mb-6 text-primary" />
-                <h3 className="text-xl font-semibold mb-2">Nenhum favorito encontrado</h3>
+                <h3 className="text-xl font-semibold mb-2 text-card-foreground">Nenhum favorito encontrado</h3>
                 <p className="text-muted-foreground">
                   Adicione barbeiros aos seus favoritos para aparecer aqui
                 </p>
               </div>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-4">
               {favoriteBarbers.map((barber) => (
-                <Card key={barber.id} className="group relative overflow-hidden border shadow-md hover:shadow-lg transition-all duration-300 bg-white dark:bg-slate-800">
-                  <CardContent className="p-6">
-                    <div className="flex items-start justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <Avatar className="h-12 w-12 ring-2 ring-primary/20">
-                          <AvatarImage src={barber.photo} />
-                          <AvatarFallback className="bg-primary text-white font-bold">
-                            {barber.name.charAt(0).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <h3 className="font-semibold text-lg text-slate-900 dark:text-white">
-                            {barber.name}
-                          </h3>
-                          <div className="flex items-center gap-1">
-                            <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                            <span className="text-sm text-muted-foreground">
-                              {getAverageRating(barber).toFixed(1)}
-                            </span>
+                <Card key={barber.id} className="group relative border-card-border shadow-md hover:shadow-lg transition-all duration-300 bg-card">
+                  <CardContent className="p-4">
+                    <div className="flex items-center gap-4">
+                      {/* Imagem do barbeiro */}
+                      <div className="relative h-16 w-16 flex-shrink-0">
+                        <Image
+                          src={barber.photo}
+                          alt={barber.name}
+                          fill
+                          className="object-cover rounded-lg"
+                        />
+                        <div className="absolute -top-1 -right-1">
+                          <Badge className="bg-red-500 text-white text-xs px-1 py-0.5">
+                            <Heart className="h-2 w-2 mr-1 fill-current" />
+                          </Badge>
+                        </div>
+                      </div>
+                      
+                      {/* Conteúdo */}
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-lg font-semibold text-card-foreground mb-1 group-hover:text-primary transition-colors truncate">
+                              {barber.name}
+                            </h3>
+                            <p className="text-sm text-foreground-muted truncate">
+                              {barber.barberShop?.name || "Barbearia"}
+                            </p>
+                            {barber.barberShop?.address && (
+                              <p className="text-xs text-foreground-muted truncate mt-1">
+                                <MapPin className="h-3 w-3 inline mr-1" />
+                                {barber.barberShop.address}
+                              </p>
+                            )}
                           </div>
+                          {barber.rating && barber.rating > 0 && (
+                            <div className="flex items-center gap-1 text-sm text-foreground-muted flex-shrink-0">
+                              <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                              <span>{getAverageRating(barber).toFixed(1)}</span>
+                              {barber.totalReviews && barber.totalReviews > 0 && (
+                                <span className="text-xs">({barber.totalReviews})</span>
+                              )}
+                            </div>
+                          )}
                         </div>
                       </div>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => toggleFavorite(barber.id)}
-                        className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
-                      >
-                        <Heart className="h-4 w-4 fill-current" />
-                      </Button>
-                    </div>
-
-                    {barber.categories && barber.categories.length > 0 && (
-                      <div className="mb-4">
-                        <div className="flex flex-wrap gap-1">
-                          {barber.categories.slice(0, 2).map((category) => (
-                            <Badge key={category.id} variant="outline" className="text-xs">
-                              {category.name}
-                            </Badge>
-                          ))}
-                        </div>
+                      
+                      {/* Botões */}
+                      <div className="flex flex-col gap-2 flex-shrink-0">
+                        <Button 
+                          className="bg-primary hover:bg-primary/90 text-primary-foreground font-semibold px-4 py-2 transition-all duration-200 hover:scale-105"
+                          size="sm"
+                        >
+                          Agendar
+                        </Button>
+                        
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => toggleFavorite(barber.id)}
+                          className="text-red-500 hover:text-red-600 hover:bg-red-50 border-red-200 px-4 py-2"
+                        >
+                          <Heart className="h-4 w-4 mr-1 fill-current" />
+                          Remover
+                        </Button>
                       </div>
-                    )}
-
-                    <div className="space-y-2 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-2">
-                        <MapPin className="h-4 w-4" />
-                        <span>Serviços Globais</span>
-                      </div>
-                      {barber.phone && (
-                        <div className="flex items-center gap-2">
-                          <Phone className="h-4 w-4" />
-                          <span>{barber.phone}</span>
-                        </div>
-                      )}
-                      {barber.email && (
-                        <div className="flex items-center gap-2">
-                          <Mail className="h-4 w-4" />
-                          <span className="truncate">{barber.email}</span>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
-                      <Button 
-                        className="w-full bg-primary hover:bg-primary/90 text-white"
-                        size="sm"
-                      >
-                        Agendar
-                      </Button>
                     </div>
                   </CardContent>
                 </Card>

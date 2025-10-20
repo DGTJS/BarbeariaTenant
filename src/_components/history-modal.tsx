@@ -10,6 +10,7 @@ import { Calendar, Clock, MapPin, User, X, Star, Filter } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { Booking } from "@/_types/booking";
+import RatingModal from "./rating-modal";
 
 interface HistoryModalProps {
   isOpen: boolean;
@@ -21,26 +22,85 @@ interface HistoryModalProps {
 const HistoryModal = ({ isOpen, onClose, user, bookings }: HistoryModalProps) => {
   const [filter, setFilter] = useState<string>("all");
   const [filteredBookings, setFilteredBookings] = useState<Booking[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isRatingModalOpen, setIsRatingModalOpen] = useState(false);
+  const [selectedBooking, setSelectedBooking] = useState<any>(null);
 
   useEffect(() => {
-    if (isOpen) {
-      // Filtrar apenas agendamentos passados (histórico)
-      const pastBookings = bookings.filter(booking => {
-        const bookingDate = new Date(booking.dateTime);
-        const now = new Date();
-        return bookingDate < now;
+    const fetchHistory = async () => {
+      if (isOpen && user?.id) {
+        setIsLoading(true);
+        try {
+          const response = await fetch("/api/user/history");
+          if (response.ok) {
+            const historyBookings = await response.json();
+            
+            // Para teste, mostrar todos os agendamentos (passados e futuros)
+            // Depois podemos filtrar apenas os passados
+            console.log("Agendamentos recebidos:", historyBookings);
+            
+            // Aplicar filtro de status
+            if (filter === "all") {
+              setFilteredBookings(historyBookings);
+            } else {
+              setFilteredBookings(historyBookings.filter((booking: any) => 
+                booking.status.toLowerCase() === filter.toLowerCase()
+              ));
+            }
+          } else {
+            console.error("Erro ao buscar histórico");
+            setFilteredBookings([]);
+          }
+        } catch (error) {
+          console.error("Erro ao buscar histórico:", error);
+          setFilteredBookings([]);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchHistory();
+  }, [isOpen, user?.id, filter]);
+
+  const handleRateService = (booking: any) => {
+    setSelectedBooking(booking);
+    setIsRatingModalOpen(true);
+  };
+
+  const handleRatingSubmit = async (rating: number, comment: string) => {
+    try {
+      const response = await fetch("/api/booking/rate", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          bookingId: selectedBooking.id,
+          rating: rating,
+          comment: comment,
+        }),
       });
 
-      // Aplicar filtro de status
-      if (filter === "all") {
-        setFilteredBookings(pastBookings);
+      if (response.ok) {
+        // Atualizar a lista de agendamentos
+        const updatedBookings = filteredBookings.map(booking => 
+          booking.id === selectedBooking.id 
+            ? { ...booking, rating, comment }
+            : booking
+        );
+        setFilteredBookings(updatedBookings);
+        
+        alert("Avaliação enviada com sucesso!");
       } else {
-        setFilteredBookings(pastBookings.filter(booking => 
-          booking.status.toLowerCase() === filter.toLowerCase()
-        ));
+        const error = await response.json();
+        throw new Error(error.error || "Erro ao enviar avaliação");
       }
+    } catch (error) {
+      console.error("Erro ao enviar avaliação:", error);
+      throw error;
     }
-  }, [isOpen, bookings, filter]);
+  };
 
   const getStatusBadge = (status: string) => {
     const normalizedStatus = status.toUpperCase();
@@ -48,34 +108,34 @@ const HistoryModal = ({ isOpen, onClose, user, bookings }: HistoryModalProps) =>
       case 'CONFIRMED':
       case 'CONFIRMADO':
         return (
-          <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-            Confirmado
+          <Badge className="bg-emerald-500 text-white border-emerald-600 dark:bg-emerald-600 dark:text-white dark:border-emerald-700 font-semibold px-4 py-2 rounded-lg shadow-lg shadow-emerald-500/25 text-sm">
+            ✓ Confirmado
           </Badge>
         );
       case 'PENDING':
       case 'PENDENTE':
         return (
-          <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
-            Agendado
+          <Badge className="bg-amber-500 text-white border-amber-600 dark:bg-amber-600 dark:text-white dark:border-amber-700 font-semibold px-4 py-2 rounded-lg shadow-lg shadow-amber-500/25 text-sm">
+            ⏳ Agendado
           </Badge>
         );
       case 'CANCELLED':
       case 'CANCELADO':
         return (
-          <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
-            Cancelado
+          <Badge className="bg-red-500 text-white border-red-600 dark:bg-red-600 dark:text-white dark:border-red-700 font-semibold px-4 py-2 rounded-lg shadow-lg shadow-red-500/25 text-sm">
+            ✕ Cancelado
           </Badge>
         );
       case 'COMPLETED':
       case 'CONCLUIDO':
         return (
-          <Badge className="bg-blue-500/20 text-blue-400 border-blue-500/30">
-            Concluído
+          <Badge className="bg-blue-500 text-white border-blue-600 dark:bg-blue-600 dark:text-white dark:border-blue-700 font-semibold px-4 py-2 rounded-lg shadow-lg shadow-blue-500/25 text-sm">
+            ✓ Concluído
           </Badge>
         );
       default:
         return (
-          <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">
+          <Badge className="bg-gray-500 text-white border-gray-600 dark:bg-gray-600 dark:text-white dark:border-gray-700 font-semibold px-4 py-2 rounded-lg shadow-lg shadow-gray-500/25 text-sm">
             {status}
           </Badge>
         );
@@ -93,12 +153,12 @@ const HistoryModal = ({ isOpen, onClose, user, bookings }: HistoryModalProps) =>
   if (!user) {
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="max-w-md bg-white dark:bg-slate-900 border shadow-lg [&>button]:hidden">
+        <DialogContent className="max-w-md bg-card border-card-border shadow-lg [&>button]:hidden">
           <DialogHeader className="text-center pb-4">
             <div className="mx-auto mb-4 p-4 bg-primary/20 rounded-full w-fit">
               <User className="h-8 w-8 text-primary" />
             </div>
-            <DialogTitle className="text-xl font-bold text-slate-900 dark:text-white">
+            <DialogTitle className="text-xl font-bold text-foreground">
               Acesso Necessário
             </DialogTitle>
           </DialogHeader>
@@ -122,15 +182,15 @@ const HistoryModal = ({ isOpen, onClose, user, bookings }: HistoryModalProps) =>
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden flex flex-col bg-white dark:bg-slate-900 border shadow-lg [&>button]:hidden">
-        <DialogHeader className="flex-shrink-0 bg-slate-50 dark:bg-slate-800 p-6 -m-6 mb-0 border-b border-slate-200 dark:border-slate-700">
-          <DialogTitle className="flex items-center justify-between text-xl font-bold">
+      <DialogContent className="max-w-5xl max-h-[85vh] overflow-hidden flex flex-col bg-card border-card-border shadow-lg [&>button]:hidden z-50">
+        <DialogHeader className="flex-shrink-0 bg-card-secondary p-6 -m-6 mb-0 border-b border-card-border">
+          <DialogTitle className="flex items-center justify-between text-xl font-bold text-foreground">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary/20 rounded-lg">
                 <Calendar className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h2 className="text-2xl font-bold text-slate-900 dark:text-white">
+                <h2 className="text-2xl font-bold text-foreground">
                   Histórico de Agendamentos
                 </h2>
                 <p className="text-sm text-muted-foreground font-normal">
@@ -142,7 +202,7 @@ const HistoryModal = ({ isOpen, onClose, user, bookings }: HistoryModalProps) =>
               variant="ghost"
               size="sm"
               onClick={onClose}
-              className="h-8 w-8 p-0 hover:bg-slate-100 dark:hover:bg-slate-700"
+              className="h-8 w-8 p-0 hover:bg-accent-hover"
             >
               <X className="h-4 w-4" />
             </Button>
@@ -150,7 +210,7 @@ const HistoryModal = ({ isOpen, onClose, user, bookings }: HistoryModalProps) =>
         </DialogHeader>
 
         {/* Filtros */}
-        <div className="flex-shrink-0 p-6 -m-6 mt-0 border-b border-slate-200 dark:border-slate-700">
+        <div className="flex-shrink-0 p-6 -m-6 mt-0 border-b border-card-border">
           <div className="flex items-center gap-4">
             <Filter className="h-4 w-4 text-muted-foreground" />
             <select
@@ -167,12 +227,22 @@ const HistoryModal = ({ isOpen, onClose, user, bookings }: HistoryModalProps) =>
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-6 -m-6 scrollbar-thin scrollbar-thumb-slate-300 dark:scrollbar-thumb-slate-600 scrollbar-track-transparent hover:scrollbar-thumb-slate-400 dark:hover:scrollbar-thumb-slate-500">
-          {filteredBookings.length === 0 ? (
+        <div className="flex-1 overflow-y-auto p-6 -m-6 scrollbar-thin scrollbar-thumb-border scrollbar-track-transparent hover:scrollbar-thumb-border-focus">
+          {isLoading ? (
             <div className="text-center py-16">
-              <div className="bg-white dark:bg-slate-800 p-8 rounded-xl shadow-lg border">
+              <div className="bg-card-secondary p-8 rounded-xl shadow-lg border-card-border">
+                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+                <h3 className="text-xl font-semibold mb-2 text-card-foreground">Carregando histórico...</h3>
+                <p className="text-muted-foreground">
+                  Buscando seus agendamentos
+                </p>
+              </div>
+            </div>
+          ) : filteredBookings.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="bg-card-secondary p-8 rounded-xl shadow-lg border-card-border">
                 <Calendar className="h-16 w-16 mx-auto mb-6 text-primary" />
-                <h3 className="text-xl font-semibold mb-2">Nenhum agendamento encontrado</h3>
+                <h3 className="text-xl font-semibold mb-2 text-card-foreground">Nenhum agendamento encontrado</h3>
                 <p className="text-muted-foreground">
                   {filter === "all" 
                     ? "Você ainda não tem agendamentos no histórico"
@@ -193,8 +263,13 @@ const HistoryModal = ({ isOpen, onClose, user, bookings }: HistoryModalProps) =>
                           <span className="text-xs text-muted-foreground">ID: #{booking.id.slice(-6)}</span>
                         </div>
                         
-                        <h3 className="mb-2 text-lg font-semibold text-white">
+                        <h3 className="mb-2 text-lg font-semibold text-foreground">
                           {booking.service.name}
+                          {booking.serviceOption && (
+                            <span className="ml-2 text-sm font-normal text-primary">
+                              - {booking.serviceOption.name}
+                            </span>
+                          )}
                         </h3>
                         
                         <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
@@ -210,7 +285,7 @@ const HistoryModal = ({ isOpen, onClose, user, bookings }: HistoryModalProps) =>
                         <div className="space-y-1 text-sm text-muted-foreground">
                           <div className="flex items-center gap-2">
                             <MapPin className="h-4 w-4" />
-                            <span>Serviços Globais</span>
+                            <span>Serviços</span>
                           </div>
                           <div className="flex items-center gap-2">
                             <Clock className="h-4 w-4" />
@@ -221,10 +296,27 @@ const HistoryModal = ({ isOpen, onClose, user, bookings }: HistoryModalProps) =>
                               "{booking.comment}"
                             </div>
                           )}
+                          {booking.rating && (
+                            <div className="mt-2 flex items-center gap-1">
+                              <span className="text-xs text-muted-foreground">Avaliação:</span>
+                              <div className="flex">
+                                {[1, 2, 3, 4, 5].map((star) => (
+                                  <Star
+                                    key={star}
+                                    className={`h-3 w-3 ${
+                                      star <= booking.rating
+                                        ? "text-yellow-400 fill-yellow-400"
+                                        : "text-gray-300"
+                                    }`}
+                                  />
+                                ))}
+                              </div>
+                            </div>
+                          )}
                         </div>
                       </div>
                       
-                      <div className="ml-4 text-center">
+                      <div className="ml-4 flex flex-col items-center gap-3">
                         <div className="rounded-lg bg-card/50 p-3 backdrop-blur-sm">
                           <div className="text-xs text-muted-foreground capitalize">
                             {format(booking.dateTime, "MMM", { locale: ptBR })}
@@ -236,6 +328,36 @@ const HistoryModal = ({ isOpen, onClose, user, bookings }: HistoryModalProps) =>
                             {format(booking.dateTime, "HH:mm")}
                           </div>
                         </div>
+                        
+                        {/* Botão de Avaliar */}
+                        {booking.status.toLowerCase() === "completed" && !booking.rating && (
+                          <Button
+                            size="sm"
+                            onClick={() => handleRateService(booking)}
+                            className="bg-primary hover:bg-primary/90 text-primary-foreground text-xs px-3 py-1"
+                          >
+                            <Star className="h-3 w-3 mr-1" />
+                            Avaliar
+                          </Button>
+                        )}
+                        
+                        {booking.rating && (
+                          <div className="text-xs text-muted-foreground text-center">
+                            <div className="flex justify-center mb-1">
+                              {[1, 2, 3, 4, 5].map((star) => (
+                                <Star
+                                  key={star}
+                                  className={`h-3 w-3 ${
+                                    star <= booking.rating
+                                      ? "text-yellow-400 fill-yellow-400"
+                                      : "text-gray-300"
+                                  }`}
+                                />
+                              ))}
+                            </div>
+                            <span>Avaliado</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   </CardContent>
@@ -245,6 +367,14 @@ const HistoryModal = ({ isOpen, onClose, user, bookings }: HistoryModalProps) =>
           )}
         </div>
       </DialogContent>
+      
+      {/* Modal de Avaliação */}
+      <RatingModal
+        isOpen={isRatingModalOpen}
+        onClose={() => setIsRatingModalOpen(false)}
+        booking={selectedBooking}
+        onRatingSubmit={handleRatingSubmit}
+      />
     </Dialog>
   );
 };

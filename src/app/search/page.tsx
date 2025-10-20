@@ -40,12 +40,47 @@ const SearchPage = async ({ searchParams }: SearchPageProps) => {
       },
     });
     // Buscar barbeiros que tenham pelo menos uma categoria igual à selecionada
-    barbers = await db.barber.findMany({
+    const barbersData = await db.barber.findMany({
       where: {
         categories: {
           some: { id: categoryId },
         },
       },
+    });
+
+    // Buscar avaliações para cada barbeiro individualmente
+    const reviewsMap = new Map();
+    
+    for (const barber of barbersData) {
+      const reviews = await db.booking.aggregate({
+        where: {
+          barberId: barber.id,
+          rating: {
+            not: null,
+          },
+        },
+        _avg: {
+          rating: true,
+        },
+        _count: {
+          rating: true,
+        },
+      });
+      
+      reviewsMap.set(barber.id, {
+        average: reviews._avg.rating || 0,
+        count: reviews._count.rating || 0,
+      });
+    }
+
+    // Adicionar avaliações aos barbeiros
+    barbers = barbersData.map(barber => {
+      const review = reviewsMap.get(barber.id);
+      return {
+        ...barber,
+        averageRating: review?.average ? Math.min(review.average, 5) : null,
+        totalReviews: review?.count || 0,
+      };
     });
     searchTitle = `Categoria: ${categoryName}`;
   } else if (searchParams.search) {
@@ -73,13 +108,48 @@ const SearchPage = async ({ searchParams }: SearchPageProps) => {
       },
     });
 
-    barbers = await db.barber.findMany({
+    const barbersData = await db.barber.findMany({
       where: {
         name: {
           contains: searchParams.search,
           mode: "insensitive",
         },
       },
+    });
+
+    // Buscar avaliações para cada barbeiro individualmente
+    const reviewsMap = new Map();
+    
+    for (const barber of barbersData) {
+      const reviews = await db.booking.aggregate({
+        where: {
+          barberId: barber.id,
+          rating: {
+            not: null,
+          },
+        },
+        _avg: {
+          rating: true,
+        },
+        _count: {
+          rating: true,
+        },
+      });
+      
+      reviewsMap.set(barber.id, {
+        average: reviews._avg.rating || 0,
+        count: reviews._count.rating || 0,
+      });
+    }
+
+    // Adicionar avaliações aos barbeiros
+    barbers = barbersData.map(barber => {
+      const review = reviewsMap.get(barber.id);
+      return {
+        ...barber,
+        averageRating: review?.average ? Math.min(review.average, 5) : null,
+        totalReviews: review?.count || 0,
+      };
     });
 
     services = await db.barberShopService.findMany({
@@ -140,6 +210,7 @@ const SearchPage = async ({ searchParams }: SearchPageProps) => {
                       key={barber.id}
                       barber={barber}
                       nameButton="Serviços"
+                      averageRating={barber.averageRating}
                     />
                   ))}
                 </div>

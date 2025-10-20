@@ -36,10 +36,10 @@ const CardBarber = ({ barberShop, nameButton }: BarberShopItemProps) => {
           </div>
           <div className="px-1 py-3">
             <h3 className="truncate text-lg font-semibold">{barberShop.name}</h3>
-            <p className="truncate text-sm text-gray-500">{barberShop.address}</p>
+            <p className="truncate text-sm text-foreground-muted">{barberShop.address}</p>
             <Button
               variant="outline"
-              className="mt-3 w-full border-none bg-gray-700"
+              className="mt-3 w-full border-none bg-card-secondary hover:bg-card-hover"
               asChild
             >
               <Link href={`/barbershop/${barberShop.id}`}>{nameButton}</Link>
@@ -60,18 +60,18 @@ const CardBarber = ({ barberShop, nameButton }: BarberShopItemProps) => {
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
             <Badge
-              className="absolute top-3 left-3 bg-white/20 backdrop-blur-md border-white/30 text-white"
+              className="absolute top-3 left-3 bg-card/20 backdrop-blur-md border-card-border text-card-foreground"
               variant="secondary"
             >
               <StarIcon className="mr-1 h-3 w-3 fill-yellow-400 text-yellow-400" />
               <span className="text-xs font-semibold">5.0</span>
             </Badge>
-            <div className="absolute bottom-3 right-3 rounded-full bg-primary/90 px-2 py-1 text-xs font-bold text-white backdrop-blur-sm">
+            <div className="absolute bottom-3 right-3 rounded-full bg-primary/90 px-2 py-1 text-xs font-bold text-primary-foreground backdrop-blur-sm">
               Barbearia
             </div>
           </div>
           <div className="p-4">
-            <h3 className="mb-2 text-lg font-bold text-white truncate">{barberShop.name}</h3>
+            <h3 className="mb-2 text-lg font-bold text-card-foreground truncate">{barberShop.name}</h3>
             <div className="mb-3 space-y-1">
               <p className="text-sm text-muted-foreground truncate flex items-center gap-1">
                 <svg className="h-3 w-3" fill="currentColor" viewBox="0 0 20 20">
@@ -90,7 +90,7 @@ const CardBarber = ({ barberShop, nameButton }: BarberShopItemProps) => {
             </div>
             <Button
               variant="outline"
-              className="w-full border-primary/30 bg-primary/10 text-primary hover:bg-primary hover:text-white transition-all duration-200"
+              className="w-full border-primary/30 bg-primary/10 text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-200"
               asChild
             >
               <Link href={`/barbershop/${barberShop.id}`} className="flex items-center justify-center gap-2">

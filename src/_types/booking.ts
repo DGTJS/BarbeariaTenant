@@ -18,4 +18,11 @@ export interface Booking {
     name: string;
     duration: number;
   };
+  serviceOption?: {
+    id: string;
+    name: string;
+    description?: string;
+    price: number;
+    duration: number;
+  };
 }

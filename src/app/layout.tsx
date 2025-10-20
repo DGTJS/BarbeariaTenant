@@ -4,6 +4,7 @@ import "./globals.css";
 import "@/_styles/scrollbar.css";
 import AuthProviders from "@/_providers/auth";
 import FooterBar from "@/_components/footerbar";
+import ColorProvider from "@/_components/color-provider";
 import { Toaster } from "sonner";
 
 const NunitoFont = Nunito({
@@ -24,12 +25,14 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="dark">
       <body className={`${NunitoFont.variable}`}>
-        <AuthProviders>
-          <div className="flex h-full flex-col">
-            <div className="flex-1">{children}</div>
-            <FooterBar />
-          </div>
-        </AuthProviders>
+        <ColorProvider>
+          <AuthProviders>
+            <div className="flex h-full flex-col">
+              <div className="flex-1">{children}</div>
+              <FooterBar />
+            </div>
+          </AuthProviders>
+        </ColorProvider>
         <Toaster />
       </body>
     </html>

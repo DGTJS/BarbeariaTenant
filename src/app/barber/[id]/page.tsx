@@ -1,17 +1,17 @@
 import { db } from "@/_lib/prisma";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { Suspense } from "react";
+import BarberServicesWithFilter from "@/_components/barber-services-with-filter";
 import Image from "next/image";
 import { Button } from "@/_components/ui/button";
 import { Badge } from "@/_components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/_components/ui/card";
-import { ChevronLeftIcon, StarIcon, MapPin, Clock, Phone, Mail, Calendar, Heart } from "lucide-react";
+import { ChevronLeftIcon, StarIcon, MapPin, Clock, Phone, Mail, Calendar } from "lucide-react";
 import SideBarButton from "@/_components/sidebar-button";
 import Link from "next/link";
-import Category from "@/_components/category";
-import ServiceBarberCard from "@/_components/cardServiceBarber";
-import { getCategories } from "@/_lib/getCategories";
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
-import { Suspense } from "react";
+import FavoriteBarberButton from "@/_components/favorite-barber-button";
+import SpecialtyBadge from "@/_components/specialty-badge";
 
 interface BarbersProps {
   params: {
@@ -21,6 +21,12 @@ interface BarbersProps {
 
 const BarberPage = async ({ params }: BarbersProps) => {
   const { id } = await params;
+  
+  // Função para converter número do dia da semana para nome
+  const getDayName = (weekday: number): string => {
+    const days = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+    return days[weekday] || 'Dia';
+  };
   
   // Buscar dados do usuário logado
   const session = await getServerSession(authOptions);
@@ -35,7 +41,11 @@ const BarberPage = async ({ params }: BarbersProps) => {
       phone: true,
       barberShopId: true,
       categories: true,
-      workingHours: true,
+      workingHours: {
+        include: {
+          pauses: true,
+        },
+      },
       user: {
         select: {
           email: true,
@@ -90,10 +100,8 @@ const BarberPage = async ({ params }: BarbersProps) => {
     }),
   ]);
 
-  const categories = await getCategories();
-
   // Buscar dados adicionais para o modal de agendamento
-  const [allServices, allBarbers, allBookings] = await Promise.all([
+  const [allServicesRaw, allBarbers, allBookings] = await Promise.all([
     // Buscar todos os serviços
     db.barberShopService.findMany({
       include: {
@@ -124,11 +132,19 @@ const BarberPage = async ({ params }: BarbersProps) => {
     }),
   ]);
 
-  // Buscar serviços da barbearia do barbeiro ou serviços globais
-  // Primeiro, tentar buscar serviços da barbearia específica
-  let services = await db.barberShopService.findMany({
+  // Serializar allServices para evitar erro de Decimal
+  const allServices = allServicesRaw.map(service => ({
+    ...service,
+    price: Number(service.price),
+    priceAdjustments: service.priceAdjustments?.map(adj => ({
+      ...adj,
+      priceAdjustment: Number(adj.priceAdjustment),
+    })),
+  }));
+
+  // Buscar todos os serviços ativos
+  const services = await db.barberShopService.findMany({
     where: {
-      barberShopId: Barbers!.barberShopId,
       status: true,
     },
     include: {
@@ -141,32 +157,27 @@ const BarberPage = async ({ params }: BarbersProps) => {
     },
   });
 
-  // Se não encontrar serviços na barbearia específica, buscar serviços globais
-  if (services.length === 0) {
-    const globalBarberShop = await db.barberShop.findFirst({
-      where: {
-        name: "Serviços Globais",
-        status: true,
-      },
-    });
+  // Converter Decimal para number para evitar erro de serialização
+  const serializedServices = services.map(service => ({
+    ...service,
+    price: Number(service.price),
+    priceAdjustments: service.priceAdjustments?.map(adj => ({
+      ...adj,
+      priceAdjustment: Number(adj.priceAdjustment),
+    })),
+  }));
 
-    if (globalBarberShop) {
-      services = await db.barberShopService.findMany({
-        where: {
-          barberShopId: globalBarberShop.id,
-          status: true,
-        },
-        include: {
-          category: true,
-          priceAdjustments: {
-            where: {
-              barberId: id,
-            },
-          },
-        },
-      });
-    }
-  }
+  // Extrair categorias únicas dos serviços reais do barbeiro
+  const barberCategories = serializedServices
+    .map(service => service.category)
+    .filter((category, index, self) => 
+      category && self.findIndex(c => c?.id === category.id) === index
+    )
+    .map(category => ({
+      id: category!.id,
+      name: category!.name,
+      IconUrl: category!.IconUrl
+    }));
 
   const averageRating = reviews._avg.rating
     ? Math.min(reviews._avg.rating, 5)
@@ -176,7 +187,7 @@ const BarberPage = async ({ params }: BarbersProps) => {
 
   if (!Barbers) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="min-h-screen bg-background">
         <div className="flex items-center justify-center h-screen">
           <div className="text-center">
             <h1 className="text-2xl font-bold text-white mb-2">Barbeiro não encontrado</h1>
@@ -199,9 +210,9 @@ const BarberPage = async ({ params }: BarbersProps) => {
         </div>
       </div>
     }>
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+      <div className="min-h-screen bg-background">
       {/* Header com imagem de fundo */}
-      <div className="relative h-[400px] lg:h-[500px] w-full overflow-hidden">
+      <div className="relative h-[350px] lg:h-[400px] w-full overflow-hidden">
         <Image
           src={Barbers.photo || "/logo.png"}
           alt={Barbers.name}
@@ -209,14 +220,14 @@ const BarberPage = async ({ params }: BarbersProps) => {
           className="object-cover object-center"
           priority
         />
-        <div className="absolute inset-0 bg-gradient-to-t from-slate-900/90 via-slate-900/50 to-transparent" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/95 via-background/30 to-transparent" />
 
         {/* Botões de navegação */}
         <div className="absolute top-4 left-4 z-50">
       <Button
         variant="outline"
             size="sm"
-            className="bg-white/10 backdrop-blur-sm border-white/20 hover:bg-white/20"
+            className="bg-white/10 backdrop-blur-sm border border-white/20 hover:bg-white/20 shadow-sm hover:shadow-md transition-all duration-200"
         asChild
       >
         <Link href="/">
@@ -226,40 +237,37 @@ const BarberPage = async ({ params }: BarbersProps) => {
         </div>
 
         <div className="absolute top-4 right-4 z-50">
-        <SideBarButton category={categories} />
+        <SideBarButton category={[]} />
       </div>
 
         {/* Informações do barbeiro no header */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 lg:p-8">
+        <div className="absolute bottom-0 left-0 right-0 p-4 lg:p-6">
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-4">
-            <div className="text-white">
-              <h1 className="text-3xl lg:text-4xl font-bold mb-2">{Barbers.name}</h1>
-              <p className="text-lg text-gray-300 mb-3">{Barbers.barberShop?.name}</p>
-              <div className="flex items-center gap-2 text-sm text-gray-300">
+            <div className="flex flex-col gap-2">
+              <h1 className="text-2xl lg:text-3xl font-bold text-white drop-shadow-lg">{Barbers.name}</h1>
+              <p className="text-lg text-white/90 drop-shadow-md">{Barbers.barberShop?.name}</p>
+              <div className="flex items-center gap-2 text-sm text-white/80">
                 <MapPin className="h-4 w-4" />
-                <span>{Barbers.barberShop?.address || "Endereço não informado"}</span>
+                <span className="drop-shadow-md">{Barbers.barberShop?.address || "Endereço não informado"}</span>
               </div>
             </div>
             
-            <div className="flex flex-col lg:flex-row gap-3">
+            <div className="flex items-center justify-between gap-3">
               {averageRating && (
-                <Card className="bg-white/10 backdrop-blur-sm border-white/20">
-                  <CardContent className="p-4">
+                <Card className="bg-white/10 backdrop-blur-sm border border-white/20 shadow-sm hover:shadow-md transition-all duration-200">
+                  <CardContent className="p-3">
                     <div className="flex items-center gap-2 text-white">
-                      <StarIcon className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-        <div>
-                        <div className="text-xl font-bold">{averageRating.toFixed(1)}</div>
-                        <div className="text-xs text-gray-300">{totalReviews} avaliações</div>
+                      <StarIcon className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <div>
+                        <div className="text-lg font-bold">{averageRating.toFixed(1)}</div>
+                        <div className="text-xs text-white/80">{totalReviews} avaliações</div>
                       </div>
                     </div>
                   </CardContent>
                 </Card>
               )}
               
-              <Button className="bg-primary hover:bg-primary/90 text-white">
-                <Heart className="h-4 w-4 mr-2" />
-                Favoritar
-              </Button>
+              <FavoriteBarberButton barberId={Barbers.id} />
             </div>
           </div>
         </div>
@@ -271,107 +279,79 @@ const BarberPage = async ({ params }: BarbersProps) => {
           {/* Coluna principal - Serviços */}
           <div className="lg:col-span-2 space-y-8">
             {/* Categorias */}
-            <Card className="bg-slate-800/50 border-slate-700">
+            <Card className="bg-card-secondary/90 backdrop-blur-sm border border-card-border/30 shadow-sm hover:shadow-md transition-all duration-200">
               <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
+                <CardTitle className="text-card-foreground flex items-center gap-2">
                   <div className="w-1 h-6 bg-primary rounded-full" />
                   Especialidades
                 </CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-slate-600 scrollbar-track-transparent">
-                  {Barbers.categories?.map((category) => (
-            <Category
-              key={category.id}
-              name={category.name}
-              IconUrl={category.IconUrl}
-              id={category.id}
-            />
-          ))}
-        </div>
-              </CardContent>
-            </Card>
-
-            {/* Serviços */}
-            <Card className="bg-slate-800/50 border-slate-700">
-              <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
-                  <div className="w-1 h-6 bg-primary rounded-full" />
-                  Serviços Disponíveis
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {services.length > 0 ? (
-                    services.map((service) => (
-                      <Suspense key={service.id} fallback={
-                        <Card className="bg-slate-800 border-slate-700">
-                          <CardContent className="p-6">
-                            <div className="animate-pulse">
-                              <div className="h-4 bg-slate-700 rounded mb-2"></div>
-                              <div className="h-4 bg-slate-700 rounded w-3/4 mb-4"></div>
-                              <div className="h-8 bg-slate-700 rounded"></div>
-                            </div>
-                          </CardContent>
-                        </Card>
-                      }>
-                        <ServiceBarberCard
-                          service={{
-                            ...service,
-                            price: Number(service.price),
-                            priceAdjustments: service.priceAdjustments?.map((adj) => ({
-                              ...adj,
-                              priceAdjustment: Number(adj.priceAdjustment),
-                            })),
-                          }}
-                          barber={{
-                            id: Barbers.id,
-                            name: Barbers.name,
-                            photo: Barbers.photo,
-                            workingHours: Barbers.workingHours,
-                            barberShop: Barbers.barberShop,
-                          }}
-                          user={user}
-                          bookings={allBookings}
-                        />
-                      </Suspense>
+                <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-thin scrollbar-thumb-primary/30 scrollbar-track-transparent hover:scrollbar-thumb-primary/50 transition-colors">
+                  {barberCategories.length > 0 ? (
+                    barberCategories.map((category) => (
+                      <SpecialtyBadge
+                        key={category.id}
+                        name={category.name}
+                        IconUrl={category.IconUrl}
+                        id={category.id}
+                      />
                     ))
                   ) : (
-                    <div className="text-center py-12">
-                      <Calendar className="h-16 w-16 mx-auto text-gray-400 mb-4" />
-                      <h3 className="text-lg font-semibold text-white mb-2">Nenhum serviço disponível</h3>
-                      <p className="text-gray-400">Este barbeiro ainda não possui serviços cadastrados.</p>
-                    </div>
+                    <p className="text-foreground-muted text-sm">Nenhuma especialidade disponível</p>
                   )}
                 </div>
               </CardContent>
             </Card>
+
+            {/* Serviços com Filtro */}
+            <BarberServicesWithFilter
+              services={serializedServices}
+              barber={{
+                id: Barbers.id,
+                name: Barbers.name,
+                photo: Barbers.photo,
+                workingHours: Barbers.workingHours?.map((hour: any & { pauses: { id: string; startTime: string; endTime: string }[] }) => ({
+                  ...hour,
+                  pauses: hour.pauses || [],
+                })),
+                barberShop: Barbers.barberShop?.name ? {
+                  name: Barbers.barberShop.name,
+                  address: Barbers.barberShop.address || undefined,
+                } : undefined,
+              }}
+              user={user}
+              allBookings={allBookings}
+              allServices={allServices}
+              allBarbers={allBarbers}
+              categories={barberCategories}
+            />
           </div>
 
           {/* Sidebar - Informações e avaliações */}
           <div className="space-y-6">
             {/* Informações de contato */}
-            <Card className="bg-slate-800/50 border-slate-700">
+            <Card className="bg-card-secondary/90 backdrop-blur-sm border border-card-border/30 shadow-sm hover:shadow-md transition-all duration-200">
               <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
+                <CardTitle className="text-card-foreground flex items-center gap-2">
                   <div className="w-1 h-6 bg-primary rounded-full" />
                   Informações
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 {Barbers.phone && (
-                  <div className="flex items-center gap-3 text-gray-300">
+                  <div className="flex items-center gap-3 text-foreground-muted">
                     <Phone className="h-4 w-4 text-primary" />
                     <span>{Barbers.phone}</span>
                   </div>
                 )}
                 {Barbers.user?.email && (
-                  <div className="flex items-center gap-3 text-gray-300">
+                  <div className="flex items-center gap-3 text-foreground-muted">
                     <Mail className="h-4 w-4 text-primary" />
                     <span className="text-sm">{Barbers.user.email}</span>
                   </div>
                 )}
-                <div className="flex items-center gap-3 text-gray-300">
+                <div className="flex items-center gap-3 text-foreground-muted">
                   <MapPin className="h-4 w-4 text-primary" />
                   <span className="text-sm">{Barbers.barberShop?.address || "Endereço não informado"}</span>
                 </div>
@@ -380,21 +360,43 @@ const BarberPage = async ({ params }: BarbersProps) => {
 
             {/* Horários de funcionamento */}
             {Barbers.workingHours && Barbers.workingHours.length > 0 && (
-              <Card className="bg-slate-800/50 border-slate-700">
+              <Card className="bg-card-secondary/90 backdrop-blur-sm border border-card-border/30 shadow-sm hover:shadow-md transition-all duration-200">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
+                  <CardTitle className="text-card-foreground flex items-center gap-2">
                     <div className="w-1 h-6 bg-primary rounded-full" />
-                    Horários
+                    Horários e Pausas
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
+                  <div className="space-y-4">
                     {Barbers.workingHours.map((schedule, index) => (
-                      <div key={index} className="flex justify-between items-center text-sm">
-                        <span className="text-gray-300 capitalize">{schedule.dayOfWeek}</span>
-                        <span className="text-white">
-                          {schedule.startTime} - {schedule.endTime}
-                        </span>
+                      <div key={index} className="space-y-2">
+                        {/* Horário principal */}
+                        <div className="flex justify-between items-center text-sm">
+                          <span className="text-foreground-muted capitalize font-medium">
+                            {getDayName(schedule.weekday)}
+                          </span>
+                          <span className="text-card-foreground font-semibold">
+                            {schedule.startTime} - {schedule.endTime}
+                          </span>
+                        </div>
+                        
+                        {/* Pausas */}
+                        {schedule.pauses && schedule.pauses.length > 0 && (
+                          <div className="ml-4 space-y-1">
+                            {schedule.pauses.map((pause: any, pauseIndex: number) => (
+                              <div key={pauseIndex} className="flex justify-between items-center text-xs text-foreground-muted">
+                                <span className="flex items-center gap-1">
+                                  <div className="w-1 h-1 bg-foreground-muted rounded-full" />
+                                  Pausa
+                                </span>
+                                <span>
+                                  {pause.startTime} - {pause.endTime}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -404,9 +406,9 @@ const BarberPage = async ({ params }: BarbersProps) => {
 
             {/* Avaliações recentes */}
             {recentReviews.length > 0 && (
-              <Card className="bg-slate-800/50 border-slate-700">
+              <Card className="bg-card-secondary/90 backdrop-blur-sm border border-card-border/30 shadow-sm hover:shadow-md transition-all duration-200">
                 <CardHeader>
-                  <CardTitle className="text-white flex items-center gap-2">
+                  <CardTitle className="text-card-foreground flex items-center gap-2">
                     <div className="w-1 h-6 bg-primary rounded-full" />
                     Avaliações Recentes
                   </CardTitle>
@@ -414,7 +416,7 @@ const BarberPage = async ({ params }: BarbersProps) => {
                 <CardContent>
                   <div className="space-y-4">
                     {recentReviews.map((review, index) => (
-                      <div key={index} className="border-b border-slate-700 pb-4 last:border-b-0">
+                      <div key={index} className="border-b border-card-border/30 pb-4 last:border-b-0">
                         <div className="flex items-center gap-2 mb-2">
                           <div className="flex">
                             {[...Array(5)].map((_, i) => (
@@ -423,17 +425,17 @@ const BarberPage = async ({ params }: BarbersProps) => {
                                 className={`h-4 w-4 ${
                                   i < (review.rating || 0)
                                     ? "fill-yellow-400 text-yellow-400"
-                                    : "text-gray-600"
+                                    : "text-foreground-muted"
                                 }`}
                               />
                             ))}
                           </div>
-                          <span className="text-sm text-gray-400">
+                          <span className="text-sm text-foreground-muted">
                             {review.user.name || "Usuário anônimo"}
                           </span>
                         </div>
                         {review.comment && (
-                          <p className="text-sm text-gray-300">{review.comment}</p>
+                          <p className="text-sm text-foreground-muted">{review.comment}</p>
                         )}
                       </div>
                     ))}

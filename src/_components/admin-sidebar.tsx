@@ -50,6 +50,11 @@ const navigation = [
     icon: Image,
   },
   {
+    name: "Temas",
+    href: "/admin/themes",
+    icon: Palette,
+  },
+  {
     name: "Cores",
     href: "/admin/colors",
     icon: Palette,
@@ -139,7 +144,7 @@ export function AdminSidebar() {
           <div className="p-6 border-t border-border/50">
             <div className="flex items-center space-x-3 p-3 bg-muted/50 rounded-xl">
               <div className="w-8 h-8 bg-gradient-to-br from-green-500 to-green-600 rounded-full flex items-center justify-center">
-                <span className="text-white text-xs font-bold">✓</span>
+                <span className="text-card-foreground text-xs font-bold">✓</span>
               </div>
               <div className="flex-1">
                 <p className="text-xs font-medium text-foreground">Sistema Online</p>

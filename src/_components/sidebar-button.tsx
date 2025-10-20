@@ -17,12 +17,13 @@ import {
   SheetTrigger,
 } from "./ui/sheet";
 // import { Avatar, AvatarImage } from "./ui/avatar";
-import { MenuIcon, Calendar, HomeIcon, LogOutIcon } from "lucide-react";
+import { MenuIcon, Calendar, HomeIcon, LogOutIcon, Star } from "lucide-react";
 import Image from "next/image";
 import { signIn, signOut } from "next-auth/react";
 import { useSession } from "next-auth/react";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import Link from "next/link";
+import { useTheme, getIconFilter } from "@/_hooks/useTheme";
 
 interface CategoryProps {
   name: string;
@@ -36,10 +37,13 @@ interface CategoryProps {
 interface SideBarButtonProps {
   category: CategoryProps[];
   onAppointmentsClick?: () => void;
+  onRateServicesClick?: () => void;
+  onBookingClick?: () => void;
 }
 
-const SideBarButton = ({ category, onAppointmentsClick }: SideBarButtonProps) => {
+const SideBarButton = ({ category, onAppointmentsClick, onRateServicesClick, onBookingClick }: SideBarButtonProps) => {
   const { data } = useSession();
+  const { getIconFilterStyle } = useTheme();
   const handleLoginGoogleClick = () => signIn("google");
   const handleLogoutClick = () => signOut();
 
@@ -50,25 +54,31 @@ const SideBarButton = ({ category, onAppointmentsClick }: SideBarButtonProps) =>
         <Button
           size="icon"
           variant="outline"
-          className="cursor-pointer border-none hover:bg-gray-700"
+          className="cursor-pointer border-none hover:bg-card-hover"
         >
-          <MenuIcon className="h-10 w-10 text-white" />
+          <MenuIcon 
+            className="h-10 w-10 text-card-foreground"
+            style={{ filter: getIconFilterStyle() }}
+          />
         </Button>
       </SheetTrigger>
-      <SheetContent side="right" className="bg-background border-border">
+      <SheetContent side="right" className="bg-background/95   shadow-lg">
         <SheetTitle className="mx-5 pt-5 pl-3 text-left text-2xl">
           Menu
         </SheetTitle>
-        <SheetHeader className="mx-4 border-b border-solid border-gray-700 pb-8 text-left">
+        <SheetHeader className="mx-4  pb-8 text-left">
           {data?.user === undefined && (
             <div className="flex flex-row items-center justify-between">
-              <h2 className="text-lg font-semibold text-white">
+              <h2 className="text-lg font-semibold text-card-foreground">
                 Olá Faça seu login!
               </h2>
               <Dialog>
                 <DialogTrigger asChild>
                   <Button variant="default" className="cursor-pointer">
-                    <LogOutIcon className="text-white" />
+                    <LogOutIcon 
+                      className="text-card-foreground"
+                      style={{ filter: getIconFilterStyle() }}
+                    />
                   </Button>
                 </DialogTrigger>
                 <DialogContent className="w-[400px]">
@@ -111,7 +121,7 @@ const SideBarButton = ({ category, onAppointmentsClick }: SideBarButtonProps) =>
               </Avatar>{" "}
               <div className="flex flex-col text-start">
                 <p className="text-sm font-bold">{data?.user?.name}</p>
-                <p className="text-xs text-gray-400">{data?.user?.email}</p>
+                <p className="text-xs text-foreground-muted">{data?.user?.email}</p>
               </div>
             </div>
           )}
@@ -123,17 +133,53 @@ const SideBarButton = ({ category, onAppointmentsClick }: SideBarButtonProps) =>
             asChild
           >
             <Link href="/">
-              <HomeIcon className="text-white" width={15} height={15} />
-              <p className="text-sm font-normal text-white">Ínicio</p>
+              <HomeIcon 
+                className="text-card-foreground" 
+                width={15} 
+                height={15}
+                style={{ filter: getIconFilterStyle() }}
+              />
+              <p className="text-sm font-normal text-card-foreground">Ínicio</p>
             </Link>
+          </Button>
+          <Button
+            variant="ghost"
+            className="flex cursor-pointer justify-start gap-2"
+            onClick={onBookingClick}
+          >
+            <Calendar 
+              className="text-card-foreground" 
+              width={15} 
+              height={15}
+              style={{ filter: getIconFilterStyle() }}
+            />
+            <p className="text-sm font-normal">Agendar Serviços</p>
           </Button>
           <Button
             variant="ghost"
             className="flex cursor-pointer justify-start gap-2"
             onClick={onAppointmentsClick}
           >
-            <Calendar className="text-white" width={15} height={15} />
-            <p className="text-sm font-normal">Agendamentos</p>
+            <Calendar 
+              className="text-card-foreground" 
+              width={15} 
+              height={15}
+              style={{ filter: getIconFilterStyle() }}
+            />
+            <p className="text-sm font-normal">Meus Agendamentos</p>
+          </Button>
+          <Button
+            variant="ghost"
+            className="flex cursor-pointer justify-start gap-2"
+            onClick={onRateServicesClick}
+          >
+            <Star 
+              className="text-card-foreground" 
+              width={15} 
+              height={15}
+              style={{ filter: getIconFilterStyle() }}
+            />
+            <p className="text-sm font-normal">Avaliar Serviços</p>
           </Button>
         </div>
         <div className="mx-5 flex flex-col gap-4 border-b border-solid border-gray-700 py-5 text-left">
@@ -145,7 +191,13 @@ const SideBarButton = ({ category, onAppointmentsClick }: SideBarButtonProps) =>
               asChild
             >
               <Link href={`/search?category=${item.id}`}>
-                <img src={item.IconUrl} alt="Logo" width={15} height={15} />
+                <img 
+                  src={item.IconUrl} 
+                  alt="Logo" 
+                  width={15} 
+                  height={15}
+                  style={{ filter: getIconFilterStyle() }}
+                />
                 <p className="text-sm">{item.name}</p>
               </Link>
             </Button>
@@ -157,7 +209,11 @@ const SideBarButton = ({ category, onAppointmentsClick }: SideBarButtonProps) =>
             className="flex cursor-pointer items-center justify-start gap-3"
             onClick={handleLogoutClick}
           >
-            <LogOutIcon width={15} height={15} />
+            <LogOutIcon 
+              width={15} 
+              height={15}
+              style={{ filter: getIconFilterStyle() }}
+            />
             <p className="text-sm font-normal">Sair da conta</p>
           </Button>
         </div>

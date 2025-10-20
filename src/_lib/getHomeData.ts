@@ -15,10 +15,7 @@ export const getHomeData = cache(async (userId: string) => {
       // Serviços globais (disponíveis em todas as barbearias) - consulta otimizada
       db.barberShopService.findMany({
         where: { 
-          status: true,
-          barberShop: {
-            name: "Serviços Globais"
-          }
+          status: true
         },
         select: {
           id: true,
@@ -76,6 +73,11 @@ export const getHomeData = cache(async (userId: string) => {
                   endTime: true,
                 },
               },
+            },
+          },
+          booking: {
+            select: {
+              rating: true,
             },
           },
         },

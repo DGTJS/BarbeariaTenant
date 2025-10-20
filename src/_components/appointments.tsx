@@ -33,7 +33,7 @@ const Appointments = memo(({ bookings = [], user }: AppointmentsProps) => {
     return (
       <div className="space-y-4">
         {/* No appointments message */}
-        <div className="rounded-lg border border-dashed border-border/50 p-6 text-center">
+        <div className="rounded-lg border border-dashed border-booking-card-border p-6 text-center bg-booking-card">
           <Calendar className="mx-auto mb-2 h-8 w-8 text-muted-foreground" />
           {!user ? (
             <>
@@ -78,7 +78,7 @@ const Appointments = memo(({ bookings = [], user }: AppointmentsProps) => {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4 pb-20 sm:pb-4">
       {upcomingBookings.map((booking) => {
         const bookingDate = new Date(booking.dateTime);
         const month = bookingDate.toLocaleDateString('pt-BR', { month: 'short' });
@@ -94,27 +94,34 @@ const Appointments = memo(({ bookings = [], user }: AppointmentsProps) => {
             case 'CONFIRMED':
             case 'CONFIRMADO':
               return (
-                <Badge className="bg-green-500/20 text-green-400 border-green-500/30">
-                  Confirmado
+                <Badge className="bg-emerald-500 text-white border-emerald-600 dark:bg-emerald-600 dark:text-white dark:border-emerald-700 font-semibold px-4 py-2 rounded-lg shadow-lg shadow-emerald-500/25 text-sm">
+                  ✓ Confirmado
                 </Badge>
               );
             case 'PENDING':
             case 'PENDENTE':
               return (
-                <Badge className="bg-yellow-500/20 text-yellow-400 border-yellow-500/30">
-                  Agendado
+                <Badge className="bg-amber-500 text-white border-amber-600 dark:bg-amber-600 dark:text-white dark:border-amber-700 font-semibold px-4 py-2 rounded-lg shadow-lg shadow-amber-500/25 text-sm">
+                  ⏳ Agendado
                 </Badge>
               );
             case 'CANCELLED':
             case 'CANCELADO':
               return (
-                <Badge className="bg-red-500/20 text-red-400 border-red-500/30">
-                  Cancelado
+                <Badge className="bg-red-500 text-white border-red-600 dark:bg-red-600 dark:text-white dark:border-red-700 font-semibold px-4 py-2 rounded-lg shadow-lg shadow-red-500/25 text-sm">
+                  ✕ Cancelado
+                </Badge>
+              );
+            case 'COMPLETED':
+            case 'CONCLUIDO':
+              return (
+                <Badge className="bg-blue-500 text-white border-blue-600 dark:bg-blue-600 dark:text-white dark:border-blue-700 font-semibold px-4 py-2 rounded-lg shadow-lg shadow-blue-500/25 text-sm">
+                  ✓ Concluído
                 </Badge>
               );
             default:
               return (
-                <Badge className="bg-gray-500/20 text-gray-400 border-gray-500/30">
+                <Badge className="bg-gray-500 text-white border-gray-600 dark:bg-gray-600 dark:text-white dark:border-gray-700 font-semibold px-4 py-2 rounded-lg shadow-lg shadow-gray-500/25 text-sm">
                   {status}
                 </Badge>
               );
@@ -131,8 +138,13 @@ const Appointments = memo(({ bookings = [], user }: AppointmentsProps) => {
                     <span className="text-xs text-muted-foreground">ID: #{booking.id.slice(-6)}</span>
                   </div>
                   
-                  <h3 className="mb-2 text-lg font-semibold text-white">
+                  <h3 className="mb-2 text-lg font-semibold text-card-foreground">
                     {booking.service.name}
+                    {booking.serviceOption && (
+                      <span className="ml-2 text-sm font-normal text-primary">
+                        - {booking.serviceOption.name}
+                      </span>
+                    )}
                   </h3>
                   
                   <div className="mb-3 flex items-center gap-2 text-sm text-muted-foreground">
@@ -148,11 +160,11 @@ const Appointments = memo(({ bookings = [], user }: AppointmentsProps) => {
                   <div className="space-y-1 text-sm text-muted-foreground">
                     <div className="flex items-center gap-2">
                       <MapPin className="h-4 w-4" />
-                      <span>Serviços Globais</span>
+                      <span>Serviços</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4" />
-                      <span>Duração: {booking.service.duration} min</span>
+                      <span>Duração: {booking.serviceOption?.duration || booking.service.duration} min</span>
                     </div>
                     {booking.comment && (
                       <div className="mt-2 text-xs text-muted-foreground italic">
@@ -163,10 +175,10 @@ const Appointments = memo(({ bookings = [], user }: AppointmentsProps) => {
                 </div>
                 
                 <div className="ml-4 text-center">
-                  <div className="rounded-lg bg-card/50 p-3 backdrop-blur-sm">
-                    <div className="text-xs text-muted-foreground capitalize">{month}</div>
-                    <div className="text-2xl font-bold text-white">{day}</div>
-                    <div className="text-sm text-muted-foreground">{time}</div>
+                  <div className="rounded-lg bg-booking-card p-3 backdrop-blur-sm">
+                    <div className="text-xs text-foreground-muted capitalize">{month}</div>
+                    <div className="text-2xl font-bold text-card-foreground">{day}</div>
+                    <div className="text-sm text-foreground-muted">{time}</div>
                   </div>
                 </div>
               </div>

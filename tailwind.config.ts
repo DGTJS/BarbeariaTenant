@@ -22,8 +22,17 @@ const config = {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
-        background: "hsl(var(--background))",
-        foreground: "hsl(var(--foreground))",
+        background: {
+          DEFAULT: "hsl(var(--background))",
+          secondary: "hsl(var(--background-secondary))",
+          tertiary: "hsl(var(--background-tertiary))",
+        },
+        foreground: {
+          DEFAULT: "hsl(var(--foreground))",
+          secondary: "hsl(var(--foreground-secondary))",
+          muted: "hsl(var(--foreground-muted))",
+          disabled: "hsl(var(--foreground-disabled))",
+        },
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -36,6 +45,18 @@ const config = {
           DEFAULT: "hsl(var(--destructive))",
           foreground: "hsl(var(--destructive-foreground))",
         },
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+        },
         muted: {
           DEFAULT: "hsl(var(--muted))",
           foreground: "hsl(var(--muted-foreground))",
@@ -43,6 +64,7 @@ const config = {
         accent: {
           DEFAULT: "hsl(var(--accent))",
           foreground: "hsl(var(--accent-foreground))",
+          hover: "hsl(var(--accent-hover))",
         },
         popover: {
           DEFAULT: "hsl(var(--popover))",
@@ -51,6 +73,32 @@ const config = {
         card: {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
+          secondary: "hsl(var(--card-secondary))",
+          tertiary: "hsl(var(--card-tertiary))",
+          hover: "hsl(var(--card-hover))",
+          border: "hsl(var(--card-border))",
+        },
+        booking: {
+          card: "hsl(var(--booking-card))",
+          "card-hover": "hsl(var(--booking-card-hover))",
+          "card-border": "hsl(var(--booking-card-border))",
+          "status-confirmed": "hsl(var(--booking-status-confirmed))",
+          "status-pending": "hsl(var(--booking-status-pending))",
+          "status-cancelled": "hsl(var(--booking-status-cancelled))",
+        },
+        input: {
+          DEFAULT: "hsl(var(--input))",
+          border: "hsl(var(--input-border))",
+          focus: "hsl(var(--input-focus))",
+        },
+        border: {
+          DEFAULT: "hsl(var(--border))",
+          secondary: "hsl(var(--border-secondary))",
+          focus: "hsl(var(--border-focus))",
+        },
+        ring: {
+          DEFAULT: "hsl(var(--ring))",
+          focus: "hsl(var(--ring-focus))",
         },
       },
       borderRadius: {

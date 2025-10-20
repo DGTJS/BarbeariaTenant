@@ -3,6 +3,7 @@ import HomeContent from "@/_components/home-content";
 import { getHomeData, sanitizeDecimal } from "@/_lib/getHomeData";
 import { getUserData } from "@/_lib/getUserData";
 import { getBanners } from "@/_lib/getBanners";
+import { getBarberShopSystemStatus } from "@/_lib/getBarberShopSystemStatus";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
@@ -15,6 +16,7 @@ export default async function Home() {
   const { services, barbers, categories, barberShops, bookings } = await getHomeData(userId || "");
   const user = await getUserData();
   const banners = await getBanners();
+  const barberShopSystemEnabled = await getBarberShopSystemStatus();
 
   return (
     <>
@@ -22,6 +24,8 @@ export default async function Home() {
         categories={sanitizeDecimal(categories)} 
         user={user}
         bookings={sanitizeDecimal(bookings)}
+        services={sanitizeDecimal(services)}
+        barbers={sanitizeDecimal(barbers)}
       />
       <HomeContent
         user={user}
@@ -31,6 +35,7 @@ export default async function Home() {
         barberShops={sanitizeDecimal(barberShops)}
         bookings={sanitizeDecimal(bookings)}
         banners={sanitizeDecimal(banners)}
+        showBarberShops={!barberShopSystemEnabled}
       />
     </>
   );

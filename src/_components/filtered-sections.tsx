@@ -81,15 +81,17 @@ interface FilteredSectionsProps {
   services?: Service[];
   barberShops?: BarberShop[];
   bookings?: Booking[];
+  showBarberShops?: boolean;
 }
 
-const FilteredSections = ({ selectedCategory, barbers, services, barberShops, bookings }: FilteredSectionsProps) => {
+const FilteredSections = ({ selectedCategory, barbers, services, barberShops, bookings, showBarberShops = true }: FilteredSectionsProps) => {
   const filteredData = useMemo(() => {
     // Garantir que os arrays existam e não sejam undefined
     const safeBarbers = barbers || [];
     const safeServices = services || [];
     const safeBarberShops = barberShops || [];
     const safeBookings = bookings || [];
+
 
     if (!selectedCategory) {
       return {
@@ -121,7 +123,7 @@ const FilteredSections = ({ selectedCategory, barbers, services, barberShops, bo
 
             // Para serviços globais, mostrar todas as barbearias (exceto a barbearia global)
             const filteredBarberShops = safeBarberShops
-              .filter((barberShop) => barberShop.name !== "Serviços Globais")
+              .filter((barberShop) => barberShop.name !== "Serviços")
               .filter((barberShop, index, self) => 
                 index === self.findIndex(bs => bs.id === barberShop.id)
               );
@@ -144,7 +146,7 @@ const FilteredSections = ({ selectedCategory, barbers, services, barberShops, bo
       <div className="text-center py-12">
         <div className="bg-gray-800 rounded-lg p-8 max-w-md mx-auto">
           <div className="text-6xl mb-4">🔍</div>
-          <h3 className="text-xl font-semibold text-white mb-2">
+          <h3 className="text-xl font-semibold text-foreground mb-2">
             Nenhum resultado encontrado
           </h3>
           <p className="text-gray-400">
@@ -162,7 +164,7 @@ const FilteredSections = ({ selectedCategory, barbers, services, barberShops, bo
         <section>
           <div className="flex items-center gap-4 mb-6">
             <div className="h-8 w-1 rounded-full bg-gradient-to-b from-primary to-secondary"></div>
-            <h2 className="text-2xl font-bold text-white">
+            <h2 className="text-2xl font-bold text-foreground">
               {selectedCategory ? "Barbeiros Especializados" : "Nossos Barbeiros"}
             </h2>
             <span className="bg-primary/20 text-primary px-3 py-1 rounded-full text-sm font-medium">
@@ -173,9 +175,11 @@ const FilteredSections = ({ selectedCategory, barbers, services, barberShops, bo
           {/* Mobile */}
           <div className="flex gap-3 overflow-auto [&::-webkit-scrollbar]:hidden lg:hidden">
             {filteredData.filteredBarbers.map((barber) => {
-              const averageRating = barber.booking?.length > 0 
-                ? barber.booking.reduce((sum, booking) => sum + (booking.rating || 0), 0) / barber.booking.length
-                : 5.0;
+              // Calcular avaliação média apenas com ratings válidos
+              const validRatings = barber.booking?.filter(booking => booking.rating !== null) || [];
+              const averageRating = validRatings.length > 0 
+                ? validRatings.reduce((sum, booking) => sum + (booking.rating || 0), 0) / validRatings.length
+                : undefined;
               
               return (
                 <Barbers
@@ -191,9 +195,11 @@ const FilteredSections = ({ selectedCategory, barbers, services, barberShops, bo
           {/* Desktop */}
           <div className="hidden lg:grid lg:grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
             {filteredData.filteredBarbers.map((barber) => {
-              const averageRating = barber.booking?.length > 0 
-                ? barber.booking.reduce((sum, booking) => sum + (booking.rating || 0), 0) / barber.booking.length
-                : 5.0;
+              // Calcular avaliação média apenas com ratings válidos
+              const validRatings = barber.booking?.filter(booking => booking.rating !== null) || [];
+              const averageRating = validRatings.length > 0 
+                ? validRatings.reduce((sum, booking) => sum + (booking.rating || 0), 0) / validRatings.length
+                : undefined;
               
               return (
                 <Barbers
@@ -213,8 +219,8 @@ const FilteredSections = ({ selectedCategory, barbers, services, barberShops, bo
         <section>
           <div className="flex items-center gap-4 mb-6">
             <div className="h-8 w-1 rounded-full bg-gradient-to-b from-primary to-secondary"></div>
-            <h2 className="text-2xl font-bold text-white">
-              {selectedCategory ? "Serviços Globais Disponíveis" : "Serviços Globais"}
+            <h2 className="text-2xl font-bold text-foreground">
+              {selectedCategory ? "Serviços Disponíveis" : "Serviços"}
             </h2>
             <span className="bg-primary/20 text-primary px-3 py-1 rounded-full text-sm font-medium">
               {filteredData.filteredServices.length}
@@ -286,11 +292,11 @@ const FilteredSections = ({ selectedCategory, barbers, services, barberShops, bo
       )}
 
       {/* Barbearias */}
-      {filteredData.filteredBarberShops.length > 0 && (
+      {showBarberShops && filteredData.filteredBarberShops.length > 0 && (
         <section>
           <div className="flex items-center gap-4 mb-6">
             <div className="h-8 w-1 rounded-full bg-gradient-to-b from-primary to-secondary"></div>
-            <h2 className="text-2xl font-bold text-white">
+            <h2 className="text-2xl font-bold text-foreground">
               {selectedCategory ? "Barbearias Especializadas" : "Barbearias Populares"}
             </h2>
             <span className="bg-primary/20 text-primary px-3 py-1 rounded-full text-sm font-medium">

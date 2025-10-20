@@ -246,12 +246,12 @@ const BookingSidebar = ({ isOpen, onClose, service, barber, bookings }: BookingS
               />
               <div className="flex-1">
                 <h4 className="font-semibold">{service.name}</h4>
-                <p className="text-sm text-gray-400">{service.description}</p>
+                <p className="text-sm text-foreground-muted">{service.description}</p>
                 <div className="flex items-center gap-4 mt-2">
                   <span className="text-primary font-semibold">
                     {formatPrice(service.price)}
                   </span>
-                  <span className="text-sm text-gray-400">
+                  <span className="text-sm text-foreground-muted">
                     <Clock className="inline h-3 w-3 mr-1" />
                     {service.duration} min
                   </span>
@@ -298,9 +298,9 @@ const BookingSidebar = ({ isOpen, onClose, service, barber, bookings }: BookingS
                 </div>
               ) : (
                 <div className="text-center py-4">
-                  <Clock className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-                  <p className="text-sm text-gray-400">Nenhum horário disponível</p>
-                  <p className="text-xs text-gray-500 mt-1">Tente selecionar outra data</p>
+                  <Clock className="h-8 w-8 text-foreground-muted mx-auto mb-2" />
+                  <p className="text-sm text-foreground-muted">Nenhum horário disponível</p>
+                  <p className="text-xs text-foreground-muted mt-1">Tente selecionar outra data</p>
                 </div>
               )}
             </div>
@@ -312,7 +312,7 @@ const BookingSidebar = ({ isOpen, onClose, service, barber, bookings }: BookingS
               <h4 className="font-semibold mb-2">Resumo do Agendamento</h4>
               <div className="space-y-1 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Data:</span>
+                  <span className="text-foreground-muted">Data:</span>
                   <span>
                     {selectedDate.toLocaleDateString("pt-BR", {
                       weekday: "long",
@@ -322,11 +322,11 @@ const BookingSidebar = ({ isOpen, onClose, service, barber, bookings }: BookingS
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Horário:</span>
+                  <span className="text-foreground-muted">Horário:</span>
                   <span>{selectedTime}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-400">Total:</span>
+                  <span className="text-foreground-muted">Total:</span>
                   <span className="text-primary font-semibold">
                     {formatPrice(service.price)}
                   </span>

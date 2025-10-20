@@ -19,6 +19,7 @@ interface HomeContentProps {
   barberShops?: any[];
   bookings?: any[];
   banners?: any[];
+  showBarberShops?: boolean;
 }
 
 const HomeContent = ({
@@ -29,6 +30,7 @@ const HomeContent = ({
   barberShops = [],
   bookings = [],
   banners = [],
+  showBarberShops = true
 }: HomeContentProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -54,7 +56,7 @@ const HomeContent = ({
   return (
     <>
       {/* Mobile Layout */}
-      <div className="p-5 text-white lg:hidden">
+      <div className="p-5 pb-24 text-foreground lg:hidden bg-background">
         {user?.name && (
           <h2 className="text-xl">
             Olá,{" "}
@@ -92,7 +94,7 @@ const HomeContent = ({
         </div>
 
         {/* AGENDAMENTOS */}
-                <h2 className="font mt-5 text-sm font-semibold text-gray-400 uppercase">
+                <h2 className="font mt-5 text-sm font-semibold text-foreground-muted uppercase">
                   Agendamentos
                 </h2>
                 <Appointments bookings={bookings} user={user} />
@@ -105,6 +107,7 @@ const HomeContent = ({
             services={services}
             barberShops={barberShops}
             bookings={bookings}
+            showBarberShops={showBarberShops}
           />
         </div>
       </div>
@@ -116,13 +119,13 @@ const HomeContent = ({
           <div className="mb-8">
             {user?.name && (
               <div className="mb-4">
-                <h1 className="text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
+                <h1 className="text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
                   Olá,{" "}
                   <span className="text-primary">
                     {user?.name}
                   </span>
                 </h1>
-                <p className="mt-2 text-lg text-muted-foreground">
+                <p className="mt-2 text-lg text-foreground-muted">
                   {new Date().toLocaleDateString("pt-BR", {
                     weekday: "long",
                     month: "long",
@@ -133,10 +136,10 @@ const HomeContent = ({
             )}
             {!user?.name && (
               <div className="mb-4">
-                <h1 className="text-3xl font-bold text-white sm:text-4xl lg:text-5xl">
+                <h1 className="text-3xl font-bold text-foreground sm:text-4xl lg:text-5xl">
                   Entre ou Cadastre-se e faça seus agendamentos!
                 </h1>
-                <p className="mt-2 text-lg text-muted-foreground">
+                <p className="mt-2 text-lg text-foreground-muted">
                   {new Date().toLocaleDateString("pt-BR", {
                     weekday: "long",
                     month: "long",
@@ -180,6 +183,7 @@ const HomeContent = ({
                   services={services}
                   barberShops={barberShops}
                   bookings={bookings}
+                  showBarberShops={showBarberShops}
                 />
               </div>
             </div>
@@ -188,34 +192,43 @@ const HomeContent = ({
             <div className="lg:col-span-4">
               <div className="sticky top-8 space-y-6">
                         {/* Appointments Card */}
-                        <div className="rounded-2xl bg-card p-6 shadow-lg">
-                          <h3 className="mb-4 text-lg font-semibold text-white">
+                        <div className="rounded-xl bg-card/90 backdrop-blur-sm border border-card-border/30 p-6 shadow-sm hover:shadow-md transition-all duration-200">
+                          <h3 className="mb-4 text-lg font-semibold text-card-foreground">
                             Próximos Agendamentos
                           </h3>
                           <Appointments bookings={bookings} user={user} />
                         </div>
 
                 {/* Quick Stats */}
-                <div className="rounded-2xl bg-card p-6 shadow-lg">
-                  <h3 className="mb-4 text-lg font-semibold text-white">
+                <div className="rounded-xl bg-card-secondary/90 backdrop-blur-sm border border-card-border/30 p-6 shadow-sm hover:shadow-md transition-all duration-200">
+                  <h3 className="mb-4 text-lg font-semibold text-card-foreground">
                     Estatísticas
                   </h3>
                   <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Barbeiros Ativos</span>
-                      <span className="text-lg font-semibold text-white">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-card-border/20">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-primary"></div>
+                        <span className="text-foreground-muted text-sm">Barbeiros Ativos</span>
+                      </div>
+                      <span className="text-lg font-bold text-card-foreground">
                         {barbers.length}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Serviços Disponíveis</span>
-                      <span className="text-lg font-semibold text-white">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-card-border/20">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-secondary"></div>
+                        <span className="text-foreground-muted text-sm">Serviços Disponíveis</span>
+                      </div>
+                      <span className="text-lg font-bold text-card-foreground">
                         {services.length}
                       </span>
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Categorias</span>
-                      <span className="text-lg font-semibold text-white">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-background/50 border border-card-border/20">
+                      <div className="flex items-center gap-3">
+                        <div className="w-2 h-2 rounded-full bg-accent"></div>
+                        <span className="text-foreground-muted text-sm">Categorias</span>
+                      </div>
+                      <span className="text-lg font-bold text-card-foreground">
                         {categories.length}
                       </span>
                     </div>
@@ -223,26 +236,26 @@ const HomeContent = ({
                 </div>
 
                 {/* Quick Actions */}
-                <div className="rounded-2xl bg-card p-6 shadow-lg">
-                  <h3 className="mb-4 text-lg font-semibold text-white">
+                <div className="rounded-xl bg-card-tertiary/90 backdrop-blur-sm border border-card-border/30 p-6 shadow-sm hover:shadow-md transition-all duration-200">
+                  <h3 className="mb-4 text-lg font-semibold text-card-foreground">
                     Ações Rápidas
                   </h3>
                   <div className="space-y-3">
                     <button 
                       onClick={handleBookingClick}
-                      className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+                      className="w-full rounded-lg bg-primary px-4 py-3 text-sm font-medium text-primary-foreground transition-all duration-200 hover:bg-primary/90 hover:shadow-md hover:scale-[1.02]"
                     >
                       Agendar Serviço
                     </button>
                     <button 
                       onClick={handleHistoryClick}
-                      className="w-full rounded-lg border border-border px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-accent"
+                      className="w-full rounded-lg border border-card-border/50 px-4 py-3 text-sm font-medium text-card-foreground transition-all duration-200 hover:bg-accent-hover hover:border-card-border hover:shadow-sm hover:scale-[1.02]"
                     >
                       Ver Histórico
                     </button>
                     <button 
                       onClick={handleFavoritesClick}
-                      className="w-full rounded-lg border border-border px-4 py-3 text-sm font-medium text-white transition-colors hover:bg-accent"
+                      className="w-full rounded-lg border border-card-border/50 px-4 py-3 text-sm font-medium text-card-foreground transition-all duration-200 hover:bg-accent-hover hover:border-card-border hover:shadow-sm hover:scale-[1.02]"
                     >
                       Favoritos
                     </button>

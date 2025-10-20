@@ -45,63 +45,147 @@
 
 :root {
   --radius: 0.625rem;
-  --background: #101828;
-  --card: #101828;
-  --secondary: #7f00e6;
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
-}
-
-.dark {
-  --background: oklch(24.776% 0.00003 271.152);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(98.511% 0.00011 271.152); /*TEXTO CARD --*/
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(59.568% 0.24705 294.351); /* COR PRIMARIA  --*/
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.488 0.243 264.376);
+  
+  /* === SISTEMA DE TEMAS DINÂMICO === */
+  /* As cores são carregadas dinamicamente dos temas */
+  /* Valores padrão como fallback */
+  
+  /* Cores Principais - Fallback */
+  --primary: var(--primary-main, oklch(59.568% 0.24705 294.351));
+  --primary-foreground: var(--text-foreground, oklch(0.205 0 0));
+  --secondary: var(--primary-secondary, oklch(0.269 0 0));
+  --secondary-foreground: var(--text-foreground, oklch(0.985 0 0));
+  
+  /* Cores de Fundo - Fallback */
+  --background: var(--background-main, oklch(24.776% 0.00003 271.152));
+  --background-secondary: var(--background-secondary, oklch(20% 0.00003 271.152));
+  --background-tertiary: var(--background-tertiary, oklch(16% 0.00003 271.152));
+  
+  /* Cores de Cards - Fallback */
+  --card: var(--card-main, oklch(0.205 0 0));
+  --card-foreground: var(--text-foreground, oklch(98.511% 0.00011 271.152));
+  --card-secondary: var(--card-secondary, oklch(0.18 0 0));
+  --card-tertiary: var(--card-tertiary, oklch(0.15 0 0));
+  --card-border: var(--card-border, oklch(1 0 0 / 10%));
+  --card-hover: var(--card-hover, oklch(0.22 0 0));
+  
+  /* Cores de Agendamento - Fallback */
+  --booking-card: var(--booking-card, oklch(0.19 0 0));
+  --booking-card-hover: var(--booking-hover, oklch(0.21 0 0));
+  --booking-card-border: var(--booking-border, oklch(1 0 0 / 8%));
+  --booking-status-confirmed: var(--booking-status-confirmed, oklch(0.6 0.15 142));
+  --booking-status-pending: var(--booking-status-pending, oklch(0.7 0.15 60));
+  --booking-status-cancelled: var(--booking-status-cancelled, oklch(0.6 0.2 20));
+  
+  /* Cores de Texto - Fallback */
+  --foreground: var(--text-foreground, oklch(0.985 0 0));
+  --foreground-secondary: var(--text-secondary, oklch(0.8 0 0));
+  --foreground-muted: var(--text-muted, oklch(0.708 0 0));
+  --foreground-disabled: var(--text-disabled, oklch(0.5 0 0));
+  
+  /* Cores de Acento - Fallback */
+  --accent: var(--primary-accent, oklch(0.269 0 0));
+  --accent-foreground: var(--text-foreground, oklch(0.985 0 0));
+  --accent-hover: var(--primary-accent-hover, oklch(0.3 0 0));
+  
+  /* Cores de Estado - Fallback */
+  --destructive: var(--state-error, oklch(0.704 0.191 22.216));
+  --destructive-foreground: var(--text-foreground, oklch(0.985 0 0));
+  --success: var(--state-success, oklch(0.6 0.15 142));
+  --success-foreground: var(--text-foreground, oklch(0.985 0 0));
+  --warning: var(--state-warning, oklch(0.7 0.15 60));
+  --warning-foreground: var(--text-foreground, oklch(0.205 0 0));
+  --info: var(--state-info, oklch(0.6 0.15 240));
+  --info-foreground: var(--text-foreground, oklch(0.985 0 0));
+  
+  /* Cores de Input e Formulários - Fallback */
+  --input: var(--input-main, oklch(1 0 0 / 15%));
+  --input-border: var(--input-border, oklch(1 0 0 / 20%));
+  --input-focus: var(--input-focus, oklch(1 0 0 / 30%));
+  
+  /* Cores de Borda - Fallback */
+  --border: var(--border-main, oklch(1 0 0 / 10%));
+  --border-secondary: var(--border-secondary, oklch(1 0 0 / 5%));
+  --border-focus: var(--border-focus, oklch(0.556 0 0));
+  
+  /* Cores de Ring/Focus - Fallback */
+  --ring: var(--border-focus, oklch(0.556 0 0));
+  --ring-focus: var(--primary-main, oklch(0.6 0.1 294.351));
+  
+  /* Cores de Popover - Fallback */
+  --popover: var(--card-main, oklch(0.205 0 0));
+  --popover-foreground: var(--text-foreground, oklch(0.985 0 0));
+  
+  /* Cores de Muted - Fallback */
+  --muted: var(--primary-secondary, oklch(0.269 0 0));
+  --muted-foreground: var(--text-muted, oklch(0.708 0 0));
+  
+  /* Cores de Sidebar - Fallback */
+  --sidebar: var(--card-main, oklch(0.205 0 0));
+  --sidebar-foreground: var(--text-foreground, oklch(0.985 0 0));
+  --sidebar-primary: var(--primary-main, oklch(0.488 0.243 264.376));
+  --sidebar-primary-foreground: var(--text-foreground, oklch(0.985 0 0));
+  --sidebar-accent: var(--primary-accent, oklch(0.269 0 0));
+  --sidebar-accent-foreground: var(--text-foreground, oklch(0.985 0 0));
+  --sidebar-border: var(--border-main, oklch(1 0 0 / 10%));
+  --sidebar-ring: var(--border-focus, oklch(0.556 0 0));
+  
+  /* Cores de Chart - Fallback */
+  --chart-1: var(--primary-main, oklch(0.488 0.243 264.376));
   --chart-2: oklch(0.696 0.17 162.48);
   --chart-3: oklch(0.769 0.188 70.08);
   --chart-4: oklch(0.627 0.265 303.9);
   --chart-5: oklch(0.645 0.246 16.439);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
 }
+
+/* === CLASSES UTILITÁRIAS PARA CORES PADRONIZADAS === */
+
+/* Cores de Fundo */
+.bg-background-secondary { background-color: hsl(var(--background-secondary)); }
+.bg-background-tertiary { background-color: hsl(var(--background-tertiary)); }
+
+/* Cores de Cards */
+.bg-card-secondary { background-color: hsl(var(--card-secondary)); }
+.bg-card-tertiary { background-color: hsl(var(--card-tertiary)); }
+.bg-card-hover { background-color: hsl(var(--card-hover)); }
+.border-card-border { border-color: hsl(var(--card-border)); }
+
+/* Cores de Agendamento */
+.bg-booking-card { background-color: hsl(var(--booking-card)); }
+.bg-booking-card-hover { background-color: hsl(var(--booking-card-hover)); }
+.border-booking-card-border { border-color: hsl(var(--booking-card-border)); }
+.bg-booking-status-confirmed { background-color: hsl(var(--booking-status-confirmed)); }
+.bg-booking-status-pending { background-color: hsl(var(--booking-status-pending)); }
+.bg-booking-status-cancelled { background-color: hsl(var(--booking-status-cancelled)); }
+
+/* Cores de Texto */
+.text-foreground-secondary { color: hsl(var(--foreground-secondary)); }
+.text-foreground-muted { color: hsl(var(--foreground-muted)); }
+.text-foreground-disabled { color: hsl(var(--foreground-disabled)); }
+
+/* Cores de Estado */
+.bg-success { background-color: hsl(var(--success)); }
+.text-success { color: hsl(var(--success)); }
+.bg-warning { background-color: hsl(var(--warning)); }
+.text-warning { color: hsl(var(--warning)); }
+.bg-info { background-color: hsl(var(--info)); }
+.text-info { color: hsl(var(--info)); }
+
+/* Cores de Acento */
+.bg-accent-hover { background-color: hsl(var(--accent-hover)); }
+
+/* Cores de Input */
+.bg-input-border { background-color: hsl(var(--input-border)); }
+.border-input-border { border-color: hsl(var(--input-border)); }
+.bg-input-focus { background-color: hsl(var(--input-focus)); }
+.border-input-focus { border-color: hsl(var(--input-focus)); }
+
+/* Cores de Borda */
+.border-border-secondary { border-color: hsl(var(--border-secondary)); }
+.border-border-focus { border-color: hsl(var(--border-focus)); }
+
+/* Cores de Ring */
+.ring-ring-focus { --tw-ring-color: hsl(var(--ring-focus)); }
 
 .grid-xs {
   display: grid;

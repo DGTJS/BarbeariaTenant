@@ -12,7 +12,7 @@ export async function GET() {
     }
 
     // Buscar configurações do usuário
-    const user = await db.user.findUnique({
+    const user = await db.user.findFirst({
       where: { id: session.user.id },
       select: {
         email: true,

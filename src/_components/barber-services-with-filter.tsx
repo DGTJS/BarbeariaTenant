@@ -138,8 +138,9 @@ const BarberServicesWithFilter = ({
                     id: barber.id,
                     name: barber.name,
                     photo: barber.photo,
-                    workingHours: barber.workingHours?.map((hour) => ({
+                    workingHours: barber.workingHours?.map((hour) => ({ 
                       ...hour,
+                      barberId: barber.id,
                       pauses: hour.pauses || [],
                     })),
                     barberShop: barber.barberShop?.name ? {

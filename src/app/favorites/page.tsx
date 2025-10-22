@@ -51,7 +51,7 @@ const FavoritesPage = async () => {
     _count: {
       rating: true,
     },
-    by: ["barberId"],
+    by: "barberId",
   });
 
   const reviewsMap = new Map();

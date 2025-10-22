@@ -69,7 +69,6 @@ export const authOptions: NextAuthOptions = {
     },
     async session({ session, token }) {
       if (token && token.id) {
-        // @ts-expect-error id extendido no token
         session.user.id = token.id as string;
       }
       return session;

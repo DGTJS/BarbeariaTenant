@@ -280,7 +280,6 @@ const CardServices = ({
         serviceId: BarberShopService.id,
         status: "pending",
         userId: session?.user?.id || "",
-        serviceOptionId: selectedServiceOption?.id || null,
       });
       
       toast.success("Agendamento criado com sucesso");

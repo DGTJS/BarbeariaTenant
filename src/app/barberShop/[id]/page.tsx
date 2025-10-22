@@ -77,7 +77,7 @@ const BarberShopPage = async ({ params }: BarberShopPageProps) => {
               key={barberBarberShop.id}
               barber={barberBarberShop}
               nameButton={"Agendar"}
-              averageRating={barberBarberShop.averageRating}
+              averageRating={barberBarberShop.averageRating ?? undefined}
             />
           ))}
         </div>
@@ -88,7 +88,21 @@ const BarberShopPage = async ({ params }: BarberShopPageProps) => {
           <div className="mt-5 gap-3">
             {servicesBarberShop && servicesBarberShop.length > 0 ? (
               servicesBarberShop.map((service) => (
-                <ServiceBarberCard key={service.id} service={service} />
+                <ServiceBarberCard 
+                  key={service.id} 
+                  service={{
+                    ...service,
+                    price: Number(service.price)
+                  }}
+                  barber={{
+                    id: "",
+                    name: "",
+                    photo: "",
+                    barberShopId: service.barberShopId
+                  }}
+                  user={null}
+                  bookings={[]}
+                />
               ))
             ) : (
               <p className="text-sm text-foreground-muted">

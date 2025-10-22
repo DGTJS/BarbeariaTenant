@@ -184,14 +184,8 @@ const FavoritesModal = ({ isOpen, onClose, user, barbers }: FavoritesModalProps)
                               {barber.name}
                             </h3>
                             <p className="text-sm text-foreground-muted truncate">
-                              {barber.barberShop?.name || "Barbearia"}
+                              Barbearia
                             </p>
-                            {barber.barberShop?.address && (
-                              <p className="text-xs text-foreground-muted truncate mt-1">
-                                <MapPin className="h-3 w-3 inline mr-1" />
-                                {barber.barberShop.address}
-                              </p>
-                            )}
                           </div>
                           {barber.rating && barber.rating > 0 && (
                             <div className="flex items-center gap-1 text-sm text-foreground-muted flex-shrink-0">

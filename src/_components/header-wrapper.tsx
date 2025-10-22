@@ -9,7 +9,7 @@ import BookingModal from "./booking-modal";
 import FavoritesModal from "./favorites-modal";
 import HistoryModal from "./history-modal";
 import NotificationsModal from "./notifications-modal";
-import { Booking } from "@/_types/booking";
+// import { Booking } from "@/_types/booking";
 
 interface Category {
   id: string;
@@ -21,9 +21,9 @@ interface Category {
 }
 
 interface HeaderWrapperProps {
-  categories: Category[];
+  categories: any[];
   user: { name?: string | null; id?: string } | null;
-  bookings: Booking[];
+  bookings: any[];
   services?: any[];
   barbers?: any[];
 }
@@ -106,6 +106,7 @@ const HeaderWrapper = ({ categories, user, bookings, services, barbers }: Header
         isOpen={isFavoritesModalOpen}
         onClose={() => setIsFavoritesModalOpen(false)}
         user={user}
+        barbers={barbers || []}
       />
       <HistoryModal
         isOpen={isHistoryModalOpen}

@@ -14,8 +14,14 @@ interface PriceAdjustment {
 }
 
 interface ServiceBarberCardProps {
-  service: Omit<BarberShopService, 'price'> & {
+  service: {
+    id: string;
+    name: string;
+    description: string | null;
     price: number;
+    duration: number;
+    imageUrl: string;
+    categoryId: string | null;
     priceAdjustments?: PriceAdjustment[];
     category?: {
       id: string;
@@ -26,6 +32,7 @@ interface ServiceBarberCardProps {
     id: string;
     name: string;
     photo: string;
+    barberShopId?: string;
     workingHours?: {
       id: string;
       barberId: string;
@@ -141,6 +148,7 @@ const ServiceBarberCard = ({ service, barber, user, bookings, allServices, allBa
         categories={categories || []}
         preselectedService={{
           ...service,
+          barberShopId: barber.barberShopId || "",
           // Ensure description is always string or undefined, never null
           description: service.description ?? undefined,
         }}

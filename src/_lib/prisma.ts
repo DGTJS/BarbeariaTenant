@@ -14,13 +14,6 @@ const prisma =
         url: process.env.DATABASE_URL,
       },
     },
-    // Configurações otimizadas para o pool de conexões
-    __internal: {
-      engine: {
-        connectTimeout: 60000, // 60 segundos
-        queryTimeout: 30000,   // 30 segundos
-      },
-    },
   });
 
 // Garantir que a conexão seja fechada adequadamente

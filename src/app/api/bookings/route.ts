@@ -40,14 +40,6 @@ export async function GET(request: Request) {
             photo: true,
           }
         },
-        serviceOption: {
-          select: {
-            id: true,
-            name: true,
-            price: true,
-            duration: true,
-          }
-        }
       },
       orderBy: {
         dateTime: 'desc',

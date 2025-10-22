@@ -296,23 +296,6 @@ const HistoryModal = ({ isOpen, onClose, user, bookings }: HistoryModalProps) =>
                               "{booking.comment}"
                             </div>
                           )}
-                          {booking.rating && (
-                            <div className="mt-2 flex items-center gap-1">
-                              <span className="text-xs text-muted-foreground">Avaliação:</span>
-                              <div className="flex">
-                                {[1, 2, 3, 4, 5].map((star) => (
-                                  <Star
-                                    key={star}
-                                    className={`h-3 w-3 ${
-                                      star <= booking.rating
-                                        ? "text-yellow-400 fill-yellow-400"
-                                        : "text-gray-300"
-                                    }`}
-                                  />
-                                ))}
-                              </div>
-                            </div>
-                          )}
                         </div>
                       </div>
                       
@@ -330,7 +313,7 @@ const HistoryModal = ({ isOpen, onClose, user, bookings }: HistoryModalProps) =>
                         </div>
                         
                         {/* Botão de Avaliar */}
-                        {booking.status.toLowerCase() === "completed" && !booking.rating && (
+                        {booking.status.toLowerCase() === "completed" && (
                           <Button
                             size="sm"
                             onClick={() => handleRateService(booking)}
@@ -341,23 +324,6 @@ const HistoryModal = ({ isOpen, onClose, user, bookings }: HistoryModalProps) =>
                           </Button>
                         )}
                         
-                        {booking.rating && (
-                          <div className="text-xs text-muted-foreground text-center">
-                            <div className="flex justify-center mb-1">
-                              {[1, 2, 3, 4, 5].map((star) => (
-                                <Star
-                                  key={star}
-                                  className={`h-3 w-3 ${
-                                    star <= booking.rating
-                                      ? "text-yellow-400 fill-yellow-400"
-                                      : "text-gray-300"
-                                  }`}
-                                />
-                              ))}
-                            </div>
-                            <span>Avaliado</span>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </CardContent>

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/_providers/auth";
+import { authOptions } from "@/_providers/auth-options";
 
 // GET /api/mercadopago/connect - Inicia fluxo OAuth do Mercado Pago
 export async function GET(request: NextRequest) {

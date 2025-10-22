@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/_providers/auth";
+import { authOptions } from "@/_providers/auth-options";
 import { disconnectMercadoPago } from "@/_lib/mercadopago";
 
 // DELETE /api/mercadopago/disconnect - Desconecta Mercado Pago do usuário

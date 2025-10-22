@@ -5,7 +5,7 @@ import { getUserData } from "@/_lib/getUserData";
 import { getBanners } from "@/_lib/getBanners";
 import { getBarberShopSystemStatus } from "@/_lib/getBarberShopSystemStatus";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/_providers/auth-options";
 
 export default async function Home() {
   // Obter sessão do usuário

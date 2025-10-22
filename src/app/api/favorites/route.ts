@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "../auth/[...nextauth]/route";
+import { authOptions } from "@/_providers/auth-options";
 import { db } from "@/_lib/prisma";
 
 // Debug: verificar se o modelo está disponível

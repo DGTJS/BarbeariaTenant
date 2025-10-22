@@ -14,16 +14,17 @@ import { getServiceBarberShop } from "@/_lib/getServiceShop";
 import BarberCardHorizontal from "@/_components/BarberCardHorizontal";
 
 interface BarberShopPageProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 const BarberShopPage = async ({ params }: BarberShopPageProps) => {
-  const barberShop = await getBarberShopsId(params.id);
-  const categoriesBarberShop = await getCategoriesFromBarberShop(params.id);
-  const servicesBarberShop = await getServiceBarberShop(params.id);
-  const barberBarberShop = await getBarberFromBarberShop(params.id);
+  const { id } = await params;
+  const barberShop = await getBarberShopsId(id);
+  const categoriesBarberShop = await getCategoriesFromBarberShop(id);
+  const servicesBarberShop = await getServiceBarberShop(id);
+  const barberBarberShop = await getBarberFromBarberShop(id);
 
   return (
     <div className="min-h-screen bg-background">

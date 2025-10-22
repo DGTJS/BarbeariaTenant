@@ -1,5 +1,5 @@
 import { getServerSession } from "next-auth";
-import { authOptions } from "../api/auth/[...nextauth]/route";
+import { authOptions } from "@/_providers/auth-options";
 import { db } from "@/_lib/prisma";
 import { Card, CardContent } from "@/_components/ui/card";
 import { Badge } from "@/_components/ui/badge";

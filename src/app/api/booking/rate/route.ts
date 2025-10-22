@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/_providers/auth-options";
 import { db } from "@/_lib/prisma";
 
 // POST - Avaliar um serviço concluído

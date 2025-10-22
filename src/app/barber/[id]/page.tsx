@@ -1,6 +1,6 @@
 import { db } from "@/_lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/_providers/auth-options";
 import { Suspense } from "react";
 import BarberServicesWithFilter from "@/_components/barber-services-with-filter";
 import Image from "next/image";
@@ -14,9 +14,9 @@ import FavoriteBarberButton from "@/_components/favorite-barber-button";
 import SpecialtyBadge from "@/_components/specialty-badge";
 
 interface BarbersProps {
-  params: {
+  params: Promise<{
     id: string;
-  };
+  }>;
 }
 
 const BarberPage = async ({ params }: BarbersProps) => {

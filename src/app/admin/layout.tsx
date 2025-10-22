@@ -2,7 +2,7 @@ import { Metadata } from "next";
 import { AdminSidebar } from "@/_components/admin-sidebar";
 import { headers } from "next/headers";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/app/api/auth/[...nextauth]/route";
+import { authOptions } from "@/_providers/auth-options";
 
 export const metadata: Metadata = {
   title: "Dashboard Admin - Barbearia",

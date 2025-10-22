@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/_lib/prisma";
 import { getServerSession } from "next-auth";
-import { authOptions } from "@/_providers/auth";
+import { authOptions } from "@/_providers/auth-options";
 
 // GET /api/mercadopago/callback - Callback do OAuth do Mercado Pago
 export async function GET(request: NextRequest) {

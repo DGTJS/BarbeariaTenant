@@ -1,28 +1,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CardBarbers from "@/_components/CardBarbers";
 import CardBarber from "@/_components/cardBarberShop";
-import CardServices from "@/_components/cardServices";
+import CardServices from "@/_components/CardServices";
 import HeaderWrapper from "@/_components/header-wrapper";
 import { db } from "@/_lib/prisma";
 import Search from "@/_components/search";
 
 interface SearchPageProps {
-  searchParams: {
+  searchParams: Promise<{
     search?: string;
     category?: string;
-  };
+  }>;
 }
 
 const SearchPage = async ({ searchParams }: SearchPageProps) => {
+  const sp = await searchParams;
   let barberShops: any[] = [];
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   let barbers: any[] = [];
   let services: any[] = [];
   let searchTitle = "";
 
-  if (searchParams.category) {
+  if (sp.category) {
     // Busca por categoria
-    const categoryId = searchParams.category;
+    const categoryId = sp.category;
     // Buscar nome da categoria
     const category = await db.barberCategory.findUnique({
       where: { id: categoryId },
@@ -83,14 +84,14 @@ const SearchPage = async ({ searchParams }: SearchPageProps) => {
       };
     });
     searchTitle = `Categoria: ${categoryName}`;
-  } else if (searchParams.search) {
+  } else if (sp.search) {
     // Busca por texto (como já faz hoje)
     barberShops = await db.barberShop.findMany({
       where: {
         OR: [
           {
             name: {
-              contains: searchParams.search,
+              contains: sp.search,
               mode: "insensitive",
             },
           },
@@ -98,7 +99,7 @@ const SearchPage = async ({ searchParams }: SearchPageProps) => {
             services: {
               some: {
                 name: {
-                  contains: searchParams.search,
+                  contains: sp.search,
                   mode: "insensitive",
                 },
               },
@@ -111,7 +112,7 @@ const SearchPage = async ({ searchParams }: SearchPageProps) => {
     const barbersData = await db.barber.findMany({
       where: {
         name: {
-          contains: searchParams.search,
+          contains: sp.search,
           mode: "insensitive",
         },
       },
@@ -155,12 +156,12 @@ const SearchPage = async ({ searchParams }: SearchPageProps) => {
     services = await db.barberShopService.findMany({
       where: {
         name: {
-          contains: searchParams.search,
+          contains: sp.search,
           mode: "insensitive",
         },
       },
     });
-    searchTitle = `Resultados para "${searchParams.search}"`;
+    searchTitle = `Resultados para "${sp.search}"`;
   }
 
   return (

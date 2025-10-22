@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
@@ -15,7 +15,8 @@
     "setup:env": "node scripts/quick-setup.js",
     "setup:env:interactive": "node scripts/setup-env.js",
     "update:env": "node scripts/update-env.js",
-    "prepare": "husky"
+    "prepare": "husky",
+    "vercel-build": "prisma generate && next build"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts",

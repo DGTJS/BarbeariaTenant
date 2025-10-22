@@ -51,14 +51,14 @@ const FavoritesPage = async () => {
     _count: {
       rating: true,
     },
-    by: "barberId",
   });
 
   const reviewsMap = new Map();
-  reviews.forEach(review => {
-    reviewsMap.set(review.barberId, {
-      average: review._avg.rating || 0,
-      count: review._count.rating || 0,
+  // Para cada barbeiro, criar entrada no mapa com dados agregados
+  favorites.forEach(favorite => {
+    reviewsMap.set(favorite.barberId, {
+      average: reviews._avg.rating || 0,
+      count: reviews._count.rating || 0,
     });
   });
 

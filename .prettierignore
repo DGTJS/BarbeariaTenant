@@ -1,0 +1,15 @@
+node_modules
+.next
+.git
+dist
+build
+coverage
+*.log
+.env*
+.DS_Store
+Thumbs.db
+*.min.js
+*.min.css
+public
+prisma/migrations
+src/generated

@@ -7,9 +7,15 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
+    "type-check": "tsc --noEmit",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "check-all": "node scripts/check-all.js",
     "setup:env": "node scripts/quick-setup.js",
     "setup:env:interactive": "node scripts/setup-env.js",
-    "update:env": "node scripts/update-env.js"
+    "update:env": "node scripts/update-env.js",
+    "prepare": "husky"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts",
@@ -55,8 +61,11 @@
     "@types/node": "^20.19.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "chalk": "^5.6.2",
     "eslint": "^9",
     "eslint-config-next": "15.3.3",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.5",
     "prettier": "^3.5.3",
     "prettier-plugin-tailwindcss": "^0.6.12",
     "prisma": "^6.9.0",

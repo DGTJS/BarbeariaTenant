@@ -1,0 +1,13 @@
+#!/usr/bin/env sh
+. "$(dirname -- "$0")/_/husky.sh"
+
+# Verificar formato da mensagem de commit
+commit_regex='^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?: .{1,50}'
+
+if ! grep -qE "$commit_regex" "$1"; then
+    echo "❌ Formato de commit inválido!"
+    echo "✅ Use: tipo(escopo): descrição"
+    echo "📝 Tipos: feat, fix, docs, style, refactor, test, chore, perf, ci, build, revert"
+    echo "💡 Exemplo: feat(auth): adiciona login com Google"
+    exit 1
+fi

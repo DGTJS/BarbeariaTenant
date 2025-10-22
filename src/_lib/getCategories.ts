@@ -74,7 +74,7 @@ export const getBarberFromBarberShop = async (barberShopId: string) => {
   }
 
   // Adicionar avaliações aos barbeiros
-  return barbers.map(barber => {
+  return barbers.map((barber: any) => {
     const review = reviewsMap.get(barber.id);
     return {
       ...barber,

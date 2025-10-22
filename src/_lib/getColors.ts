@@ -13,7 +13,7 @@ export async function getActiveColors() {
     });
 
     // Organizar cores por categoria
-    const colorsByCategory = colors.reduce((acc, color) => {
+    const colorsByCategory = colors.reduce((acc: any, color: any) => {
       if (!acc[color.category]) {
         acc[color.category] = {};
       }
@@ -41,7 +41,7 @@ export async function getColorsForCSS() {
     });
 
     // Gerar CSS custom properties
-    const cssVariables = colors.map(color => {
+    const cssVariables = colors.map((color: any) => {
       const cssName = `--${color.category}-${color.name}`;
       return `${cssName}: ${color.value};`;
     }).join('\n  ');

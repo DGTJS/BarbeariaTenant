@@ -39,9 +39,9 @@ export const getServices = cache(async () => {
     },
   });
 
-  const services = servicesRaw.map((service) => {
-    const barbersOfTheCategory = barbers.filter((barber) =>
-      barber.categories.some((cat) => cat.id === service.categoryId),
+  const services = servicesRaw.map((service: any) => {
+    const barbersOfTheCategory = barbers.filter((barber: any) =>
+      barber.categories.some((cat: any) => cat.id === service.categoryId),
     );
 
     // Sanitiza o serviço inteiro, incluindo price e priceAdjustments

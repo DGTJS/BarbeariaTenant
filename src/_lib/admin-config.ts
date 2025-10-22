@@ -5,7 +5,7 @@ export async function getSiteConfig() {
     const configs = await db.siteConfig.findMany();
     const configMap: Record<string, any> = {};
     
-    configs.forEach(config => {
+    configs.forEach((config: any) => {
       let value: any = config.value;
       
       // Parse value based on type

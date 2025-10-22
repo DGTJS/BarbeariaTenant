@@ -1,16 +1,28 @@
 import { Metadata } from "next";
 import { AdminSidebar } from "@/_components/admin-sidebar";
+import { headers } from "next/headers";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 
 export const metadata: Metadata = {
   title: "Dashboard Admin - Barbearia",
   description: "Painel administrativo da barbearia",
 };
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const headersList = await headers();
+  const pathname = headersList.get("x-pathname") || "";
+  const session = await getServerSession(authOptions);
+  
+  // Se for a página de login E não estiver logado, não mostrar sidebar e header
+  if (pathname === "/admin/login" && !session) {
+    return <>{children}</>;
+  }
+
   return (
     <div className="min-h-screen bg-background flex">
       <AdminSidebar />

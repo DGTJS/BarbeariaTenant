@@ -10,6 +10,7 @@ import {
   Settings, 
   Palette, 
   Image, 
+  CreditCard,
   Users, 
   Scissors, 
   Calendar,
@@ -48,6 +49,11 @@ const navigation = [
     name: "Banner",
     href: "/admin/banner",
     icon: Image,
+  },
+  {
+    name: "Planos",
+    href: "/admin/plans",
+    icon: CreditCard,
   },
   {
     name: "Temas",

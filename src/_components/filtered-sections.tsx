@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import Barbers from "./CardBarbers";
-import CardServices from "./cardServices";
+import CardServices from "./CardServices";
 import CardBarber from "./cardBarberShop";
 
 interface Barber {

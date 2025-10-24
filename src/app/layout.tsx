@@ -5,6 +5,7 @@ import "@/_styles/scrollbar.css";
 import AuthProviders from "@/_providers/auth";
 import FooterBar from "@/_components/footerbar";
 import ColorProvider from "@/_components/color-provider";
+import DynamicMetadata from "@/_components/dynamic-metadata";
 import { Toaster } from "sonner";
 
 const NunitoFont = Nunito({
@@ -25,6 +26,7 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className="dark">
       <body className={`${NunitoFont.variable}`}>
+        <DynamicMetadata />
         <ColorProvider>
           <AuthProviders>
             <div className="flex h-full flex-col">

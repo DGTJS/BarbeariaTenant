@@ -157,3 +157,7 @@ Após configurar o `.env.local`:
 
 **💡 Dica**: Use `npm run setup:env` para configuração automática!
 
+
+
+
+

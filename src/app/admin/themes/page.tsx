@@ -32,7 +32,6 @@ const ThemeAdminPage = () => {
   const [themes, setThemes] = useState<Theme[]>([]);
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState<string | null>(null);
-  const [menuColors, setMenuColors] = useState<{ bg?: string; text?: string; activeBg?: string; activeText?: string }>({});
 
   // Buscar temas
   const fetchThemes = async () => {
@@ -52,6 +51,7 @@ const ThemeAdminPage = () => {
       setLoading(false);
     }
   };
+
 
   // Aplicar tema
   const applyTheme = async (themeId: string) => {
@@ -113,19 +113,6 @@ const ThemeAdminPage = () => {
     }
   };
 
-  // Salvar cores do menu em SiteConfig
-  const saveMenuColors = async () => {
-    await fetch('/api/admin/site-config', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        'menu_bg_color': menuColors.bg || '',
-        'menu_text_color': menuColors.text || '',
-        'menu_active_bg_color': menuColors.activeBg || '',
-        'menu_active_text_color': menuColors.activeText || '',
-      })
-    });
-  };
 
   // Obter ícone do tipo de tema
   const getThemeIcon = (type: string) => {
@@ -168,6 +155,13 @@ const ThemeAdminPage = () => {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button 
+            onClick={() => window.location.href = '/admin/colors'} 
+            variant="default"
+          >
+            <Palette className="h-4 w-4 mr-2" />
+            Cores Detalhadas
+          </Button>
           <Button onClick={applyCurrentColors} variant="outline">
             <RefreshCw className="h-4 w-4 mr-2" />
             Aplicar Cores
@@ -194,37 +188,6 @@ const ThemeAdminPage = () => {
           iconName="Cabelo" 
         />
       </div>
-
-      {/* Cores do menu */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Cores do Menu (Sidebar/Topbar)</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <Label>Fundo do Menu</Label>
-              <Input type="text" placeholder="#0f172a" value={menuColors.bg || ''} onChange={e => setMenuColors(c => ({ ...c, bg: e.target.value }))} />
-            </div>
-            <div>
-              <Label>Texto do Menu</Label>
-              <Input type="text" placeholder="#e2e8f0" value={menuColors.text || ''} onChange={e => setMenuColors(c => ({ ...c, text: e.target.value }))} />
-            </div>
-            <div>
-              <Label>Fundo Ativo</Label>
-              <Input type="text" placeholder="#7c3aed" value={menuColors.activeBg || ''} onChange={e => setMenuColors(c => ({ ...c, activeBg: e.target.value }))} />
-            </div>
-            <div>
-              <Label>Texto Ativo</Label>
-              <Input type="text" placeholder="#ffffff" value={menuColors.activeText || ''} onChange={e => setMenuColors(c => ({ ...c, activeText: e.target.value }))} />
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button onClick={saveMenuColors}>Salvar Cores do Menu</Button>
-            <Button variant="outline" onClick={() => setMenuColors({})}>Limpar</Button>
-          </div>
-        </CardContent>
-      </Card>
 
       {/* Temas */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

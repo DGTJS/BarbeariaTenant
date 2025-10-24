@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { useTheme } from "@/_hooks/useTheme";
+import DynamicIcon from "./dynamic-icon";
 
 interface Category {
   id: string;
@@ -66,12 +67,10 @@ const CategoryFilter = ({ categories, selectedCategory, onCategorySelect }: Cate
                 : "bg-card-secondary/90 border border-card-border/30 hover:bg-accent-hover shadow-sm hover:shadow-md transition-all duration-200"
             }`}
           >
-            <img 
-              src={category.IconUrl} 
-              alt={category.name}
-              width={16}
-              height={16}
-              style={{ filter: getIconFilterStyle() }}
+            <DynamicIcon 
+              iconUrl={category.IconUrl}
+              className="w-4 h-4"
+              size={16}
             />
             <span className="text-sm">{category.name}</span>
           </Button>

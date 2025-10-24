@@ -24,9 +24,7 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: true,
   },
   serverExternalPackages: ['@prisma/client'],
-  experimental: {
-    serverComponentsExternalPackages: ['@prisma/client'],
-  },
+
 };
 
 export default nextConfig;

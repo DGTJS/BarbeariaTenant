@@ -7,7 +7,7 @@ import { Button } from "./ui/button";
 import { Calendar } from "./ui/calendar";
 import { toast } from "sonner";
 import { createBooking } from "@/app/_actions/create-booking";
-import { ptBR } from "date-fns/locale";
+import { ptBR } from "date-fns/locale/pt-BR";
 import { CalendarIcon, Clock, User, X } from "lucide-react";
 
 interface BarberWithWorkingHours {

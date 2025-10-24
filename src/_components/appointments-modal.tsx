@@ -8,7 +8,7 @@ import { Card, CardContent } from "./ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { Calendar, Clock, MapPin, User, X, Star, Phone, Mail } from "lucide-react";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { ptBR } from "date-fns/locale/pt-BR";
 import { Booking } from "@/_types/booking";
 
 interface AppointmentsModalProps {

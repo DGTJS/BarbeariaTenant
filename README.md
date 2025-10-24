@@ -1,77 +1,141 @@
-### ✅ Dev Checklist – MVP Inicial
+# 🪒 Sistema de Barbearia SaaS
 
-#### 📦 Banco de Dados - Em andamento
+Sistema completo de gerenciamento para barbearias com configurações dinâmicas, horários personalizados e SEO otimizado.
 
-- [/Incompleto\] Estrutura de usuários, barbeiros e barbearias
-- [] Tabela de serviços
-- [] Tabela de agendamentos
-- [] Tabela de pagamentos
-- [] Tabela de avaliações
-- [] Tabela de agendamentos (com link para cliente, serviço, barbeiro e barbearia)
+## 🚀 Funcionalidades
 
-#### 🧪 Funcionalidades Visual UI/UX
+### ⚙️ Configurações Dinâmicas
+- ✅ Nome, endereço, email, telefone da barbearia
+- ✅ Descrição personalizada
+- ✅ Cores do tema configuráveis
+- ✅ Todas as configurações salvas no banco de dados
 
-- [x] Cards de barbeiros
-- [x] Cards das barbearias filial
-- [x] Cards de serviços
-- [x] Cards de avaliações
-- [x] Cards de agendamentos
-- [x] Cards de categorias
-- [] Cliente agenda serviço com barbeiro e horário
-- [] Barbeiro vê seus próprios agendamentos
-- [] Admin visualiza todos os agendamentos da barbearia
-- [] Atualização de status (confirmado, cancelado, finalizado)
+### 🖼️ Logo e Favicon
+- ✅ Upload de logo com preview em tempo real
+- ✅ Conversão automática de qualquer imagem para favicon
+- ✅ Análise de qualidade automática
+- ✅ Logo dinâmica exibida em todo o sistema
+- ✅ Suporte a: PNG, JPEG, WebP, GIF, SVG, BMP, TIFF, ICO
 
-#### 🔐 Autenticação
+### 🕒 Horários Personalizados
+- ✅ Configuração individual por dia da semana
+- ✅ Horários diferentes para cada dia
+- ✅ Dias abertos/fechados
+- ✅ Interface com abas e cards colapsáveis
+- ✅ Botão "Copiar" para replicar horários
 
-- [] JWT para login
-- [] Regras por tipo de usuário (cliente, barbeiro, admin)
+### 🔍 SEO Dinâmico
+- ✅ Título da página configurável
+- ✅ Meta descrição personalizada
+- ✅ Meta keywords
+- ✅ Favicon dinâmico
+- ✅ Atualização automática em tempo real
 
-#### 🚀 APIs
+### 🎨 Interface Melhorada
+- ✅ Design moderno e responsivo
+- ✅ Preview de imagens em tempo real
+- ✅ Componentes shadcn/ui
+- ✅ Feedback visual completo
+- ✅ UX otimizada para muitas configurações
 
-- [] Criar agendamento
-- [] Listar agendamentos
-- [] Ver detalhes do agendamento
-- [] Atualizar status
-- [ ] Integração com planos (barbearia e cliente)
-- [ ] Integração com Mercado Pago
-- [ ] Sistema de cupons
-- [ ] Gestão de produtos e pedidos
-- [ ] Notificações e chat interno (ainda em analise)
-
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
-## Getting Started
-
-First, run the development server:
+## 📦 Instalação
 
 ```bash
+# Clonar repositório
+git clone [url-do-repositorio]
+
+# Instalar dependências
+npm install
+
+# Configurar banco de dados
+# Criar arquivo .env com DATABASE_URL
+
+# Sincronizar schema
+npx prisma db push
+
+# Inicializar configurações
+node scripts/init-site-config.js
+
+# Iniciar aplicação
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🔧 Configuração
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 1. Acessar Painel Admin
+```
+http://localhost:3000/admin/settings
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### 2. Configurar Informações
+- **Aba Geral**: Nome, endereço, email, telefone
+- **Aba Marca**: Logo e favicon
+- **Aba Horários**: Dias e horários de funcionamento
+- **Aba SEO**: Título, descrição, keywords
+- **Aba Tema**: Cores personalizadas
 
-## Learn More
+### 3. Salvar Configurações
+Clique em "Salvar Configurações" no final da página
 
-To learn more about Next.js, take a look at the following resources:
+## 📚 Documentação Completa
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Consulte [DOCUMENTACAO_COMPLETA.md](./DOCUMENTACAO_COMPLETA.md) para:
+- Guia completo de uso
+- Referência de API
+- Troubleshooting detalhado
+- Exemplos de código
+- Comandos úteis
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## 🛠️ Tecnologias
 
-## Deploy on Vercel
+- **Next.js 15**: Framework React
+- **Prisma 6.18**: ORM PostgreSQL
+- **Sharp**: Processamento de imagens
+- **Shadcn/ui**: Componentes de interface
+- **TypeScript**: Tipagem estática
+- **Tailwind CSS**: Estilização
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 📝 Comandos Úteis
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Desenvolvimento
+```bash
+npm run dev          # Iniciar desenvolvimento
+npm run build        # Build para produção
+npm start           # Iniciar produção
+```
+
+### Banco de Dados
+```bash
+npx prisma studio                    # Interface visual do banco
+npx prisma generate                  # Gerar cliente Prisma
+node scripts/test-db-connection.js  # Testar conexão
+```
+
+### Debug
+```bash
+node scripts/init-site-config.js    # Inicializar configurações
+curl http://localhost:3000/api/debug/config  # Debug de configurações
+```
+
+## 🔍 Troubleshooting
+
+### Logo não aparece?
+1. Limpar cache do navegador (Ctrl+Shift+R)
+2. Verificar debug em `/admin/settings`
+3. Executar: `node scripts/test-db-connection.js`
+
+### Erro de conexão PostgreSQL?
+1. Atualizar Prisma: `npm i --save-dev prisma@latest`
+2. Regenerar cliente: `npx prisma generate`
+3. Testar: `node scripts/test-db-connection.js`
+
+### Mais informações?
+Consulte [DOCUMENTACAO_COMPLETA.md](./DOCUMENTACAO_COMPLETA.md)
+
+## 📄 Licença
+
+Este projeto é privado e proprietário.
+
+---
+
+**Sistema 100% funcional e pronto para uso!** 🎉

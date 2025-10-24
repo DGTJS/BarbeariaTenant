@@ -7,7 +7,7 @@ import { Card, CardContent } from "./ui/card";
 import { Avatar, AvatarImage } from "./ui/avatar";
 import { Star, X, Calendar, Clock, MapPin } from "lucide-react";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { ptBR } from "date-fns/locale/pt-BR";
 import RatingModal from "./rating-modal";
 
 interface RateServicesModalProps {

@@ -13,10 +13,9 @@ export default async function Home() {
   const userId = session?.user?.id || null;
   
   // Busca todos os dados em uma única operação otimizada
-  const { services, barbers, categories, barberShops, bookings } = await getHomeData(userId || "");
+  const { services, barbers, categories, bookings } = await getHomeData(userId || "");
   const user = await getUserData();
   const banners = await getBanners();
-  const barberShopSystemEnabled = await getBarberShopSystemStatus();
 
   return (
     <>
@@ -32,10 +31,8 @@ export default async function Home() {
         categories={sanitizeDecimal(categories)}
         barbers={sanitizeDecimal(barbers)}
         services={sanitizeDecimal(services)}
-        barberShops={sanitizeDecimal(barberShops)}
         bookings={sanitizeDecimal(bookings)}
         banners={sanitizeDecimal(banners)}
-        showBarberShops={!barberShopSystemEnabled}
       />
     </>
   );

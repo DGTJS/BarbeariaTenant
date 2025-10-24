@@ -3,10 +3,10 @@ import { db } from "@/_lib/prisma";
 
 export async function GET(
   request: NextRequest,
-  context: { params: Promise<{ serviceId: string }> }
+  { params }: { params: { serviceId: string } }
 ) {
   try {
-    const { serviceId } = await context.params;
+    const serviceId = params.serviceId;
 
     const options = await db.serviceOption.findMany({
       where: {

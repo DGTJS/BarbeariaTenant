@@ -16,6 +16,13 @@ export async function GET() {
         case "boolean":
           value = cfg.value === "true";
           break;
+        case "array":
+          try {
+            value = JSON.parse(cfg.value);
+          } catch {
+            value = [];
+          }
+          break;
         default:
           value = cfg.value;
       }
@@ -60,14 +67,17 @@ export async function PUT(request: NextRequest) {
       entries.map(async ({ key, value, type }) => {
         const normalizedType = type
           ? type
+          : Array.isArray(value)
+          ? "array"
           : typeof value === "boolean"
           ? "boolean"
           : typeof value === "number"
           ? "number"
           : "string";
 
-        const stringValue =
-          typeof value === "string" ? value : value?.toString?.() ?? "";
+        const stringValue = Array.isArray(value)
+          ? JSON.stringify(value)
+          : typeof value === "string" ? value : value?.toString?.() ?? "";
 
         await db.siteConfig.upsert({
           where: { key },

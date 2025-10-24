@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { CheckCircle, Calendar, Clock, User, Scissors } from "lucide-react";
 import { Button } from "@/_components/ui/button";
+import BarbershopMap from "./barbershop-map";
 
 interface BookingSuccessModalProps {
   isOpen: boolean;
@@ -20,6 +21,7 @@ interface BookingSuccessModalProps {
 export default function BookingSuccessModal({ isOpen, onClose, bookingData }: BookingSuccessModalProps) {
   const [isVisible, setIsVisible] = useState(false);
   const [animationStep, setAnimationStep] = useState(0);
+  const [siteConfig, setSiteConfig] = useState<{ name: string; address: string } | null>(null);
 
   useEffect(() => {
     if (isOpen) {
@@ -30,6 +32,16 @@ export default function BookingSuccessModal({ isOpen, onClose, bookingData }: Bo
       const timer1 = setTimeout(() => setAnimationStep(1), 100);
       const timer2 = setTimeout(() => setAnimationStep(2), 300);
       const timer3 = setTimeout(() => setAnimationStep(3), 500);
+      
+      // Buscar configurações da barbearia
+      fetch('/api/admin/site-config')
+        .then(res => res.json())
+        .then(data => {
+          if (data.name && data.address) {
+            setSiteConfig({ name: data.name, address: data.address });
+          }
+        })
+        .catch(err => console.error('Erro ao buscar configurações:', err));
       
       return () => {
         clearTimeout(timer1);
@@ -142,6 +154,18 @@ export default function BookingSuccessModal({ isOpen, onClose, bookingData }: Bo
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* Mapa da Barbearia */}
+        {siteConfig && siteConfig.address && (
+          <div className={`px-6 pb-6 transition-all duration-500 delay-400 ${
+            animationStep >= 3 ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2'
+          }`}>
+            <BarbershopMap 
+              address={siteConfig.address}
+              name={siteConfig.name}
+            />
           </div>
         )}
 

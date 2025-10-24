@@ -69,3 +69,7 @@ function generateRandomSecret() {
 
 createEnvFile();
 
+
+
+
+

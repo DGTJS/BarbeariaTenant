@@ -16,10 +16,8 @@ interface HomeContentProps {
   categories?: any[];
   barbers?: any[];
   services?: any[];
-  barberShops?: any[];
   bookings?: any[];
   banners?: any[];
-  showBarberShops?: boolean;
 }
 
 const HomeContent = ({
@@ -27,10 +25,8 @@ const HomeContent = ({
   categories = [],
   barbers = [],
   services = [],
-  barberShops = [],
   bookings = [],
-  banners = [],
-  showBarberShops = true
+  banners = []
 }: HomeContentProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -105,9 +101,7 @@ const HomeContent = ({
             selectedCategory={selectedCategory}
             barbers={barbers}
             services={services}
-            barberShops={barberShops}
             bookings={bookings}
-            showBarberShops={showBarberShops}
           />
         </div>
       </div>
@@ -181,9 +175,7 @@ const HomeContent = ({
                   selectedCategory={selectedCategory}
                   barbers={barbers}
                   services={services}
-                  barberShops={barberShops}
                   bookings={bookings}
-                  showBarberShops={showBarberShops}
                 />
               </div>
             </div>

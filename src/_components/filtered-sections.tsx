@@ -79,17 +79,14 @@ interface FilteredSectionsProps {
   selectedCategory: string | null;
   barbers?: Barber[];
   services?: Service[];
-  barberShops?: BarberShop[];
   bookings?: Booking[];
-  showBarberShops?: boolean;
 }
 
-const FilteredSections = ({ selectedCategory, barbers, services, barberShops, bookings, showBarberShops = true }: FilteredSectionsProps) => {
+const FilteredSections = ({ selectedCategory, barbers, services, bookings }: FilteredSectionsProps) => {
   const filteredData = useMemo(() => {
     // Garantir que os arrays existam e não sejam undefined
     const safeBarbers = barbers || [];
     const safeServices = services || [];
-    const safeBarberShops = barberShops || [];
     const safeBookings = bookings || [];
 
 
@@ -100,9 +97,6 @@ const FilteredSections = ({ selectedCategory, barbers, services, barberShops, bo
         ),
         filteredServices: safeServices.filter((service, index, self) => 
           index === self.findIndex(s => s.id === service.id)
-        ),
-        filteredBarberShops: safeBarberShops.filter((barberShop, index, self) => 
-          index === self.findIndex(bs => bs.id === barberShop.id)
         ),
       };
     }
@@ -121,24 +115,15 @@ const FilteredSections = ({ selectedCategory, barbers, services, barberShops, bo
                 index === self.findIndex(s => s.id === service.id)
               );
 
-            // Para serviços globais, mostrar todas as barbearias (exceto a barbearia global)
-            const filteredBarberShops = safeBarberShops
-              .filter((barberShop) => barberShop.name !== "Serviços")
-              .filter((barberShop, index, self) => 
-                index === self.findIndex(bs => bs.id === barberShop.id)
-              );
-
     return {
       filteredBarbers,
       filteredServices,
-      filteredBarberShops,
     };
-  }, [selectedCategory, barbers, services, barberShops, bookings]);
+  }, [selectedCategory, barbers, services, bookings]);
 
   const hasResults = 
     filteredData.filteredBarbers.length > 0 ||
-    filteredData.filteredServices.length > 0 ||
-    filteredData.filteredBarberShops.length > 0;
+    filteredData.filteredServices.length > 0;
 
   // Se uma categoria está selecionada mas não há resultados
   if (selectedCategory && !hasResults) {
@@ -292,41 +277,6 @@ const FilteredSections = ({ selectedCategory, barbers, services, barberShops, bo
       )}
 
       {/* Barbearias */}
-      {showBarberShops && filteredData.filteredBarberShops.length > 0 && (
-        <section>
-          <div className="flex items-center gap-4 mb-6">
-            <div className="h-8 w-1 rounded-full bg-gradient-to-b from-primary to-secondary"></div>
-            <h2 className="text-2xl font-bold text-foreground">
-              {selectedCategory ? "Barbearias Especializadas" : "Barbearias Populares"}
-            </h2>
-            <span className="bg-primary/20 text-primary px-3 py-1 rounded-full text-sm font-medium">
-              {filteredData.filteredBarberShops.length}
-            </span>
-          </div>
-          
-          {/* Mobile */}
-          <div className="flex gap-3 overflow-auto [&::-webkit-scrollbar]:hidden lg:hidden">
-            {filteredData.filteredBarberShops.map((barberShop) => (
-              <CardBarber
-                key={barberShop.id}
-                barberShop={barberShop}
-                nameButton="Reservar"
-              />
-            ))}
-          </div>
-          
-          {/* Desktop */}
-          <div className="hidden lg:grid lg:grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {filteredData.filteredBarberShops.map((barberShop) => (
-              <CardBarber
-                key={barberShop.id}
-                barberShop={barberShop}
-                nameButton="Reservar"
-              />
-            ))}
-          </div>
-        </section>
-      )}
     </div>
   );
 };

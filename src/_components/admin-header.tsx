@@ -20,11 +20,14 @@ import {
   ChevronDown,
   Loader2
 } from "lucide-react";
+import DynamicLogo from "./dynamic-logo";
+import { useSiteConfig } from "@/_hooks/useSiteConfig";
 
 export default function AdminHeader() {
   const { data: session, status } = useSession();
   const [loggingOut, setLoggingOut] = useState(false);
   const router = useRouter();
+  const { config } = useSiteConfig();
 
   const handleLogout = async () => {
     setLoggingOut(true);
@@ -69,12 +72,17 @@ export default function AdminHeader() {
       <div className="flex items-center justify-between">
         {/* Logo e Título */}
         <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-lg flex items-center justify-center">
-            <span className="text-white font-bold text-sm">B</span>
+          <div className="w-8 h-8 flex items-center justify-center">
+            <DynamicLogo 
+              alt="Logo" 
+              width={32} 
+              height={32} 
+              className="object-contain"
+            />
           </div>
           <div>
             <h1 className="text-xl font-semibold text-gray-900 dark:text-white">
-              Admin Panel
+              {config.barbershop_name || "Admin Panel"}
             </h1>
             <p className="text-sm text-gray-600 dark:text-gray-400">
               Sistema de Gerenciamento

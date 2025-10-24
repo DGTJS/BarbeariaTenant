@@ -61,11 +61,6 @@ const navigation = [
     icon: Palette,
   },
   {
-    name: "Cores",
-    href: "/admin/colors",
-    icon: Palette,
-  },
-  {
     name: "Configurações",
     href: "/admin/settings",
     icon: Settings,

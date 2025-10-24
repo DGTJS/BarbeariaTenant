@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { toast } from "sonner";
 import ColorPicker from "@/_components/color-picker";
+import LoadingScreen from "@/_components/loading-screen";
 
 interface ColorConfig {
   id: string;
@@ -361,11 +362,7 @@ const ColorAdminPage = () => {
   }, [updateTimeout]);
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <RefreshCw className="h-8 w-8 animate-spin" />
-      </div>
-    );
+    return <LoadingScreen message="Carregando paleta de cores" />;
   }
 
   return (
@@ -373,8 +370,17 @@ const ColorAdminPage = () => {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-foreground">Configuração de Cores</h1>
-          <p className="text-foreground-muted">Gerencie as cores do sistema</p>
+          <div className="flex items-center gap-3 mb-2">
+            <Button 
+              onClick={() => window.location.href = '/admin/themes'} 
+              variant="ghost"
+              size="sm"
+            >
+              ← Voltar para Temas
+            </Button>
+          </div>
+          <h1 className="text-3xl font-bold text-foreground">Configuração Detalhada de Cores</h1>
+          <p className="text-foreground-muted">Personalize cada cor do sistema individualmente</p>
           <p className="text-sm text-foreground-muted mt-1">
             💡 Clique no quadrado de cor para abrir o seletor visual
           </p>

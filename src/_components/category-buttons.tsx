@@ -1,6 +1,7 @@
 "use client";
 
 import { useTheme, getIconFilter } from "../_hooks/useTheme";
+import DynamicIcon from "./dynamic-icon";
 
 interface Category {
   id: string;
@@ -46,13 +47,10 @@ const CategoryButtons = ({ categories, selectedCategory, onCategorySelect }: Cat
                   : "bg-card-secondary text-card-foreground border-border hover:bg-card-hover hover:border-primary/50"
               }`}
             >
-              <img 
-                src={category.IconUrl} 
-                alt={category.name} 
-                width={20} 
-                height={20}
-                className="flex-shrink-0"
-                style={{ filter: getIconFilterStyle() }}
+              <DynamicIcon 
+                iconUrl={category.IconUrl}
+                className="flex-shrink-0 w-5 h-5"
+                size={20}
               />
               <span className="text-sm font-medium whitespace-nowrap">{category.name}</span>
             </button>
@@ -73,15 +71,12 @@ const CategoryButtons = ({ categories, selectedCategory, onCategorySelect }: Cat
                   : "border-border bg-card-secondary hover:scale-105 hover:border-primary/50 hover:bg-card-hover hover:shadow-lg"
               }`}
             >
-              <img 
-                src={category.IconUrl} 
-                alt={category.name} 
-                width={20} 
-                height={20}
-                className={`flex-shrink-0 transition-transform duration-200 ${
+              <DynamicIcon 
+                iconUrl={category.IconUrl}
+                className={`flex-shrink-0 w-5 h-5 transition-transform duration-200 ${
                   selectedCategory === category.id ? "scale-110" : "group-hover:scale-110"
                 }`}
-                style={{ filter: getIconFilterStyle() }}
+                size={20}
               />
               <span className="text-sm font-medium transition-colors truncate">
                 {category.name}

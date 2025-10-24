@@ -10,8 +10,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import { useBooking } from "@/_hooks/use-booking";
 import BookingSuccessModal from "./booking-success-modal";
+import DynamicIcon from "./dynamic-icon";
 import { set } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { ptBR } from "date-fns/locale/pt-BR";
 import { CalendarIcon, ChevronLeft, ChevronRight, Scissors, User, Clock, CheckCircle } from "lucide-react";
 
 interface BarberWithWorkingHours {
@@ -107,32 +108,42 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
       const response = await fetch(`/api/services/${serviceId}/options`);
       if (response.ok) {
         const options = await response.json();
+        
+        // Atualizar o estado com as opções do banco
+        setServiceOptions(prev => ({
+          ...prev,
+          [serviceId]: options
+        }));
+        
         return options;
       }
     } catch (error) {
       console.error('Erro ao buscar opções do serviço:', error);
     }
-    return [];
+    
+    // Se falhar, usar fallback
+    const fallbackOptions = getFallbackOptions(serviceId);
+    setServiceOptions(prev => ({
+      ...prev,
+      [serviceId]: fallbackOptions
+    }));
+    return fallbackOptions;
   };
 
   // Função para gerar opções de serviços baseadas no serviço selecionado
-  const getServiceOptions = (service: Service): ServiceOption[] => {
+  const getServiceOptions = async (service: Service): Promise<ServiceOption[]> => {
     // Verificar se já temos as opções em cache
     if (serviceOptions[service.id]) {
       return serviceOptions[service.id];
     }
 
-    // Usar opções hardcoded por enquanto
-    const options = getFallbackOptions(service);
-    setServiceOptions(prev => ({
-      ...prev,
-      [service.id]: options
-    }));
+    // Buscar opções do banco de dados
+    const options = await fetchServiceOptions(service.id);
     return options;
   };
 
   // Função de fallback com opções hardcoded
-  const getFallbackOptions = (service: Service): ServiceOption[] => {
+  const getFallbackOptions = (serviceId: string): ServiceOption[] => {
     const serviceOptionsMap: { [key: string]: ServiceOption[] } = {
       "Corte de Cabelo": [
         { id: "1", name: "Degradê", description: "Corte com degradê nas laterais", price: 25, duration: 30, status: true, imageUrl: "https://utfs.io/f/0ddfbd26-a424-43a0-aaf3-c3f1dc6be6d1-1kgxo7.png" },
@@ -174,8 +185,9 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
       ]
     };
 
-    return serviceOptionsMap[service.name] || [
-      { id: "default", name: "Padrão", description: "Serviço padrão", price: Number(service.price), duration: service.duration, status: true, imageUrl: service.imageUrl }
+    // Retornar opção padrão se não encontrar no mapa
+    return [
+      { id: "default", name: "Padrão", description: "Serviço padrão", price: 0, duration: 0, status: true, imageUrl: "" }
     ];
   };
 
@@ -212,10 +224,13 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
   useEffect(() => {
     if (selectedService && !serviceOptions[selectedService.id]) {
       console.log('Carregando opções para serviço:', selectedService.name);
-      const options = getServiceOptions(selectedService);
-      console.log('Opções carregadas:', options);
+      getServiceOptions(selectedService).then(options => {
+        console.log('Opções carregadas:', options);
+      }).catch(error => {
+        console.error('Erro ao carregar opções:', error);
+      });
     }
-  }, [selectedService]);
+  }, [selectedService, serviceOptions]);
 
   useEffect(() => {
     if (!selectBarber || !selectedDate || !barbers) {
@@ -606,12 +621,10 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
                     onClick={() => setSelectedCategory(category)}
                   >
                     <div className="flex items-center gap-3">
-                      <img 
-                        src={category.IconUrl} 
-                        alt={category.name} 
-                        width={24} 
-                        height={24}
-                        className="flex-shrink-0 rounded-lg object-cover"
+                      <DynamicIcon 
+                        iconUrl={category.IconUrl}
+                        className="flex-shrink-0 w-6 h-6 rounded-lg"
+                        size={24}
                       />
                       <div>
                             <h4 className="font-semibold text-foreground">{category.name}</h4>
@@ -770,22 +783,29 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
                 </div>
               ) : (
                 // Mostrar serviços no fluxo normal
-            <div className="space-y-4">
-              <div className="grid gap-4 md:grid-cols-2">
-                {filteredServices.map((service) => (
-                  <div
-                    key={service.id}
-                    className={`cursor-pointer rounded-lg border p-4 transition-all hover:border-primary ${
-                      selectedService?.id === service.id ? "border-primary bg-primary/10" : "border-border"
-                    }`}
-                        onClick={() => {
-                          setSelectedService(service);
-                          // Carregar opções imediatamente
-                          if (!serviceOptions[service.id]) {
-                            getServiceOptions(service);
-                          }
-                        }}
-                  >
+            <div className="space-y-6">
+              <div>
+                <div className="text-center mb-4">
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Escolha o Serviço</h3>
+                  <p className="text-sm text-foreground-muted">Selecione o tipo de serviço desejado</p>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  {filteredServices.map((service) => (
+                    <div
+                      key={service.id}
+                      className={`cursor-pointer rounded-lg border p-4 transition-all hover:border-primary ${
+                        selectedService?.id === service.id ? "border-primary bg-primary/10" : "border-border"
+                      }`}
+                          onClick={() => {
+                            setSelectedService(service);
+                            // Carregar opções imediatamente
+                            if (!serviceOptions[service.id]) {
+                              getServiceOptions(service).catch(err => {
+                                console.error('Erro ao carregar opções:', err);
+                              });
+                            }
+                          }}
+                    >
                     <div className="mb-3 h-16 w-full">
                       <img
                         src={service.imageUrl}
@@ -812,12 +832,63 @@ export default function BookingModal({ isOpen, onClose, services, barbers, booki
                   </div>
                 ))}
               </div>
+            </div>
+
+              {/* Mostrar opções do serviço após seleção */}
+              {selectedService && serviceOptions[selectedService.id] && (
+                <div className="space-y-4">
+                  <div className="text-center">
+                    <h3 className="text-lg font-semibold text-foreground mb-2">Escolha a Opção</h3>
+                    <p className="text-sm text-foreground-muted">Selecione o tipo de {selectedService.name}</p>
+                  </div>
+                  <div className="grid gap-4 md:grid-cols-2">
+                    {serviceOptions[selectedService.id].map((option) => (
+                      <div
+                        key={option.id}
+                        className={`cursor-pointer rounded-lg border p-4 transition-all hover:border-primary ${
+                          selectedServiceOption?.id === option.id
+                            ? "border-primary bg-primary/10"
+                            : "border-border"
+                        }`}
+                        onClick={() => setSelectedServiceOption(option)}
+                      >
+                        <div className="space-y-3">
+                          {option.imageUrl && (
+                            <img
+                              src={option.imageUrl}
+                              alt={option.name}
+                              className="w-full h-24 object-cover rounded-lg"
+                            />
+                          )}
+                          <div>
+                            <h4 className="font-semibold text-foreground">{option.name}</h4>
+                            <p className="text-sm text-foreground-muted">{option.description}</p>
+                            <div className="flex justify-between items-center mt-2">
+                              <span className="text-lg font-bold text-primary">
+                                {option.price > 0 && '+'}
+                                {new Intl.NumberFormat('pt-BR', {
+                                  style: 'currency',
+                                  currency: 'BRL',
+                                }).format(option.price)}
+                              </span>
+                              {option.duration > 0 && (
+                                <span className="text-sm text-foreground-muted">+{option.duration}min</span>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="flex justify-between">
                 <Button variant="outline" onClick={prevStep}>
                   <ChevronLeft className="h-4 w-4 mr-1" />
                   Voltar
                 </Button>
-                {selectedService && (
+                {selectedService && selectedServiceOption && (
                   <Button onClick={nextStep}>
                     Continuar
                     <ChevronRight className="h-4 w-4 ml-1" />

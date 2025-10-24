@@ -21,6 +21,34 @@ Este diretório contém scripts úteis para gerenciar e manter a aplicação da 
 - **Uso**: `node scripts/seed-banners.js`
 - **Função**: Cria banners iniciais para o carrossel da página inicial
 
+### 🔧 Scripts de Correção
+
+#### `fix-images.js`
+- **Descrição**: Corrige referências de imagens quebradas no banco de dados
+- **Uso**: `npm run fix:images` ou `node scripts/fix-images.js`
+- **Função**: 
+  - Corrige imagens de barbeiros com caminhos locais inválidos
+  - Corrige imagens de serviços com caminhos locais inválidos
+  - Atualiza usuários barbeiros com imagens válidas
+  - Substitui por URLs hospedadas ou placeholders
+
+#### `fix-category-icons.js`
+- **Descrição**: Corrige ícones de categorias com URLs externas quebradas
+- **Uso**: `npm run fix:icons` ou `node scripts/fix-category-icons.js`
+- **Função**: 
+  - Detecta ícones com URLs externas (404)
+  - Substitui por ícones do Lucide (formato `lucide:IconName`)
+  - Mapeia automaticamente categorias para ícones apropriados
+  - Mantém ícones já válidos (lucide: ou data:)
+
+#### `fix-all.js`
+- **Descrição**: Executa todos os scripts de correção de uma vez
+- **Uso**: `npm run fix:all` ou `node scripts/fix-all.js`
+- **Função**: 
+  - Executa fix-images.js
+  - Executa fix-category-icons.js
+  - Corrige todos os problemas de mídia de uma só vez
+
 ### 🔍 Scripts de Verificação
 
 #### `verify-global-services.js`
@@ -56,6 +84,22 @@ Para verificar se o sistema está funcionando corretamente:
 
 ```bash
 node scripts/verify-global-services.js
+```
+
+### Correção de Problemas
+Se encontrar erros 404 de imagens ou ícones:
+
+```bash
+# Corrigir tudo de uma vez (recomendado)
+npm run fix:all
+
+# OU corrigir individualmente:
+
+# Corrigir apenas imagens quebradas
+npm run fix:images
+
+# Corrigir apenas ícones quebrados
+npm run fix:icons
 ```
 
 ## Estrutura dos Dados

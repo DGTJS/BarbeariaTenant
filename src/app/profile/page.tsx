@@ -1,64 +1,78 @@
-import { getServerSession } from "next-auth";
-import { authOptions } from "@/_providers/auth-options";
-import { db } from "@/_lib/prisma";
+"use client";
+
+import { useSession } from "next-auth/react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/_components/ui/card";
 import { Button } from "@/_components/ui/button";
 import { Badge } from "@/_components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/_components/ui/avatar";
-import { Input } from "@/_components/ui/input";
-import { Label } from "@/_components/ui/label";
-import { Switch } from "@/_components/ui/switch";
 import { 
   User, 
-  Mail, 
   Calendar, 
   Settings, 
   LogOut,
   ArrowLeft,
   Edit,
-  Phone,
-  Bell,
-  MessageSquare
+  Bell
 } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
+import { signOut } from "next-auth/react";
 import NotificationSettings from "@/_components/notification-settings";
+import UserLogin from "@/_components/user-login";
+import LoadingScreen, { LoadingSpinner } from "@/_components/loading-screen";
 
-const ProfilePage = async () => {
-  // Obter sessão do usuário no servidor
-  const session = await getServerSession(authOptions);
-  
-  if (!session?.user?.id) {
-    redirect('/api/auth/signin');
+interface Booking {
+  id: string;
+  dateTime: string;
+  status: string;
+  service: {
+    name: string;
+  };
+  barber: {
+    name: string;
+  };
+}
+
+const ProfilePage = () => {
+  const { data: session, status } = useSession();
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (status === "authenticated" && session?.user?.id) {
+      fetchBookings();
+    } else if (status !== "loading") {
+      setLoading(false);
+    }
+  }, [status, session]);
+
+  const fetchBookings = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/user/history");
+      if (response.ok) {
+        const data = await response.json();
+        setBookings(data);
+      }
+    } catch (error) {
+      console.error("Erro ao buscar agendamentos:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSignOut = async () => {
+    await signOut({ callbackUrl: "/" });
+  };
+
+  // Mostrar tela de loading bonita
+  if (status === "loading") {
+    return <LoadingScreen message="Carregando seu perfil" />;
   }
 
-  // Buscar agendamentos do usuário no servidor (mesma lógica da página inicial)
-  const bookings = await db.booking.findMany({
-    where: {
-      userId: session.user.id,
-    },
-    include: {
-      service: {
-        select: {
-          id: true,
-          name: true,
-          price: true,
-          duration: true,
-          imageUrl: true,
-        }
-      },
-      barber: {
-        select: {
-          id: true,
-          name: true,
-          photo: true,
-        }
-      }
-    },
-    orderBy: {
-      dateTime: 'desc',
-    },
-  });
+  if (status === "unauthenticated") {
+    return <UserLogin />;
+  }
 
   const totalBookings = bookings.length;
   const isSubscriber = false; // Por enquanto, sempre false
@@ -78,22 +92,20 @@ const ProfilePage = async () => {
       </div>
 
       <div className="container mx-auto px-4 py-6">
-
-
         {/* Perfil Principal - Design Moderno */}
         <div className="bg-gradient-to-br from-primary/10 via-card/50 to-card/90 backdrop-blur-sm rounded-2xl border border-card-border/30 shadow-lg p-6 mb-6">
           <div className="flex flex-col items-center text-center">
             <Avatar className="h-24 w-24 mb-4 ring-4 ring-primary/20">
-              <AvatarImage src={session.user.image || ""} alt={session.user.name || ""} />
+              <AvatarImage src={session?.user?.image || ""} alt={session?.user?.name || ""} />
               <AvatarFallback className="text-2xl font-bold bg-primary/10 text-primary">
-                {session.user.name?.charAt(0).toUpperCase() || "U"}
+                {session?.user?.name?.charAt(0).toUpperCase() || "U"}
               </AvatarFallback>
             </Avatar>
             <h2 className="text-2xl font-bold text-card-foreground mb-1">
-              {session.user.name || "Usuário"}
+              {session?.user?.name || "Usuário"}
             </h2>
             <p className="text-muted-foreground mb-3">
-              {session.user.email}
+              {session?.user?.email}
             </p>
             <Badge variant="secondary" className={isSubscriber ? "bg-green-500/20 text-green-600 border-green-500/30" : "bg-gray-500/20 text-gray-600 border-gray-500/30"}>
               {isSubscriber ? "Assinante" : "Não Assinante"}
@@ -131,7 +143,7 @@ const ProfilePage = async () => {
         {/* Grid de Conteúdo */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Configurações de Notificação */}
-          <NotificationSettings userId={session.user.id} />
+          {session?.user?.id && <NotificationSettings userId={session.user.id} />}
 
           {/* Ações Rápidas */}
           <Card className="bg-card/90 backdrop-blur-sm border border-card-border/30 shadow-sm">
@@ -152,7 +164,11 @@ const ProfilePage = async () => {
                 <span className="text-sm">Preferências</span>
               </Button>
               
-              <Button variant="ghost" className="w-full justify-start h-auto py-3 text-red-500 hover:text-red-600">
+              <Button 
+                variant="ghost" 
+                className="w-full justify-start h-auto py-3 text-red-500 hover:text-red-600"
+                onClick={handleSignOut}
+              >
                 <LogOut className="h-4 w-4 mr-3" />
                 <span className="text-sm">Sair da Conta</span>
               </Button>
@@ -169,9 +185,11 @@ const ProfilePage = async () => {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {bookings.length > 0 ? (
+            {loading ? (
+              <LoadingSpinner size="md" text="Carregando agendamentos..." />
+            ) : bookings.length > 0 ? (
               <div className="space-y-3">
-                {bookings.slice(0, 5).map((booking: any) => (
+                {bookings.slice(0, 5).map((booking) => (
                   <div key={booking.id} className="flex items-center justify-between p-4 bg-gradient-to-r from-card-secondary/30 to-card-secondary/10 rounded-xl border border-card-border/20 hover:shadow-md transition-all">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center">

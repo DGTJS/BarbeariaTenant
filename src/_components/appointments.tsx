@@ -23,7 +23,7 @@ const Appointments = memo(({ bookings = [], user }: AppointmentsProps) => {
   
   const handleViewAllAppointments = () => {
     if (!user) {
-      router.push('/api/auth/signin');
+      router.push('/profile');
     } else {
       setIsModalOpen(true);
     }
@@ -46,7 +46,7 @@ const Appointments = memo(({ bookings = [], user }: AppointmentsProps) => {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => router.push('/api/auth/signin')}
+                onClick={() => router.push('/profile')}
                 className="border-primary/30 text-primary hover:bg-primary/10 hover:border-primary/50 transition-all duration-200"
               >
                 <Eye className="h-4 w-4 mr-2" />

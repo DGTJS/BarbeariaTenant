@@ -1,8 +1,8 @@
-import Image from "next/image";
 import Link from "next/link";
 import { Bell } from "lucide-react";
 import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
+import DynamicLogo from "./dynamic-logo";
 
 interface Category {
   id: string;
@@ -21,9 +21,15 @@ interface HeaderProps {
 const Header = ({ onNotificationClick, unreadNotifications = 0 }: HeaderProps) => {
   return (
     <div className="text-card-foreground backdrop-blur-md ">
-      <div className="flex items-center justify-between px-4 py-2">
+      <div className="flex items-center justify-between px-4 py-4">
         <Link href="/" className="cursor-pointer transition-transform hover:scale-105">
-          <Image src="/logo.png" alt="Logo" width={80} height={80} className="drop-shadow-sm" />
+          <DynamicLogo 
+            alt="Logo" 
+            width={80} 
+            height={80} 
+            className="drop-shadow-sm" 
+            priority={true}
+          />
         </Link>
         <Button
           variant="ghost"

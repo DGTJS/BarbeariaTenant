@@ -7,33 +7,33 @@ async function seedCategoryDatabase() {
     data: [
       {
         name: "Cabelo",
-        IconUrl:
-          "https://092abtnhnl.ufs.sh/f/tWCD8hUekPO5LE30lBMzFhV6fsG7iLg5rDx9CuHlwt1RdZeN",
+        IconUrl: "lucide:Scissors",
+        description: "Cortes e penteados profissionais"
       },
       {
         name: "Barba",
-        IconUrl:
-          "https://092abtnhnl.ufs.sh/f/tWCD8hUekPO5JrxOXqQzLqEKM87orjxQp1i9FUSnghDsfPae",
+        IconUrl: "lucide:Wind",
+        description: "Aparar e modelar barba"
       },
       {
-        name: "Acabemento",
-        IconUrl:
-          "https://092abtnhnl.ufs.sh/f/tWCD8hUekPO5bs3P1Hw7wlT2QPkdKemXHpiCZELJ4jSa0zOM",
+        name: "Acabamento",
+        IconUrl: "lucide:Sparkles",
+        description: "Finalização e detalhes"
       },
       {
         name: "Sobrancelha",
-        IconUrl:
-          "https://092abtnhnl.ufs.sh/f/tWCD8hUekPO5EgBdt4XJtg3FC87ObndhUefW0skEK64NVSvc",
+        IconUrl: "lucide:Eye",
+        description: "Design e modelagem de sobrancelhas"
       },
       {
         name: "Massagem",
-        IconUrl:
-          "https://092abtnhnl.ufs.sh/f/tWCD8hUekPO5qsvgVYbIWuCXSD1PT9MsYJafzFvOwVeBE3kR",
+        IconUrl: "lucide:Hand",
+        description: "Massagens relaxantes"
       },
       {
         name: "Hidratação",
-        IconUrl:
-          "https://092abtnhnl.ufs.sh/f/tWCD8hUekPO56uyRjp0UX2oTS8WMNzemARQB6I4qgsapE1kc",
+        IconUrl: "lucide:Droplet",
+        description: "Tratamentos capilares"
       },
     ],
   });

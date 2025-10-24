@@ -9,7 +9,6 @@ export const getHomeData = cache(async (userId: string) => {
       services,
       barbers,
       categories,
-      barberShops,
       bookings
     ] = await Promise.all([
       // Serviços globais (disponíveis em todas as barbearias) - consulta otimizada
@@ -97,24 +96,6 @@ export const getHomeData = cache(async (userId: string) => {
         take: 10, // Limitar resultados
       }),
       
-      // Barbearias - consulta simples
-      db.barberShop.findMany({
-        where: { status: true },
-        select: {
-          id: true,
-          name: true,
-          address: true,
-          phones: true,
-          imageUrl: true,
-          rating: true,
-          description: true,
-          status: true,
-          createdAt: true,
-          updatedAt: true,
-        },
-        take: 10, // Limitar resultados
-      }),
-      
       // Agendamentos - apenas do usuário atual e futuros (se userId fornecido)
       userId ? db.booking.findMany({
         where: {
@@ -181,20 +162,11 @@ export const getHomeData = cache(async (userId: string) => {
     }
   }
 
-  // Deduplica barbearias por ID
-  const uniqueBarberShops = new Map<string, (typeof barberShops)[number]>();
-  for (const barberShop of barberShops) {
-    if (!uniqueBarberShops.has(barberShop.id)) {
-      uniqueBarberShops.set(barberShop.id, barberShop);
-    }
-  }
-
     
     return {
       services: Array.from(uniqueServices.values()),
       barbers: Array.from(uniqueBarbers.values()),
       categories: Array.from(uniqueCategories.values()),
-      barberShops: Array.from(uniqueBarberShops.values()),
       bookings,
     };
   } catch (error) {
@@ -204,7 +176,6 @@ export const getHomeData = cache(async (userId: string) => {
       services: [],
       barbers: [],
       categories: [],
-      barberShops: [],
       bookings: [],
     };
   }

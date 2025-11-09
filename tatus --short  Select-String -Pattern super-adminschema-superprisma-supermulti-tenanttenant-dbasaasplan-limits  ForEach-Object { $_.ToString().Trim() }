@@ -1,0 +1,165 @@
+warning: in the working copy of 'prisma/schema.prisma', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'scripts/README.md', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/_components/CardServices.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/_components/admin-header.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/_components/admin-login.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/_components/admin-sidebar.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/_components/appointments-modal.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/_components/appointments.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/_components/booking-calendar.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/_components/booking-modal.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/_components/booking-sidebar.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/_components/booking-success-modal.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/_components/filtered-sections.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/_components/header-wrapper.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/_components/home-content.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/_hooks/use-booking.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/_lib/getHomeData.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/_types/booking.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/_actions/create-booking.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/admin/barbers/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/admin/bookings/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/admin/layout.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/admin/login/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/admin/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/admin/services/page.tsx', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/api/admin/available-times/route.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/api/admin/barbers/route.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/api/admin/bookings/route.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/api/admin/dashboard/route.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/api/available-times.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/app/api/bookings/route.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'src/middleware.ts', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'tsconfig.json', LF will be replaced by CRLF the next time Git touches it
+warning: in the working copy of 'vercel.json', LF will be replaced by CRLF the next time Git touches it
+ DOCUMENTACAO_COMPLETA.md                          |  800 [31m-------[m
+ README.md                                         |  238 [32m+[m[31m-[m
+ SETUP_ENV.md                                      |  163 [31m--[m
+ next.config.ts                                    |    4 [32m+[m
+ package-lock.json                                 |  179 [32m+[m[31m-[m
+ package.json                                      |    4 [32m+[m[31m-[m
+ prisma/migrations/migration_lock.toml             |    4 [32m+[m[31m-[m
+ prisma/schema.prisma                              |  304 [32m++[m[31m-[m
+ prisma/seed.ts                                    |   34 [32m+[m[31m-[m
+ scripts/README.md                                 |  272 [32m++[m[31m-[m
+ scripts/check-all.js                              |   50 [31m-[m
+ scripts/cleanup-duplicates.js                     |  165 [31m--[m
+ scripts/fix-all-category-icons.js                 |   74 [31m-[m
+ scripts/fix-all.js                                |   24 [31m-[m
+ scripts/fix-category-icons.js                     |   96 [31m-[m
+ scripts/fix-env.js                                |   53 [31m-[m
+ scripts/fix-images.js                             |   97 [31m-[m
+ scripts/init-site-config.js                       |   77 [31m-[m
+ scripts/quick-setup.js                            |    4 [32m+[m
+ scripts/remove-duplicate-categories.js            |  100 [31m-[m
+ scripts/seed-banners.js                           |    1 [31m-[m
+ scripts/seed-categories.js                        |  103 [31m-[m
+ scripts/seed-colors.js                            |   75 [31m-[m
+ scripts/seed-sample-data.js                       |  232 [31m--[m
+ scripts/seed-service-options.js                   |  158 [31m--[m
+ scripts/seed-themes.js                            |  248 [31m--[m
+ scripts/setup-env.js                              |  105 [31m-[m
+ scripts/update-category-icons.js                  |   65 [31m-[m
+ scripts/update-env.js                             |   72 [31m-[m
+ src/_components/CardServices.tsx                  | 1183 [32m+++++++[m[31m---[m
+ src/_components/admin-header.tsx                  |  148 [32m+[m[31m-[m
+ src/_components/admin-login.tsx                   |   50 [32m+[m[31m-[m
+ src/_components/admin-sidebar.tsx                 |  235 [32m+[m[31m-[m
+ src/_components/appointments-modal.tsx            |  169 [32m+[m[31m-[m
+ src/_components/appointments.tsx                  |  493 [32m++[m[31m--[m
+ src/_components/banner-carousel.tsx               |  111 [32m+[m[31m-[m
+ src/_components/barber-services-with-filter.tsx   |   53 [32m+[m[31m-[m
+ src/_components/barbershop-map.tsx                |   45 [32m+[m[31m-[m
+ src/_components/booking-calendar.tsx              |  154 [32m+[m[31m-[m
+ src/_components/booking-modal.tsx                 | 2556 [32m+++++++++++++[m[31m--------[m
+ src/_components/booking-sidebar.tsx               |  148 [32m+[m[31m-[m
+ src/_components/booking-success-modal.tsx         |  253 [32m+[m[31m-[m
+ src/_components/cardBarberShop.tsx                |    2 [32m+[m
+ src/_components/cardServiceBarber.tsx             |   49 [32m+[m[31m-[m
+ src/_components/cardServices-new.tsx              |  828 [31m-------[m
+ src/_components/cardServices-old.tsx              |  659 [31m------[m
+ src/_components/category-buttons.tsx              |   38 [32m+[m[31m-[m
+ src/_components/category-filter.tsx               |   25 [32m+[m[31m-[m
+ src/_components/category.tsx                      |   26 [32m+[m[31m-[m
+ src/_components/color-provider.tsx                |   48 [32m+[m[31m-[m
+ src/_components/dynamic-icon.tsx                  |  267 [32m++[m[31m-[m
+ src/_components/dynamic-logo.tsx                  |   21 [32m+[m
+ src/_components/enhanced-logo-upload.tsx          |    4 [32m+[m[31m-[m
+ src/_components/favorite-barber-button.tsx        |   59 [32m+[m[31m-[m
+ src/_components/filtered-sections.tsx             |  155 [32m+[m[31m-[m
+ src/_components/floating-menu.tsx                 |   49 [32m+[m[31m-[m
+ src/_components/header-wrapper.tsx                |   41 [32m+[m[31m-[m
+ src/_components/history-modal.tsx                 |   99 [32m+[m[31m-[m
+ src/_components/home-content.tsx                  |   56 [32m+[m[31m-[m
+ src/_components/icon-filter-demo.tsx              |   34 [32m+[m[31m-[m
+ src/_components/icon-selector.tsx                 |   61 [32m+[m[31m-[m
+ src/_components/logo-preview.tsx                  |  120 [32m+[m[31m-[m
+ src/_components/logo-upload.tsx                   |    4 [32m+[m
+ src/_components/rate-services-modal.tsx           |  101 [32m+[m[31m-[m
+ src/_components/rating-modal.tsx                  |   29 [32m+[m[31m-[m
+ src/_components/sidebar-button.tsx                |   73 [32m+[m[31m-[m
+ src/_components/specialty-badge.tsx               |   28 [32m+[m[31m-[m
+ src/_components/test-icons.tsx                    |    2 [32m+[m
+ src/_components/ui/dialog.tsx                     |   36 [32m+[m[31m-[m
+ src/_components/ui/input.tsx                      |    2 [32m+[m[31m-[m
+ src/_components/ui/select.tsx                     |    6 [32m+[m[31m-[m
+ src/_components/ui/textarea.tsx                   |    2 [32m+[m[31m-[m
+ src/_hooks/use-booking.ts                         |  105 [32m+[m[31m-[m
+ src/_hooks/useSiteConfig.ts                       |  202 [32m+[m[31m-[m
+ src/_hooks/useTheme.ts                            |  103 [32m+[m[31m-[m
+ src/_lib/admin-services.ts                        |  108 [32m+[m[31m-[m
+ src/_lib/getHomeData.ts                           |  189 [32m+[m[31m-[m
+ src/_lib/getServiceShop.ts                        |    9 [32m+[m
+ src/_lib/getServices.ts                           |   37 [32m+[m[31m-[m
+ src/_lib/mercadopago.ts                           |    4 [32m+[m
+ src/_lib/prisma.ts                                |   40 [32m+[m[31m-[m
+ src/_server/auth-options.ts                       |   76 [32m+[m[31m-[m
+ src/_types/booking.ts                             |    3 [32m+[m
+ src/app/_actions/create-booking.ts                |  105 [32m+[m[31m-[m
+ src/app/admin/banner/page.tsx                     |   77 [32m+[m[31m-[m
+ src/app/admin/barbers/page.tsx                    | 1250 [32m++++++[m[31m----[m
+ src/app/admin/bookings/page.tsx                   | 1428 [32m++++++++[m[31m----[m
+ src/app/admin/layout.tsx                          |  136 [32m+[m[31m-[m
+ src/app/admin/login/layout.tsx                    |    4 [32m+[m
+ src/app/admin/login/page.tsx                      |    8 [32m+[m[31m-[m
+ src/app/admin/page.tsx                            |  411 [32m+++[m[31m-[m
+ src/app/admin/plans/page.tsx                      |  682 [32m++++[m[31m--[m
+ src/app/admin/services/page.tsx                   |  706 [32m+++[m[31m---[m
+ src/app/admin/settings/page.tsx                   | 1074 [32m++++++[m[31m---[m
+ src/app/api/admin/available-times/route.ts        |  205 [32m+[m[31m-[m
+ src/app/api/admin/barbers/route.ts                |  955 [32m+++++++[m[31m-[m
+ src/app/api/admin/bookings/route.ts               |  597 [32m++++[m[31m-[m
+ src/app/api/admin/categories/route.ts             |   52 [32m+[m[31m-[m
+ src/app/api/admin/category-icon/route.ts          |   74 [32m+[m[31m-[m
+ src/app/api/admin/dashboard/route.ts              |  626 [32m+++[m[31m--[m
+ src/app/api/admin/logo/route.ts                   |   58 [32m+[m[31m-[m
+ src/app/api/admin/populate-options/route.ts       |  233 [32m+[m[31m-[m
+ src/app/api/admin/reports/route.ts                |  159 [32m+[m[31m-[m
+ src/app/api/admin/services/route.ts               |  141 [32m+[m[31m-[m
+ src/app/api/admin/site-config/route.ts            |  135 [32m+[m[31m-[m
+ src/app/api/admin/themes/route.ts                 |   10 [32m+[m
+ src/app/api/available-times.ts                    |  112 [32m+[m[31m-[m
+ src/app/api/bookings/route.ts                     |  547 [32m++++[m[31m-[m
+ src/app/api/favorites/check/route.ts              |   13 [32m+[m[31m-[m
+ src/app/api/favorites/route.ts                    |   38 [32m+[m[31m-[m
+ src/app/api/mercadopago/test/route.ts             |    4 [32m+[m
+ src/app/api/mercadopago/token/route.ts            |    2 [32m+[m[31m-[m
+ src/app/api/search/route.ts                       |  146 [32m+[m[31m-[m
+ src/app/api/services/[serviceId]/options/route.ts |    4 [32m+[m[31m-[m
+ src/app/api/themes/active/route.ts                |   43 [32m+[m[31m-[m
+ src/app/api/user/bookings/route.ts                |   39 [32m+[m[31m-[m
+ src/app/api/user/history/route.ts                 |  100 [32m+[m[31m-[m
+ src/app/barber/[id]/page.tsx                      |  677 [32m+++[m[31m---[m
+ src/app/barberShop/[id]/page.tsx                  |  164 [32m+[m[31m-[m
+ src/app/debug-categories/page.tsx                 |   85 [31m-[m
+ src/app/favorites/page.tsx                        |   50 [32m+[m[31m-[m
+ src/app/globals.css                               |  210 [32m+[m[31m-[m
+ src/app/page.tsx                                  |    1 [31m-[m
+ src/app/profile/page.tsx                          |  109 [32m+[m[31m-[m
+ src/app/search/page.tsx                           |   70 [32m+[m[31m-[m
+ src/app/test-icons/page.tsx                       |   44 [31m-[m
+ src/middleware.ts                                 |   94 [32m+[m[31m-[m
+ src/types/next-auth.d.ts                          |   25 [32m+[m[31m-[m
+ tsconfig.json                                     |    3 [32m+[m[31m-[m
+ vercel.json                                       |   12 [32m+[m[31m-[m
+ 130 files changed, 14311 insertions(+), 10606 deletions(-)

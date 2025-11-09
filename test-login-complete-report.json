@@ -1,0 +1,132 @@
+{
+  "timestamp": "2025-11-04T17:57:51.054Z",
+  "summary": {
+    "total": 3,
+    "success": 0,
+    "failed": 3,
+    "details": [
+      {
+        "tenant": "default",
+        "url": "http://localhost:3000",
+        "server": "✅",
+        "csrf": "✅",
+        "providers": "✅",
+        "login": "❌",
+        "session": "❌",
+        "errors": {
+          "server": null,
+          "csrf": null,
+          "login": null,
+          "session": null
+        }
+      },
+      {
+        "tenant": "santos",
+        "url": "http://santos.localhost:3000",
+        "server": "❌",
+        "csrf": "❌",
+        "providers": "❌",
+        "login": "❌",
+        "session": "❌",
+        "errors": {
+          "server": "getaddrinfo ENOTFOUND santos.localhost",
+          "csrf": null,
+          "login": null,
+          "session": null
+        }
+      },
+      {
+        "tenant": "teste",
+        "url": "http://teste.localhost:3000",
+        "server": "❌",
+        "csrf": "❌",
+        "providers": "❌",
+        "login": "❌",
+        "session": "❌",
+        "errors": {
+          "server": "getaddrinfo ENOTFOUND teste.localhost",
+          "csrf": null,
+          "login": null,
+          "session": null
+        }
+      }
+    ]
+  },
+  "results": [
+    {
+      "tenant": "default",
+      "url": "http://localhost:3000",
+      "timestamp": "2025-11-04T17:57:49.103Z",
+      "tests": {
+        "server": {
+          "success": true,
+          "url": "http://localhost:3000"
+        },
+        "csrf": {
+          "success": true,
+          "token": "2bfa9d4d3718e47ceaf8caefe822e0d6a4db137862b01dd62a8928711a4d08de",
+          "cookieHeader": ""
+        },
+        "providers": {
+          "success": true,
+          "providers": [
+            "credentials",
+            "google"
+          ],
+          "details": {
+            "credentials": {
+              "id": "credentials",
+              "name": "credentials",
+              "type": "credentials",
+              "signinUrl": "http://localhost:3000/api/auth/signin/credentials",
+              "callbackUrl": "http://localhost:3000/api/auth/callback/credentials"
+            },
+            "google": {
+              "id": "google",
+              "name": "Google",
+              "type": "oauth",
+              "signinUrl": "http://localhost:3000/api/auth/signin/google",
+              "callbackUrl": "http://localhost:3000/api/auth/callback/google"
+            }
+          }
+        },
+        "login": {
+          "success": false,
+          "status": 302,
+          "hasSessionCookie": false,
+          "redirectUrl": "http://localhost:3000/api/auth/signin?csrf=true",
+          "data": null,
+          "cookies": "next-auth.csrf-token=8803f47267cb80be017e3df2e5da28d6ae092b1ee7f55df6cde46d33d439c097%7C45e35b28b99389443be23252ddf82337a762ab249271ab0cbc5d22be6d90bd68; Path=/; HttpOnly; SameSite=Lax; next-auth.callback-url=http%3A%2F%2Flocalhost%3A3000; Path=/; HttpOnly; SameSite=Lax"
+        },
+        "session": {
+          "success": false,
+          "data": {}
+        }
+      }
+    },
+    {
+      "tenant": "santos",
+      "url": "http://santos.localhost:3000",
+      "timestamp": "2025-11-04T17:57:51.029Z",
+      "tests": {
+        "server": {
+          "success": false,
+          "url": "http://santos.localhost:3000",
+          "error": "getaddrinfo ENOTFOUND santos.localhost"
+        }
+      }
+    },
+    {
+      "tenant": "teste",
+      "url": "http://teste.localhost:3000",
+      "timestamp": "2025-11-04T17:57:51.042Z",
+      "tests": {
+        "server": {
+          "success": false,
+          "url": "http://teste.localhost:3000",
+          "error": "getaddrinfo ENOTFOUND teste.localhost"
+        }
+      }
+    }
+  ]
+}

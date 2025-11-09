@@ -1,0 +1,278 @@
+// Schema do Banco Principal (Super Tenant)
+// Gerencia todos os tenants, assinaturas e planos
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma-super"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL_SUPER") // URL do banco principal
+}
+
+// Modelo de Plano (editável pelo Super Admin)
+model Plan {
+  id          String  @id @default(uuid())
+  name        String // Starter, Profissional, Enterprise
+  price       Decimal @db.Decimal(10, 2)
+  period      String  @default("monthly") // monthly, yearly
+  description String? @db.Text
+  status      Boolean @default(true)
+
+  // Limites do plano
+  maxBarbers          Int @default(0) // 0 = ilimitado
+  maxServices         Int @default(0)
+  maxServiceOptions   Int @default(0) // por serviço
+  maxBookingsPerMonth Int @default(0)
+  maxBarberShops      Int @default(1) // unidades de barbearia
+  maxStorageMB        Int @default(100) // armazenamento em MB
+
+  // Funcionalidades
+  hasAnalytics       Boolean @default(false)
+  hasNotifications   Boolean @default(true)
+  hasCustomDomain    Boolean @default(false) // domínio próprio
+  hasWhiteLabel      Boolean @default(false)
+  hasAPI             Boolean @default(false)
+  hasPrioritySupport Boolean @default(false)
+
+  // Features extras
+  features Json? // Array de features extras em JSON
+
+  // Configurações
+  trialDays    Int     @default(14) // dias de trial
+  requiresCard Boolean @default(true) // requer cartão no trial
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  subscriptions Subscription[]
+  tenants       Tenant[]
+
+  @@map("plans")
+}
+
+// Modelo de Tenant (cada cliente)
+model Tenant {
+  id           String  @id @default(uuid())
+  name         String // Nome da barbearia/empresa
+  subdomain    String  @unique // subdomain.barberboss.com
+  customDomain String? @unique // domínio próprio (opcional)
+
+  // Dados do dono
+  ownerName  String
+  ownerEmail String
+  ownerPhone String?
+
+  // Banco de dados
+  databaseName String @unique // Nome do banco de dados do tenant
+  databaseUrl  String @db.Text // URL completa de conexão
+
+  // Status
+  status   String  @default("trial") // trial, active, suspended, expired, cancelled
+  isActive Boolean @default(true)
+
+  // Assinatura
+  planId String?
+  plan   Plan?   @relation(fields: [planId], references: [id])
+
+  // Trial
+  trialStartDate DateTime?
+  trialEndDate   DateTime?
+  trialUsed      Boolean   @default(false)
+
+  // Asaas
+  asaasCustomerId     String? // ID do cliente no Asaas
+  asaasSubscriptionId String? // ID da assinatura no Asaas
+
+  // Limites e uso atual
+  currentBarbers           Int @default(0)
+  currentServices          Int @default(0)
+  currentBookingsThisMonth Int @default(0)
+  currentBarberShops       Int @default(1)
+  currentStorageMB         Int @default(0)
+
+  // Metadados
+  metadata Json? // Dados extras em JSON
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  subscriptions           Subscription[]
+  chatMessages            ChatMessage[]
+  promotions              Promotion[]
+  expirationNotifications ExpirationNotification[]
+  superAdminAccess        SuperAdminAccess?
+
+  @@map("tenants")
+}
+
+// Modelo de Assinatura (histórico de assinaturas)
+model Subscription {
+  id       String @id @default(uuid())
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  planId   String
+  plan     Plan   @relation(fields: [planId], references: [id])
+
+  // Status
+  status   String // active, cancelled, expired, suspended
+  isActive Boolean @default(true)
+
+  // Datas
+  startDate   DateTime
+  endDate     DateTime?
+  cancelledAt DateTime?
+
+  // Pagamento
+  asaasSubscriptionId String? // ID da assinatura no Asaas
+  paymentMethod       String? // credit_card, pix, boleto
+  amount              Decimal? @db.Decimal(10, 2)
+
+  // Renovação
+  autoRenew       Boolean   @default(true)
+  nextBillingDate DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("subscriptions")
+}
+
+// Modelo de Promoção (remarketing)
+model Promotion {
+  id       String  @id @default(uuid())
+  tenantId String?
+  tenant   Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  name        String
+  description String? @db.Text
+  code        String  @unique // código da promoção
+
+  // Tipo de desconto
+  discountType  String // percentage, fixed_amount
+  discountValue Decimal @db.Decimal(10, 2)
+
+  // Limitações
+  maxUses     Int? // máximo de usos
+  currentUses Int       @default(0)
+  validFrom   DateTime
+  validUntil  DateTime?
+
+  // Aplicação
+  planIds Json? // IDs dos planos que podem usar (null = todos)
+
+  status Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("promotions")
+}
+
+// Modelo de Chat (atendimento ao vivo)
+model ChatMessage {
+  id       String  @id @default(uuid())
+  tenantId String?
+  tenant   Tenant? @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Dados do remetente
+  senderId   String // ID do usuário (super admin ou tenant owner)
+  senderName String
+  senderType String // super_admin, tenant_owner
+
+  // Mensagem
+  message String    @db.Text
+  isRead  Boolean   @default(false)
+  readAt  DateTime?
+
+  // Metadados
+  metadata Json?
+
+  createdAt DateTime @default(now())
+
+  @@map("chat_messages")
+}
+
+// Modelo de Imagem da Landing Page (editável pelo Super Admin)
+model LandingPageImage {
+  id       String  @id @default(uuid())
+  section  String // hero, features, pricing, testimonials, etc
+  position String // identifier para múltiplas imagens na mesma seção
+  imageUrl String  @db.Text
+  altText  String?
+  order    Int     @default(0)
+
+  status Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([section, position])
+  @@map("landing_page_images")
+}
+
+// Modelo de Configuração da Landing Page
+model LandingPageConfig {
+  id    String @id @default(uuid())
+  key   String @unique
+  value String @db.Text
+  type  String @default("text") // text, json, html
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@map("landing_page_config")
+}
+
+// Modelo de Relatório (gerado pelo sistema)
+model Report {
+  id     String @id @default(uuid())
+  type   String // tenant_usage, revenue, growth, etc
+  period String // daily, weekly, monthly
+
+  // Dados
+  data Json // dados do relatório em JSON
+
+  // Metadados
+  generatedAt DateTime @default(now())
+  periodStart DateTime
+  periodEnd   DateTime
+
+  @@map("reports")
+}
+
+// Modelo de Notificação de Expiração
+model ExpirationNotification {
+  id       String @id @default(uuid())
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  type      String // trial_expiring, subscription_expiring, expired
+  daysLeft  Int?
+  sentAt    DateTime @default(now())
+  emailSent Boolean  @default(false)
+
+  @@map("expiration_notifications")
+}
+
+// Modelo de Acesso do Super Admin aos Tenants
+model SuperAdminAccess {
+  id       String @id @default(uuid())
+  tenantId String
+  tenant   Tenant @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+
+  // Credenciais de acesso
+  adminEmail   String // Email do super admin
+  accessToken  String? // Token de acesso temporário
+  lastAccessed DateTime?
+
+  // Logs de acesso
+  accessLogs Json? // Array de logs de acesso
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now()) @updatedAt
+
+  @@unique([tenantId])
+  @@map("super_admin_access")
+}

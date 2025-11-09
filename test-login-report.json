@@ -1,0 +1,88 @@
+{
+  "timestamp": "2025-11-04T17:28:47.481Z",
+  "summary": {
+    "total": 3,
+    "success": 0,
+    "failed": 3,
+    "details": [
+      {
+        "tenant": "default",
+        "url": "http://localhost:3000",
+        "server": "✅",
+        "csrf": "❌",
+        "providers": "✅",
+        "login": "❌",
+        "session": "❌"
+      },
+      {
+        "tenant": "santos",
+        "url": "http://santos.localhost:3000",
+        "server": "❌",
+        "csrf": "❌",
+        "providers": "❌",
+        "login": "❌",
+        "session": "❌"
+      },
+      {
+        "tenant": "teste",
+        "url": "http://teste.localhost:3000",
+        "server": "❌",
+        "csrf": "❌",
+        "providers": "❌",
+        "login": "❌",
+        "session": "❌"
+      }
+    ]
+  },
+  "results": [
+    {
+      "tenant": "default",
+      "url": "http://localhost:3000",
+      "tests": {
+        "server": {
+          "success": true
+        },
+        "csrf": {
+          "success": false,
+          "token": null
+        },
+        "providers": {
+          "success": true,
+          "providers": [
+            "credentials",
+            "google"
+          ]
+        },
+        "login": {
+          "success": false,
+          "status": 302,
+          "hasSessionCookie": false,
+          "redirectUrl": "http://localhost:3000/api/auth/signin?csrf=true",
+          "data": ""
+        },
+        "session": {
+          "success": false,
+          "reason": "Sem cookie de sessão"
+        }
+      }
+    },
+    {
+      "tenant": "santos",
+      "url": "http://santos.localhost:3000",
+      "tests": {
+        "server": {
+          "success": false
+        }
+      }
+    },
+    {
+      "tenant": "teste",
+      "url": "http://teste.localhost:3000",
+      "tests": {
+        "server": {
+          "success": false
+        }
+      }
+    }
+  ]
+}

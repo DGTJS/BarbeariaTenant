@@ -20,7 +20,6 @@
     "fix:all": "node scripts/fix-all.js",
     "seed:options": "node scripts/seed-service-options.js",
     "cleanup:duplicates": "node scripts/cleanup-duplicates.js",
-    "prepare": "husky",
     "vercel-build": "prisma generate && next build"
   },
   "prisma": {

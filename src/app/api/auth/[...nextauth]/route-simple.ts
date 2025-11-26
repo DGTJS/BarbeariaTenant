@@ -5,52 +5,14 @@
 
 import NextAuth, { type NextAuthOptions } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantDbBySubdomain } from "@/_lib/tenant-db";
 import { db as defaultDb } from "@/_lib/prisma";
 import CredentialsProvider from "next-auth/providers/credentials";
 import GoogleProvider from "next-auth/providers/google";
 import bcrypt from "bcryptjs";
 
-// Função para obter o banco de dados do tenant
-async function getTenantDatabase(req: NextRequest) {
-  const hostname =
-    req.headers.get("host") || req.headers.get("x-forwarded-host") || "";
-
-  try {
-    const parts = hostname.split(".");
-
-    if (
-      hostname.includes("localhost") &&
-      parts.length > 1 &&
-      parts[0] !== "localhost"
-    ) {
-      const subdomain = parts[0];
-      const tenantData = await getTenantDbBySubdomain(subdomain);
-      return tenantData.db;
-    }
-
-    if (
-      parts.length > 1 &&
-      !hostname.includes("localhost") &&
-      !hostname.includes("127.0.0.1")
-    ) {
-      const subdomain = parts[0];
-      if (subdomain !== "www" && subdomain !== "app") {
-        const tenantData = await getTenantDbBySubdomain(subdomain);
-        return tenantData.db;
-      }
-    }
-  } catch (error) {
-    console.log("[NextAuth] Usando banco padrão:", error);
-  }
-
-  return defaultDb;
-}
-
 // Função para criar opções do NextAuth
 async function getAuthOptions(req: NextRequest): Promise<NextAuthOptions> {
-  const tenantDb = await getTenantDatabase(req);
-  const dbToUse = tenantDb || defaultDb;
+  const dbToUse = defaultDb;
 
   const providers: any[] = [
     CredentialsProvider({

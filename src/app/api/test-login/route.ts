@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantDbBySubdomain } from "@/_lib/tenant-db";
+import { db } from "@/_lib/prisma";
 
 /**
  * Rota de teste simples para login
@@ -9,36 +9,9 @@ export async function POST(req: NextRequest) {
   try {
     console.log("[TEST LOGIN] ========== INICIANDO TESTE ==========");
 
-    // Obter subdomain do hostname
-    const hostname = req.headers.get("host") || "";
-    const subdomain = hostname.split(".")[0];
-
-    console.log("[TEST LOGIN] Hostname:", hostname);
-    console.log("[TEST LOGIN] Subdomain:", subdomain);
-
-    // Obter banco do tenant
-    let db;
-    let tenantName = "default";
-
-    if (subdomain && subdomain !== "localhost" && subdomain !== "127.0.0.1") {
-      try {
-        const { tenant, db: tenantDb } =
-          await getTenantDbBySubdomain(subdomain);
-        db = tenantDb;
-        tenantName = tenant.name;
-        console.log("[TEST LOGIN] Usando banco do tenant:", tenantName);
-      } catch (error: any) {
-        console.error("[TEST LOGIN] Erro ao obter tenant:", error.message);
-        return NextResponse.json(
-          { error: "Tenant não encontrado", message: error.message },
-          { status: 404 }
-        );
-      }
-    } else {
-      const { db: defaultDb } = await import("@/_lib/prisma");
-      db = defaultDb;
-      console.log("[TEST LOGIN] Usando banco default");
-    }
+    // Usar banco padrão
+    const tenantName = "default";
+    console.log("[TEST LOGIN] Usando banco default");
 
     // Parse do body
     const body = await req.json();

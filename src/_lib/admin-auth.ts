@@ -10,7 +10,6 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/_providers/auth-options";
 import { db } from "./prisma";
-import { getTenantDbBySubdomain } from "./tenant-db";
 import { getTenantDatabase, getSession } from "./auth";
 import type { Session } from "next-auth";
 import type { NextRequest } from "next/server";

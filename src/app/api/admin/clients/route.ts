@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantDatabase } from "@/_lib/auth";
+;
 import { requireAdminOnly } from "@/_lib/admin-auth";
+import { db } from "@/_lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
@@ -17,7 +18,7 @@ export async function GET(request: NextRequest) {
     }
 
     // CRÍTICO: Obter banco do tenant correto
-    const db = await getTenantDatabase(request);
+    // Usando banco único
     const hostname = request.headers.get("host") || "";
     console.log(`🔍 [ADMIN-CLIENTS-GET] Buscando clientes no tenant: ${hostname}`);
 

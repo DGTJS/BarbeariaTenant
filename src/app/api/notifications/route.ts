@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantDatabase, getSession } from "@/_lib/auth";
+import { getSession } from "@/_lib/auth";
+import { db } from "@/_lib/prisma";
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,7 +12,7 @@ export async function GET(request: NextRequest) {
     }
 
     // CRÍTICO: Obter banco do tenant correto
-    const db = await getTenantDatabase(request);
+    // Usando banco único
     const hostname = request.headers.get("host") || "";
     console.log(`🔍 [NOTIFICATIONS-GET] Buscando notificações do usuário no tenant: ${hostname}`);
 
@@ -118,7 +119,7 @@ export async function PUT(request: NextRequest) {
     }
 
     // CRÍTICO: Obter banco do tenant correto
-    const db = await getTenantDatabase(request);
+    // Usando banco único
     const hostname = request.headers.get("host") || "";
     console.log(`🔍 [NOTIFICATIONS-PUT] Atualizando notificação no tenant: ${hostname}`);
 

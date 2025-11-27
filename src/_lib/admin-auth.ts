@@ -10,7 +10,7 @@
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/_providers/auth-options";
 import { db } from "./prisma";
-import { getTenantDatabase, getSession } from "./auth";
+import { getSession } from "./auth";
 import type { Session } from "next-auth";
 import type { NextRequest } from "next/server";
 
@@ -70,24 +70,11 @@ export async function requireAdmin(
   console.log("🔐 [ADMIN-AUTH] userId:", currentSession.userId);
   console.log("🔐 [ADMIN-AUTH] role da sessão:", currentSession.role);
 
-  // Detectar tenant e usar banco correto
-  let dbToUse = db;
-  if (req) {
-    try {
-      console.log("🔐 [ADMIN-AUTH] Obtendo banco do tenant...");
-      dbToUse = await getTenantDatabase(req);
-      console.log("🔐 [ADMIN-AUTH] Banco do tenant obtido com sucesso");
-    } catch (error) {
-      console.error("❌ [ADMIN-AUTH] Erro ao obter banco do tenant:", error);
-      // Continuar com banco padrão se houver erro
-    }
-  }
-
   // Buscar role do banco de dados (fonte de verdade)
   // NÃO confiar apenas na sessão, pois pode estar desatualizada
   console.log("🔐 [ADMIN-AUTH] Buscando usuário no banco:", currentSession.userId);
   
-  const dbUser = await dbToUse.user.findUnique({
+  const dbUser = await db.user.findUnique({
     where: { id: currentSession.userId },
     select: {
       role: true,

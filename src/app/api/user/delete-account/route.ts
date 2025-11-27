@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession, getTenantDatabase } from '@/_lib/auth';
+import { getSession } from "@/_lib/auth";
 import bcrypt from 'bcryptjs';
+import { db } from "@/_lib/prisma";
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,7 +11,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const db = await getTenantDatabase(req);
+    // Usando banco único
     const { password } = await req.json();
 
     if (!password) {

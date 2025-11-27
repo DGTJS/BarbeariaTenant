@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantDatabase } from "@/_lib/auth";
+import { db } from "@/_lib/prisma";
 
 // Rota pública para buscar configurações do site
 export async function GET(request: NextRequest) {
   try {
     // CRÍTICO: Obter banco do tenant correto
-    const db = await getTenantDatabase(request);
+    // Usando banco único
     const hostname = request.headers.get("host") || "";
     
     console.log(`🔄 [SITE-CONFIG PUBLIC] Buscando configurações no banco do tenant: ${hostname}`);

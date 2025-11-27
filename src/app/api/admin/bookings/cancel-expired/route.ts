@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantDatabase } from "@/_lib/auth";
+;
 import { requireAdmin } from "@/_lib/admin-auth";
 import { getSession } from "@/_lib/auth";
+import { db } from "@/_lib/prisma";
 
 /**
  * POST /api/admin/bookings/cancel-expired
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
       cronSecret === process.env.CRON_SECRET;
 
     // Obter banco do tenant correto
-    const db = await getTenantDatabase(request);
+    // Usando banco único
     const hostname = request.headers.get("host") || "";
     console.log(
       `🔍 [CANCEL-EXPIRED] Verificando agendamentos expirados no tenant: ${hostname}`
@@ -178,7 +179,7 @@ export async function GET(request: NextRequest) {
       cronSecret === process.env.CRON_SECRET;
 
     // Obter banco do tenant correto
-    const db = await getTenantDatabase(request);
+    // Usando banco único
     const hostname = request.headers.get("host") || "";
     console.log(
       `🔍 [CANCEL-EXPIRED-GET] Verificando agendamentos expirados no tenant: ${hostname}`

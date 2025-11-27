@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantDatabase, getSession } from "@/_lib/auth";
+import { getSession } from "@/_lib/auth";
 import { requireAdminOnly } from "@/_lib/admin-auth";
+import { db } from "@/_lib/prisma";
 
 export async function GET(
   request: NextRequest,
@@ -30,7 +31,7 @@ export async function GET(
     }
 
     // CRÍTICO: Obter banco do tenant correto
-    const db = await getTenantDatabase(request);
+    // Usando banco único
     const hostname = request.headers.get("host") || "";
     console.log(`🔍 [ADMIN-NOTIFICATION-TEMPLATES-ID-GET] Buscando template no tenant: ${hostname}`);
 
@@ -83,7 +84,7 @@ export async function PUT(
     }
 
     // CRÍTICO: Obter banco do tenant correto
-    const db = await getTenantDatabase(request);
+    // Usando banco único
     const hostname = request.headers.get("host") || "";
     console.log(`🔍 [ADMIN-NOTIFICATION-TEMPLATES-ID-PUT] Atualizando template no tenant: ${hostname}`);
 
@@ -175,7 +176,7 @@ export async function DELETE(
     }
 
     // CRÍTICO: Obter banco do tenant correto
-    const db = await getTenantDatabase(request);
+    // Usando banco único
     const hostname = request.headers.get("host") || "";
     console.log(`🔍 [ADMIN-NOTIFICATION-TEMPLATES-ID-DELETE] Deletando template no tenant: ${hostname}`);
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantDatabase } from "@/_lib/auth";
+;
 import { findNextAvailableSlot } from "@/_lib/availability";
+import { db } from "@/_lib/prisma";
 
 /**
  * GET /api/services/{serviceId}/barbers
@@ -15,7 +16,7 @@ export async function GET(
 ) {
   try {
     // CRÍTICO: Obter banco do tenant correto
-    const db = await getTenantDatabase(request);
+    // Usando banco único
     
     const { serviceId } = await params;
     const searchParams = request.nextUrl.searchParams;

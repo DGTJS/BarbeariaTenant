@@ -181,7 +181,10 @@ async function getAuthOptions(req: NextRequest): Promise<NextAuthOptions> {
 
             return true;
           } catch (error: any) {
-            console.error("[NextAuth SignIn] Erro ao processar Google OAuth:", error);
+            console.error(
+              "[NextAuth SignIn] Erro ao processar Google OAuth:",
+              error
+            );
             return true;
           }
         }
@@ -201,7 +204,7 @@ export async function GET(
 
   const resolvedParams = await params;
   const url = new URL(req.url);
-  
+
   // Construir query params no formato esperado pelo NextAuth
   const query: Record<string, string | string[]> = {};
   url.searchParams.forEach((value, key) => {
@@ -249,9 +252,7 @@ export async function GET(
           setCookieArray.push(value);
         }
       } else {
-        responseHeaders[name] = Array.isArray(value)
-          ? value.join(", ")
-          : value;
+        responseHeaders[name] = Array.isArray(value) ? value.join(", ") : value;
       }
       return mockRes;
     },
@@ -273,7 +274,7 @@ export async function GET(
         locationHeader,
         responseStatus
       );
-      setCookieArray.forEach((cookie) => {
+      setCookieArray.forEach(cookie => {
         redirectResponse.headers.append("Set-Cookie", cookie);
       });
       return redirectResponse;
@@ -296,9 +297,12 @@ export async function GET(
             status: responseStatus,
             headers: filteredHeaders,
           })
-        : NextResponse.json({}, { status: responseStatus, headers: filteredHeaders });
+        : NextResponse.json(
+            {},
+            { status: responseStatus, headers: filteredHeaders }
+          );
 
-    setCookieArray.forEach((cookie) => {
+    setCookieArray.forEach(cookie => {
       response.headers.append("Set-Cookie", cookie);
     });
 
@@ -388,9 +392,7 @@ export async function POST(
           setCookieArray.push(value);
         }
       } else {
-        responseHeaders[name] = Array.isArray(value)
-          ? value.join(", ")
-          : value;
+        responseHeaders[name] = Array.isArray(value) ? value.join(", ") : value;
       }
       return mockRes;
     },
@@ -411,7 +413,7 @@ export async function POST(
         locationHeader,
         responseStatus
       );
-      setCookieArray.forEach((cookie) => {
+      setCookieArray.forEach(cookie => {
         redirectResponse.headers.append("Set-Cookie", cookie);
       });
       return redirectResponse;
@@ -434,9 +436,12 @@ export async function POST(
             status: responseStatus,
             headers: filteredHeaders,
           })
-        : NextResponse.json({}, { status: responseStatus, headers: filteredHeaders });
+        : NextResponse.json(
+            {},
+            { status: responseStatus, headers: filteredHeaders }
+          );
 
-    setCookieArray.forEach((cookie) => {
+    setCookieArray.forEach(cookie => {
       response.headers.append("Set-Cookie", cookie);
     });
 
@@ -449,4 +454,3 @@ export async function POST(
     );
   }
 }
-

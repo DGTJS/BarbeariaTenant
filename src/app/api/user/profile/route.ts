@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getSession, getTenantDatabase } from '@/_lib/auth';
+import { getSession } from "@/_lib/auth";
+import { db } from "@/_lib/prisma";
 
 export async function GET(req: NextRequest) {
   try {
@@ -9,7 +10,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const db = await getTenantDatabase(req);
+    // Usando banco único
 
     const user = await db.user.findUnique({
       where: { id: session.userId },
@@ -41,7 +42,7 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ message: 'Unauthorized' }, { status: 401 });
     }
 
-    const db = await getTenantDatabase(req);
+    // Usando banco único
 
     const { name, whatsappNumber, image } = await req.json();
 

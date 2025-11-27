@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantDatabase } from "@/_lib/auth";
+import { db } from "@/_lib/prisma";
+;
 
 // Cache em memória com timestamp de última atualização (por tenant)
 const cachedServices: Map<string, { data: any; timestamp: number }> = new Map();
@@ -8,7 +9,7 @@ const CACHE_DURATION = 60 * 60 * 1000; // 1 hora em ms
 export async function GET(request: NextRequest) {
   try {
     // CRÍTICO: Obter banco do tenant correto
-    const db = await getTenantDatabase(request);
+    // Usando banco único
     const hostname = request.headers.get("host") || "";
     const cacheKey = hostname;
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getTenantDatabase, getSession } from '@/_lib/auth';
+import { getSession } from "@/_lib/auth";
 import { requireAdmin } from '@/_lib/admin-auth';
+import { db } from "@/_lib/prisma";
 
 export async function PUT(
   request: NextRequest,
@@ -15,7 +16,7 @@ export async function PUT(
     }
 
     // CRÍTICO: Obter banco do tenant correto
-    const db = await getTenantDatabase(request);
+    // Usando banco único
     const hostname = request.headers.get("host") || "";
     console.log(`🔍 [ADMIN-NOTIFICATIONS-ID-PUT] Atualizando notificação no tenant: ${hostname}`);
 

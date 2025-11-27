@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantDatabase } from "@/_lib/auth";
+import { db } from "@/_lib/prisma";
+;
 
 // GET /api/bookings/check-conflict?barberId=...&dateTime=...&serviceId=...
 export async function GET(request: NextRequest) {
   try {
     // CRÍTICO: Obter banco do tenant correto
-    const db = await getTenantDatabase(request);
+    // Usando banco único
     const hostname = request.headers.get("host") || "";
     console.log(`🔍 [CHECK-CONFLICT] Verificando conflito no tenant: ${hostname}`);
 

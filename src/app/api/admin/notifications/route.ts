@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantDatabase, getSession } from "@/_lib/auth";
+import { getSession } from "@/_lib/auth";
+import { db } from "@/_lib/prisma";
 import { requireAdmin, requireAdminOnly } from "@/_lib/admin-auth";
 
 export async function GET(request: NextRequest) {
@@ -10,9 +11,6 @@ export async function GET(request: NextRequest) {
     if (!session) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
-
-    // CRÍTICO: Obter banco do tenant correto
-    const db = await getTenantDatabase(request);
     const hostname = request.headers.get("host") || "";
     console.log(`🔍 [ADMIN-NOTIFICATIONS-GET] Buscando notificações no tenant: ${hostname}`);
 
@@ -84,10 +82,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // CRÍTICO: Obter banco do tenant correto
-    const db = await getTenantDatabase(request);
     const hostname = request.headers.get("host") || "";
-    console.log(`🔍 [ADMIN-NOTIFICATIONS-POST] Criando notificações no tenant: ${hostname}`);
+    console.log(`🔍 [ADMIN-NOTIFICATIONS-POST] Criando notificações`);
 
     const data = await request.json();
     const {

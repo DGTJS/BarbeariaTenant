@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantDatabase } from "@/_lib/auth";
+;
 import { requireAdminOnly } from "@/_lib/admin-auth";
 import bcrypt from "bcryptjs";
+import { db } from "@/_lib/prisma";
 
 /**
  * PATCH /api/admin/barbers/[id]/permissions
@@ -29,7 +30,7 @@ export async function PATCH(
     }
 
     // CRÍTICO: Obter banco do tenant correto
-    const db = await getTenantDatabase(request);
+    // Usando banco único
     console.log("🔍 [ADMIN-BARBERS-PERMISSIONS-PATCH] Atualizando permissões no banco do tenant...");
 
     const { id } = await params;
@@ -138,7 +139,7 @@ export async function GET(
     }
 
     // CRÍTICO: Obter banco do tenant correto
-    const db = await getTenantDatabase(request);
+    // Usando banco único
     console.log("🔍 [ADMIN-BARBERS-PERMISSIONS-GET] Buscando permissões no banco do tenant...");
 
     const { id } = await params;

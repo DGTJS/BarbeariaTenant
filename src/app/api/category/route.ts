@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantDatabase } from "@/_lib/auth";
+import { db } from "@/_lib/prisma";
+;
 
 // Cache em memória com TTL (por tenant)
 const cachedCategories: Map<string, { data: any[]; timestamp: number }> = new Map();
@@ -8,7 +9,7 @@ const CACHE_TTL = 300000; // 5 minutos (categorias mudam pouco)
 export async function GET(request: NextRequest) {
   try {
     // CRÍTICO: Obter banco do tenant correto
-    const db = await getTenantDatabase(request);
+    // Usando banco único
     const hostname = request.headers.get("host") || "";
     const cacheKey = hostname;
 

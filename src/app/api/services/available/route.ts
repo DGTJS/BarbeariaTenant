@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantDatabase } from "@/_lib/auth";
+import { db } from "@/_lib/prisma";
+;
 
 /**
  * GET /api/services/available
@@ -12,7 +13,7 @@ import { getTenantDatabase } from "@/_lib/auth";
 export async function GET(request: NextRequest) {
   try {
     // CRÍTICO: Obter banco do tenant correto
-    const db = await getTenantDatabase(request);
+    // Usando banco único
     
     const services = await db.barberShopService.findMany({
       select: {

@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantDatabase } from "@/_lib/auth";
+;
 import { getSession } from "@/_lib/auth";
 import { dispatchWebhook, WebhookEvent } from "@/_lib/webhook-dispatcher";
+import { db } from "@/_lib/prisma";
 
 // Cache em memória para agendamentos (mesma estrutura do route.ts principal)
 const cachedBookings: Map<string, { data: any; timestamp: number }> = new Map();
@@ -44,7 +45,7 @@ export async function PATCH(
     }
 
     // Obter banco do tenant correto
-    const db = await getTenantDatabase(request);
+    // Usando banco único
     const hostname = request.headers.get("host") || "";
 
     const { id } = await params;

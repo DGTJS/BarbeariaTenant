@@ -4,7 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantDatabase, getTenantSubdomain, createSessionToken, createSessionCookie } from "@/_lib/auth";
+import { createSessionToken, createSessionCookie } from "@/_lib/auth";
+import { db } from "@/_lib/prisma";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: NextRequest) {
@@ -45,14 +46,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Obter banco do tenant
-    const tenantSubdomain = getTenantSubdomain(req);
-    const db = await getTenantDatabase(req);
-
     console.log("[Auth Register] ========== TENTATIVA DE REGISTRO ==========");
     console.log("[Auth Register] Email:", email);
-    console.log("[Auth Register] Tenant:", tenantSubdomain || "padrão");
-    console.log("[Auth Register] Usando banco:", tenantSubdomain ? `tenant (${tenantSubdomain})` : "padrão");
 
     // Verificar se usuário já existe
     const existingUser = await db.user.findUnique({
@@ -95,11 +90,11 @@ export async function POST(req: NextRequest) {
       user.id,
       user.email,
       user.role,
-      tenantSubdomain
+      null
     );
 
     // Criar cookie
-    const cookie = createSessionCookie(token, tenantSubdomain);
+    const cookie = createSessionCookie(token, null);
 
     console.log("[Auth Register] ✅ Registro bem-sucedido");
     console.log("[Auth Register] User ID:", user.id);
@@ -116,7 +111,7 @@ export async function POST(req: NextRequest) {
         phone: user.phone,
         whatsappNumber: user.whatsappNumber,
       },
-      tenant: tenantSubdomain || "default",
+      tenant: "default",
     });
 
     // Definir cookie

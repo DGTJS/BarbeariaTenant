@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantDatabase, getSession } from "@/_lib/auth";
+import { getSession } from "@/_lib/auth";
 import { requireAdmin } from "@/_lib/admin-auth";
+import { db } from "@/_lib/prisma";
 
 // PATCH /api/bookings/[id]/confirm-payment
 // Confirma o pagamento de um agendamento (muda status de "Aguardando Pagamento" para "Confirmado")
@@ -27,7 +28,7 @@ export async function PATCH(
     }
 
     // CRÍTICO: Obter banco do tenant correto
-    const db = await getTenantDatabase(request);
+    // Usando banco único
     const hostname = request.headers.get("host") || "";
     console.log(`🔍 [CONFIRM-PAYMENT] Confirmando pagamento no tenant: ${hostname}`);
 

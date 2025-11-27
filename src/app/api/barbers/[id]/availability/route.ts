@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { calculateBarberAvailability } from "@/_lib/availability";
-import { getTenantDatabase } from "@/_lib/auth";
+;
 import { parse } from "date-fns";
+import { db } from "@/_lib/prisma";
 
 /**
  * GET /api/barbers/{id}/availability
@@ -58,7 +59,7 @@ export async function GET(
     }
 
     // CRÍTICO: Obter banco do tenant correto
-    const db = await getTenantDatabase(request);
+    // Usando banco único
     
     // Calcular disponibilidade
     const availability = await calculateBarberAvailability(

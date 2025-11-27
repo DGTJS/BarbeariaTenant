@@ -4,7 +4,8 @@
  */
 
 import { NextRequest, NextResponse } from "next/server";
-import { getTenantDatabase, getTenantSubdomain, createSessionToken, createSessionCookie } from "@/_lib/auth";
+import { createSessionToken, createSessionCookie } from "@/_lib/auth";
+import { db } from "@/_lib/prisma";
 import bcrypt from "bcryptjs";
 
 export async function POST(req: NextRequest) {
@@ -20,14 +21,8 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Obter banco do tenant
-    const tenantSubdomain = getTenantSubdomain(req);
-    const db = await getTenantDatabase(req);
-
     console.log("[Auth Login] ========== TENTATIVA DE LOGIN ==========");
     console.log("[Auth Login] Email:", email);
-    console.log("[Auth Login] Tenant:", tenantSubdomain || "padrão");
-    console.log("[Auth Login] Usando banco:", tenantSubdomain ? `tenant (${tenantSubdomain})` : "padrão");
 
     // Buscar usuário
     const user = await db.user.findUnique({
@@ -75,16 +70,15 @@ export async function POST(req: NextRequest) {
       user.id,
       user.email,
       user.role,
-      tenantSubdomain
+      null
     );
 
     // Criar cookie
-    const cookie = createSessionCookie(token, tenantSubdomain);
+    const cookie = createSessionCookie(token, null);
 
     console.log("[Auth Login] ✅ Login bem-sucedido");
     console.log("[Auth Login] User ID:", user.id);
     console.log("[Auth Login] Cookie name:", cookie.name);
-    console.log("[Auth Login] Tenant subdomain:", tenantSubdomain || "padrão");
     console.log("[Auth Login] Cookie config:", {
       httpOnly: cookie.httpOnly,
       secure: cookie.secure,
@@ -104,7 +98,7 @@ export async function POST(req: NextRequest) {
         phone: user.phone,
         whatsappNumber: user.whatsappNumber,
       },
-      tenant: tenantSubdomain || "default",
+      tenant: "default",
     });
 
     // Definir cookie

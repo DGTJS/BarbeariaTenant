@@ -1,0 +1,79 @@
+# 🔗 DATABASE_URL para cPanel
+
+## Configurações do Banco de Dados
+
+### Banco Principal: devanksi_barberboss
+### Usuário: devanksi_barberboss_super
+### Senha: jake0707
+
+---
+
+## ✅ DATABASE_URL Recomendada (Banco Principal)
+
+```
+mysql://devanksi_barberboss_super:jake0707@localhost:3306/devanksi_barberboss
+```
+
+**Para usar no cPanel:**
+1. Copie a URL acima
+2. Vá em: **Node.js App** → Sua aplicação → **Environment Variables**
+3. Adicione/Edite: `DATABASE_URL`
+4. Cole a URL completa
+
+---
+
+## 📋 Outras Opções
+
+### Opção 1: Usando usuário devanksi_barberboss_super com banco devanksi_barberboss
+```
+mysql://devanksi_barberboss_super:jake0707@localhost:3306/devanksi_barberboss
+```
+
+### Opção 2: Usando usuário devanksi_devanksi com banco devanksi_barberboss
+```
+mysql://devanksi_devanksi:jake0707@localhost:3306/devanksi_barberboss
+```
+
+### Opção 3: Banco super (devanksi_barberboss_super)
+```
+mysql://devanksi_barberboss_super:jake0707@localhost:3306/devanksi_barberboss_super
+```
+
+---
+
+## ⚠️ IMPORTANTE
+
+1. **Verifique se o usuário tem permissões no banco:**
+   - No cPanel, vá em **MySQL Databases**
+   - Na seção **Add User To Database**
+   - Certifique-se de que `devanksi_barberboss_super` está associado ao banco `devanksi_barberboss`
+
+2. **Após configurar a DATABASE_URL:**
+   ```bash
+   npx prisma generate
+   npx prisma migrate deploy
+   ```
+
+3. **Reinicie a aplicação** no cPanel após configurar.
+
+---
+
+## 🔍 Testar Conexão via SSH
+
+```bash
+mysql -u devanksi_barberboss_super -p devanksi_barberboss
+# Digite a senha: jake0707
+```
+
+---
+
+## 📝 Variáveis de Ambiente Necessárias no cPanel
+
+```
+DATABASE_URL=mysql://devanksi_barberboss_super:jake0707@localhost:3306/devanksi_barberboss
+NEXTAUTH_SECRET=seu_secret_aqui
+NEXTAUTH_URL=https://devank.site
+NEXT_PUBLIC_APP_URL=https://devank.site
+NODE_ENV=production
+```
+

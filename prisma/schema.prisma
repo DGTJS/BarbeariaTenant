@@ -3,7 +3,7 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -80,7 +80,7 @@ model BarberShop {
   createdAt   DateTime            @default(now())
   updatedAt   DateTime            @default(now()) @updatedAt
   imageUrl    String?
-  phones      String[]
+  phones      String?
   rating      String?
   services    BarberShopService[]
   barbers     barber[]
